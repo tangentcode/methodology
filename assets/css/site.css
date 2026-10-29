@@ -23,3 +23,6 @@ figure.diagram figcaption{color:var(--muted);font-size:.9rem;margin-top:.5rem}
 details.source{margin:-1rem 0 1.5rem;font-size:.9rem}
 details.source summary{cursor:pointer;color:var(--muted)}
 .pager{max-width:46rem;margin:0 auto 3rem;padding:1rem 1.25rem;border-top:1px solid var(--line);display:flex;justify-content:space-between}
+figure.diagram.tall img{width:24rem}
+figure.diagram.wide{width:min(72rem,calc(100vw - 2rem));margin-left:50%;transform:translateX(-50%)}
+figure.diagram.wide img{width:100%}

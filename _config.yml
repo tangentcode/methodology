@@ -4,6 +4,8 @@ markdown: kramdown
 kramdown:
   input: GFM
   hard_wrap: false
+  syntax_highlighter: rouge
+highlighter: rouge
 # These plugins are on by default in GitHub Pages. They let the existing
 # Markdown files stay the source: README.md becomes the home page, links to
 # *.md become links to the rendered pages, and no front matter is needed.
@@ -12,6 +14,8 @@ plugins:
   - jekyll-optional-front-matter
   - jekyll-readme-index
   - jekyll-titles-from-headings
+optional_front_matter:
+  remove_originals: true
 relative_links:
   enabled: true
   collections: false
