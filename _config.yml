@@ -1,0 +1,37 @@
+title: A working methodology
+description: How one human owner works with a coordinator bot and a team of coding agents.
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+# These plugins are on by default in GitHub Pages. They let the existing
+# Markdown files stay the source: README.md becomes the home page, links to
+# *.md become links to the rendered pages, and no front matter is needed.
+plugins:
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-titles-from-headings
+relative_links:
+  enabled: true
+  collections: false
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+nav:
+  - { file: README.md, label: Home }
+  - { file: roles.md, label: Roles }
+  - { file: workflow.md, label: Workflow }
+  - { file: review.md, label: Review }
+  - { file: briefs.md, label: Briefs }
+  - { file: safety.md, label: Safety }
+  - { file: working-agreements.md, label: Working agreements }
+  - { file: adopting.md, label: Adopting }
+  - { file: glossary.md, label: Glossary }
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - diagrams-src

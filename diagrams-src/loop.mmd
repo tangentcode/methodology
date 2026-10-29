@@ -1,0 +1,18 @@
+flowchart TD
+    A([Human approves issue]) --> B[Coordinator writes brief,<br/>starts worker]
+    B --> C[Worker opens draft PR<br/>against main, code + tests]
+    C --> D{Coordinator<br/>pre-check}
+    D -->|fails| C
+    D -->|passes| E[Mark ready<br/>card to Auto Review]
+    E --> F{Automated review<br/>round ≤ cap}
+    F -->|P1 or P2 finding| G[Back to draft, In Progress<br/>worker fixes the root cause,<br/>neighboring cases + tests]
+    G --> H[Coordinator verifies fix,<br/>resolves thread]
+    H -->|under the cap| E
+    H -->|cap reached:<br/>coordinator verifies,<br/>no more automated rounds| I
+    F -->|clean| I{Coordinator<br/>post-check}
+    I --> J[Merge into staging branch,<br/>redeploy staging,<br/>screenshot if UI changed]
+    J --> K{Gate into<br/>Human Review}
+    K -->|passes| L[Human Review]
+    K -->|fails| G
+    L -->|changes requested<br/>or late finding| G
+    L -->|human merges| M([Main])

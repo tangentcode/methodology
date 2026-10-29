@@ -1,0 +1,9 @@
+flowchart LR
+    B[Backlog] -->|brief written,<br/>worker started| IP[In Progress<br/><i>PR is a draft</i>]
+    IP -->|coordinator pre-check passes<br/>PR marked ready| AR[Auto Review<br/><i>automated reviewer runs</i>]
+    AR -->|P1 or P2 finding<br/>PR back to draft| IP
+    AR -->|blocked on another change| P[Pending]
+    P -->|blocker cleared,<br/>main merged in| AR
+    AR -->|clean + post-check +<br/>merged to staging| HR[Human Review]
+    HR -->|human requests changes<br/>or late finding| IP
+    HR -->|human merges to main| D[Done]
