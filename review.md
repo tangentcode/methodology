@@ -50,6 +50,10 @@ The coordinator includes this rule in every message that relays a finding. If a 
 
 Workers do not resolve review threads. The coordinator resolves a thread after it has checked the fix on the current head. This keeps one party responsible for saying a finding is closed.
 
+## Acting on a clean review
+
+A clean review is an event too. When the latest automated review of the current head is clean and no P1 or P2 threads are open, the coordinator's automation starts the next step right away: the post-check, the staging merge, and the gate. It doesn't wait for the worker, which has usually finished already. The periodic scan treats a clean review with no post-check after it as a stall.
+
 ## The gate into human review
 
 A card moves to Human Review only when all of these hold on the current head. Check them in this order and record the result before moving the card:
