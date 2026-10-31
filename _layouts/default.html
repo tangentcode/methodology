@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if page.path == "README.md" %}{% assign page_title = site.title %}{% else %}{% assign page_title = page.title | append: " · " | append: site.title %}{% endif %}
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <nav>
+      <ul>
+      {% for item in site.nav %}
+        {% if item.file == "README.md" %}{% assign href = '/' | relative_url %}{% else %}{% assign href = item.file | replace: '.md', '.html' | prepend: '/' | relative_url %}{% endif %}
+        <li><a href="{{ href }}"{% if page.path == item.file %} aria-current="page"{% endif %}>{{ item.label }}</a></li>
+      {% endfor %}
+      </ul>
+    </nav>
+  </header>
+  <main class="doc">
+    {% assign body = content %}
+    {% if page.path == "README.md" %}
+      {% capture repl %}{% include fig-loop.html %}<h2 id="documents">{% endcapture %}
+      {% assign body = body | replace: '<h2 id="documents">', repl %}
+    {% elsif page.path == "workflow.md" %}
+      {% capture repl %}{% include fig-loop.html %}<h2 id="the-loop">{% endcapture %}
+      {% assign body = body | replace: '<h2 id="the-loop">', repl %}
+      {% capture fig %}{% include fig-board.html %}{% endcapture %}
+      {% assign rouge_open = '<div class="language-mermaid highlighter-rouge">' %}
+      {% assign rouge_close = '</code></pre></div></div>' %}
+      {% assign plain_open = '<pre><code class="language-mermaid">' %}
+      {% assign plain_close = '</code></pre>' %}
+      {% assign mm = body | split: rouge_open %}
+      {% assign open = rouge_open %}{% assign close = rouge_close %}
+      {% if mm.size != 2 %}{% assign mm = body | split: plain_open %}{% assign open = plain_open %}{% assign close = plain_close %}{% endif %}
+      {% if mm.size == 2 %}
+        {% assign tail = mm[1] | split: close %}
+        {% assign rest = tail | shift | join: close %}
+        {% assign body = mm[0] | append: fig | append: '<details class="source"><summary>Mermaid source for this chart</summary>' | append: open | append: tail[0] | append: close | append: '</details>' | append: rest %}
+      {% endif %}
+    {% elsif page.path == "review.md" %}
+      {% capture repl %}{% include fig-loop.html %}<h2 id="coordinator-checks">{% endcapture %}
+      {% assign body = body | replace: '<h2 id="coordinator-checks">', repl %}
+    {% endif %}
+    {{ body }}
+  </main>
+  {% assign idx = 0 %}
+  {% for item in site.nav %}{% if page.path == item.file %}{% assign idx = forloop.index0 %}{% endif %}{% endfor %}
+  <footer class="pager">
+    {% if idx > 0 %}{% assign pidx = idx | minus: 1 %}{% assign prev = site.nav[pidx] %}
+      {% if prev.file == "README.md" %}{% assign ph = '/' | relative_url %}{% else %}{% assign ph = prev.file | replace: '.md', '.html' | prepend: '/' | relative_url %}{% endif %}
+      <a class="prev" href="{{ ph }}">← {{ prev.label }}</a>
+    {% else %}<span></span>{% endif %}
+    {% assign nidx = idx | plus: 1 %}{% assign next = site.nav[nidx] %}
+    {% if next %}<a class="next" href="{{ next.file | replace: '.md', '.html' | prepend: '/' | relative_url }}">{{ next.label }} →</a>{% endif %}
+  </footer>
+</body>
+</html>
