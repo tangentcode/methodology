@@ -46,7 +46,7 @@ flowchart LR
 6. For each P1 or P2 finding, the coordinator converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule. The worker fixes and pushes. The coordinator verifies the fix, resolves the thread, and returns to step 5.
 7. After the round cap, the worker still fixes findings, but the coordinator verifies them itself and requests no more automated reviews.
 8. When no P1 or P2 findings remain, the coordinator runs its post-review check.
-9. The coordinator merges the change into the staging branch, redeploys staging, and checks that staging serves the current head and can run the change.
+9. The coordinator merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change.
 10. For any change a person can see, current screenshots or frames from staging go into the pull request description. The description also says where and how to see the change.
 11. The coordinator checks the full gate in [review.md](review.md). Only if it passes does the card move to Human Review.
 12. The human reviews. He merges to main, or sends the change back with comments, which returns it to step 6.
@@ -68,7 +68,7 @@ A change is done when:
 - The human has merged it to main.
 - Its tests ran green on the final head, with pass counts reported.
 - Every review finding is fixed at its root cause, with neighboring cases tested.
-- It ran on staging at its final head, with screenshots or frames in the pull request if it changed anything a person can see.
+- It ran on a staging deploy that contained its final head, with screenshots or frames in the pull request if it changed anything a person can see.
 - No review threads are open.
 
 ## Blocked work

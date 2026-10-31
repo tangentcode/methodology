@@ -32,6 +32,6 @@
 
 **Round.** One automated review of the current head. Rounds have a cap.
 
-**Staging.** A test environment fed by the staging branch, an integration branch that is never merged into main.
+**Staging.** A test environment fed by the staging branch, an integration branch that is never merged into main. Because the branch collects many changes, the commit staging serves is usually a merge that contains a pull request's head, not the head itself.
 
 **Worker agent.** A coding agent in a terminal session that owns one change.

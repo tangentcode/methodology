@@ -94,7 +94,7 @@ For each review finding: the root cause, the neighboring cases, and the tests.
 <other change, or "nothing">
 
 ## Where to see it
-<the staging place to look, the steps to get there, and the commit staging is serving>
+<the staging place to look, the steps to get there, and the staging commit being served, which contains this head>
 
 ## Screenshot
 <current staging screenshots or frames for anything a person can see, with a side-by-side for generated media that has a reference, or "nothing visible changed">
@@ -119,7 +119,7 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 9. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
 10. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 7 until a round comes back clean or the cap is reached.
 11. **Coordinator.** Runs the post-check (checklist C).
-12. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that staging serves the current head and can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
+12. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
 13. **Coordinator.** Checks the gate (checklist D). If it passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
 14. **Human.** Reviews, then merges to main or sends it back with comments.
 
@@ -162,7 +162,7 @@ Run these on the current head every time. A new push resets them.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] Checklist C passed on this head.
 - [ ] The card is a pull request, not an issue.
-- [ ] The change is merged into the staging branch, staging is redeployed, and staging is serving this head.
+- [ ] The change is merged into the staging branch, staging is redeployed, and the commit staging serves contains this head.
 - [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, move the card to Pending and ask the human.
 - [ ] The pull request description says where and how to see the change.
 - [ ] Any change a person can see, such as UI, rendered images or video, has current staging screenshots or frames embedded in the pull request description.

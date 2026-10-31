@@ -22,7 +22,7 @@ The coordinator runs the loop and keeps the board accurate. It does not write th
 - Resolves review threads after it has verified a fix.
 - Moves cards and marks pull requests draft or ready.
 - Merges changes that passed its checks into the staging branch and redeploys staging.
-- Checks that staging serves the current head and can run the change before asking for human review.
+- Checks that the commit staging serves contains the current head, and that staging can run the change, before asking for human review.
 - Makes sure screenshots or frames from staging are embedded in the pull request for any change a person can see.
 - Reports results to the human.
 
