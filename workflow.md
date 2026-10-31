@@ -3,8 +3,8 @@
 ## Artifacts
 
 - **Issue.** States one goal, the approach, and acceptance criteria. The human approves it before work starts.
-- **Brief.** The coordinator's instructions to one worker for one issue. See [briefs.md](briefs.md).
-- **Pull request.** One per issue, branched from main and targeting main. It starts as a draft.
+- **Brief.** The coordinator's instructions to one worker for one change: a whole issue, or a named part of one. See [briefs.md](briefs.md).
+- **Pull request.** One per worker's change, branched from main and targeting main. It starts as a draft. An issue usually becomes one pull request, but a large issue can be split into several, each with its own worker and branch and each naming the part of the issue it covers.
 - **Board.** One card per issue or pull request. The column says what happens next.
 - **Staging branch.** An integration branch that collects changes for testing on the staging environment. It is never merged into main.
 
@@ -25,7 +25,7 @@ Issues define scope, and one issue may lead to several pull requests. An issue t
 
 ```mermaid
 flowchart LR
-    B[Backlog] --> IP[In Progress]
+    B[Backlog] -->|draft pull request opened, issue card removed| IP[In Progress]
     IP -->|coordinator pre-check passes| AR[Auto Review]
     AR -->|P1 or P2 finding| IP
     AR -->|blocked on another change| P[Pending]
@@ -39,8 +39,8 @@ flowchart LR
 ## The loop
 
 1. The human approves an issue.
-2. The coordinator writes a brief and starts a worker. The card moves to In Progress.
-3. The worker cuts a branch from main, opens a draft pull request early, and pushes code with tests.
+2. The coordinator writes a brief and starts a worker. The issue card stays in Backlog.
+3. The worker cuts a branch from main, opens a draft pull request early, and pushes code with tests. Once the draft pull request exists, the coordinator removes the issue card and puts the pull request card in In Progress.
 4. The coordinator runs its pre-review check (see [review.md](review.md)).
 5. The coordinator marks the pull request ready, moves the card to Auto Review, and requests an automated review.
 6. For each P1 or P2 finding, the coordinator converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule. The worker fixes and pushes. The coordinator verifies the fix, resolves the thread, and returns to step 5.

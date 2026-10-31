@@ -6,7 +6,7 @@
 
 **Board.** The project tracker with one card per issue or pull request, arranged in columns.
 
-**Brief.** The coordinator's written instructions to a worker for one issue.
+**Brief.** The coordinator's written instructions to a worker for one change: a whole issue, or a named part of one.
 
 **Coordinator bot.** The agent that runs the workflow, steers workers, checks changes, and moves cards.
 
