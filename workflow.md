@@ -16,10 +16,12 @@
 | In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator |
 | Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator |
 | Pending | Otherwise ready, but blocked on another change or an outside decision | Coordinator |
-| Human Review | Passed the gate. Waiting on the human | Coordinator |
+| Human Review | Passed the gate. Waiting on the human. Pull requests only | Coordinator |
 | Done | Merged to main | Human, or the board on merge |
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
+
+An issue card stays on the board only until a pull request links it. Once a pull request links the issue, remove the issue card. The pull request card carries the work from then on, so each change shows up once and Human Review lists only pull requests. An issue with no pull request never goes in Human Review or Pending. If it's waiting on the human, put a question on it and leave it where it is.
 
 ```mermaid
 flowchart LR
@@ -28,7 +30,7 @@ flowchart LR
     AR -->|P1 or P2 finding| IP
     AR -->|blocked on another change| P[Pending]
     P -->|blocker cleared| AR
-    AR -->|clean, coordinator check passes, merged to staging| HR[Human Review]
+    AR -->|clean, post-check passes, deployed and verified on staging, screenshots in PR| HR[Human Review]
     HR -->|human requests changes| IP
     HR -->|late finding| IP
     HR -->|human merges to main| D[Done]
@@ -44,9 +46,10 @@ flowchart LR
 6. For each P1 or P2 finding, the coordinator converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule. The worker fixes and pushes. The coordinator verifies the fix, resolves the thread, and returns to step 5.
 7. After the round cap, the worker still fixes findings, but the coordinator verifies them itself and requests no more automated reviews.
 8. When no P1 or P2 findings remain, the coordinator runs its post-review check.
-9. The coordinator merges the change into the staging branch and redeploys staging. For a UI change it captures a screenshot on staging.
-10. If the change passes the gate, the card moves to Human Review.
-11. The human reviews. He merges to main, or sends the change back with comments, which returns it to step 6.
+9. The coordinator merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change.
+10. For any change a person can see, current screenshots or frames from staging go into the pull request description. The description also says where and how to see the change.
+11. The coordinator checks the full gate in [review.md](review.md). Only if it passes does the card move to Human Review.
+12. The human reviews. He merges to main, or sends the change back with comments, which returns it to step 6.
 
 ## Definition of ready
 
@@ -65,7 +68,7 @@ A change is done when:
 - The human has merged it to main.
 - Its tests ran green on the final head, with pass counts reported.
 - Every review finding is fixed at its root cause, with neighboring cases tested.
-- It ran on staging, with a screenshot if the UI changed.
+- It ran on a staging deploy that contained its final head, with screenshots or frames in the pull request if it changed anything a person can see.
 - No review threads are open.
 
 ## Blocked work

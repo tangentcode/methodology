@@ -7,7 +7,7 @@ A change passes through four reviews, in this order:
 1. **Coordinator pre-check**, before the first automated review.
 2. **Automated review**, for up to a fixed number of rounds.
 3. **Coordinator post-check**, after automated review is clean, before merging to staging.
-4. **Human review**, after the change runs on staging.
+4. **Human review**, after the change runs on staging and the pull request shows it.
 
 The coordinator's checks catch problems the automated reviewer doesn't look for: a change that does more or less than the issue asked, a missing test, a brief instruction that was ignored, or a change that touches files outside its scope.
 
@@ -52,14 +52,18 @@ Workers do not resolve review threads. The coordinator resolves a thread after i
 
 ## The gate into human review
 
-A card moves to Human Review only when all of these hold on the current head:
+A card moves to Human Review only when all of these hold on the current head. Check them in this order and record the result before moving the card:
 
+- The card is a pull request. Issue cards never go in Human Review.
 - The pull request is not a draft.
 - It is mergeable against main.
 - No P1 or P2 findings or threads are open.
-- The coordinator's post-check passed.
-- The change is merged into the staging branch and staging is redeployed.
-- A change with a visible UI difference has a staging screenshot attached.
+- The coordinator's post-check passed on this head.
+- The change is deployed where the human will review it, and the deploy is verified. The change is merged into the staging branch and staging was redeployed. The commit staging is actually serving contains the pull request's current head. Staging is an integration branch, so that commit is usually a merge rather than the head itself. Record the commit staging is serving. The staged environment must also be able to run the change, with any configuration, credentials or services it needs. If staging can't run it, the card goes to Pending with a question for the human, not to Human Review.
+- The pull request description says where and how to see the change.
+- Any change a person can see, such as UI, rendered images or generated video, has current screenshots or frames from staging embedded in the pull request description. Generated media includes a side-by-side with its reference when there is one. If there's any doubt about whether a change is visible, treat it as visible.
+
+Whatever automation moves cards has to check every condition on this list. A condition that's written down but not checked isn't part of the gate.
 
 If any condition fails later, for example after a new push or a late finding, the card goes back to In Progress.
 

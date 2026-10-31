@@ -12,7 +12,7 @@
 
 **Finding.** A defect a reviewer reports. P1 must be fixed. P2 should be fixed before human review.
 
-**Gate.** The set of conditions a change must meet before its card moves to Human Review.
+**Gate.** The set of conditions a pull request must meet before its card moves to Human Review. Each condition is checked on the current head, by automation as well as by people.
 
 **Head.** The latest commit on a pull request's branch. Checks apply to the current head only.
 
@@ -32,6 +32,6 @@
 
 **Round.** One automated review of the current head. Rounds have a cap.
 
-**Staging.** A test environment fed by the staging branch, an integration branch that is never merged into main.
+**Staging.** A test environment fed by the staging branch, an integration branch that is never merged into main. Because the branch collects many changes, the commit staging serves is usually a merge that contains a pull request's head, not the head itself.
 
 **Worker agent.** A coding agent in a terminal session that owns one change.
