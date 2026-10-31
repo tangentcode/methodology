@@ -1,6 +1,6 @@
 # Briefs
 
-A brief is the coordinator's written instruction to one worker agent for one issue. The worker should be able to start from the brief alone, without asking the coordinator for context.
+A brief is the coordinator's written instruction to one worker agent for one change: a whole issue, or a named part of one. The worker should be able to start from the brief alone, without asking the coordinator for context.
 
 ## What a brief contains
 

@@ -10,7 +10,7 @@
 
 ## Scope
 
-- One worker, one issue, one branch, one pull request.
+- One worker, one change, one branch, one pull request. A change covers a whole issue or a named part of one. Splitting an issue across several pull requests is fine.
 - When a worker finds and demonstrates a real defect next to its change, it fixes it in the same change with a regression test. The coordinator doesn't ask the human whether to fix a demonstrated defect.
 - Unrelated ideas become new issues in Backlog, approved by the human before work starts.
 - Items the human has parked stay parked until he says otherwise.

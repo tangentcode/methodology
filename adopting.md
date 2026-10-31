@@ -20,7 +20,7 @@ Create one board for the repository with a single-select status field and these 
 
 | Column | Put a card here when | The pull request is |
 |---|---|---|
-| Backlog | The issue is proposed or approved but no worker has started | not yet open |
+| Backlog | The issue defines scope and no pull request has picked it up yet | not yet open |
 | In Progress | A worker is writing code or fixing findings | a draft |
 | Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
 | Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
@@ -75,7 +75,7 @@ Add an issue template to the repository:
 Add a pull request template:
 
 ```markdown
-Fixes <issue reference>
+Fixes <issue reference>   (or: Part of <issue reference>, when this pull request covers only part of the issue)
 
 ## What changed
 <summary>
@@ -110,8 +110,8 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 
 1. **Human.** Approves the issue. The coordinator adds the `approved` label and puts the card in Backlog.
 2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
-3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. Moves the card to In Progress.
-4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue.
+3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The issue card stays in Backlog.
+4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue. The coordinator then removes the issue card and puts the pull request card in In Progress.
 5. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
 6. **Coordinator.** Runs the pre-check (checklist A below).
 7. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
