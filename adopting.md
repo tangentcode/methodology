@@ -75,7 +75,7 @@ Add an issue template to the repository:
 Add a pull request template:
 
 ```markdown
-Fixes <issue reference>
+Fixes <issue reference>   (or: Part of <issue reference>, when this pull request covers only part of the issue)
 
 ## What changed
 <summary>
