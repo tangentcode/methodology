@@ -34,8 +34,10 @@ nav:
   - { file: working-agreements.md, label: Working agreements }
   - { file: adopting.md, label: Adopting }
   - { file: glossary.md, label: Glossary }
+  - { file: changelog.md, label: Changelog }
 exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
   - diagrams-src
+  - scripts
