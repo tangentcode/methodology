@@ -48,6 +48,7 @@ Starting a new project? Begin with [adopting.md](adopting.md).
 | [working-agreements.md](working-agreements.md) | Day-to-day agreements about communication and conduct |
 | [adopting.md](adopting.md) | Setup guide for a new project: board, labels, templates, first issue, gate checklists |
 | [glossary.md](glossary.md) | Terms used in these documents |
+| [changelog.md](changelog.md) | Every change to these documents, newest first, linked to its pull request |
 
 ## Adapting it
 

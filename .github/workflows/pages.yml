@@ -1,5 +1,9 @@
-# Rebuild and publish the GitHub Pages site whenever main changes,
-# so a merged pull request shows up on tangentcode.github.io/methodology.
+# Rebuild and publish the GitHub Pages site whenever main changes, so a
+# merged pull request shows up on the site. Run it by hand from the Actions
+# tab (or `gh workflow run pages.yml`) to redeploy without a new merge.
+#
+# This only publishes once the repository's Pages source is set to
+# "GitHub Actions" (Settings > Pages > Source).
 name: Deploy Pages
 
 on:
@@ -9,10 +13,11 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
   pages: write
   id-token: write
 
+# One deploy at a time. A deploy already running finishes; a newer push
+# queues behind it instead of cancelling it halfway.
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -22,11 +27,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The changelog is built from main's full first-parent history.
+          fetch-depth: 0
       - uses: actions/configure-pages@v5
-      - name: Write the changelog from merged pull requests
-        run: ./scripts/changelog.sh changelog.md
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Fill the changelog from main's history
+        run: python3 scripts/changelog.py changelog.md HEAD
+      # The same builder (the github-pages gem) that the branch-based Pages
+      # build uses, so pages render the same way.
       - uses: actions/jekyll-build-pages@v1
         with:
           source: ./
