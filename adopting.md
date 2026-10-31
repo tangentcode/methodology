@@ -177,3 +177,6 @@ If any item fails later, move the card back to In Progress and convert the pull 
 - Check the build machine's load and memory before starting more.
 - Keep a list of active workers: issue, branch, session, last reported head.
 - When two changes touch the same files, start the second only after the first merges, or put the second in Pending.
+- Give every worker, whatever agent it runs, a standing allow list for the routine actions of its own change: read-only commands, running tests, installing dependencies inside its own checkout, and committing and pushing its own branch. Never allow pushes to main, the staging branch or another worker's branch. If a worker hits the same permission prompt on every change, that's a setup bug. Fix the allow list instead of approving the prompt each time.
+- Give each checkout its own dependency install, not a link into another checkout, so removing or reinstalling dependencies stays inside the worker's own directory.
+- Check for workers stopped on a permission prompt every 10 to 15 minutes, separately from the slower stall scan. A prompt that has waited more than 10 minutes counts as a stall. The coordinator approves it if the action stays inside the worker's own checkout and branch, and asks the human otherwise.
