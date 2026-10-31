@@ -12,7 +12,7 @@
 
 **Finding.** A defect a reviewer reports. P1 must be fixed. P2 should be fixed before human review.
 
-**Gate.** The set of conditions a change must meet before its card moves to Human Review.
+**Gate.** The set of conditions a pull request must meet before its card moves to Human Review. Each condition is checked on the current head, by automation as well as by people.
 
 **Head.** The latest commit on a pull request's branch. Checks apply to the current head only.
 

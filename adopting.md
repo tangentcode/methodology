@@ -24,14 +24,14 @@ Create one board for the repository with a single-select status field and these 
 | In Progress | A worker is writing code or fixing findings | a draft |
 | Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
 | Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
-| Human Review | The change passed the gate (see step 6) | ready |
+| Human Review | The pull request passed the gate (see step 6). Pull requests only | ready |
 | Done | The human merged it to main | merged |
 
 Board settings:
 
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
-- [ ] Put the issue card and its pull request card on the board. While the pull request moves through the loop, keep the issue card in Pending so the board doesn't count the work twice.
+- [ ] When a pull request links an issue, remove the issue card from the board. The pull request card carries the work, so the board counts it once and Human Review holds only pull requests.
 
 ## 3. Create labels
 
@@ -42,7 +42,7 @@ Keep labels few. These are enough to start:
 | `approved` | The human approved the issue. Workers start only on approved issues. |
 | `parked` | The human paused it. Leave it alone until he says otherwise. |
 | `blocked` | Waiting on another change or decision. Name the blocker in a comment. |
-| `ui` | Has a visible UI change, so it needs a staging screenshot. |
+| `ui` | Changes something a person can see (UI, rendered images or video), so it needs screenshots or frames from staging. |
 | `needs-decision` | The coordinator asked the human a question and is waiting. |
 | `follow-up` | Filed from a review finding or neighboring case that belongs in its own change. |
 
@@ -93,8 +93,11 @@ For each review finding: the root cause, the neighboring cases, and the tests.
 ## Blocked on
 <other change, or "nothing">
 
+## Where to see it
+<the staging place to look, the steps to get there, and the commit staging is serving>
+
 ## Screenshot
-<staging screenshot for UI changes, or "no UI change">
+<current staging screenshots or frames for anything a person can see, with a side-by-side for generated media that has a reference, or "nothing visible changed">
 ```
 
 Copy the brief template from [briefs.md](briefs.md) into the coordinator's own notes. Briefs don't go in the repository.
@@ -116,7 +119,7 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 9. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
 10. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 7 until a round comes back clean or the cap is reached.
 11. **Coordinator.** Runs the post-check (checklist C).
-12. **Coordinator.** Merges the change into the staging branch, redeploys staging, and captures a screenshot if the change has the `ui` label.
+12. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that staging serves the current head and can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
 13. **Coordinator.** Checks the gate (checklist D). If it passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
 14. **Human.** Reviews, then merges to main or sends it back with comments.
 
@@ -158,8 +161,13 @@ Run these on the current head every time. A new push resets them.
 - [ ] It is mergeable against main.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] Checklist C passed on this head.
-- [ ] The change is merged into the staging branch and staging is redeployed.
-- [ ] A change with a visible UI difference has a staging screenshot in the pull request.
+- [ ] The card is a pull request, not an issue.
+- [ ] The change is merged into the staging branch, staging is redeployed, and staging is serving this head.
+- [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, move the card to Pending and ask the human.
+- [ ] The pull request description says where and how to see the change.
+- [ ] Any change a person can see, such as UI, rendered images or video, has current staging screenshots or frames embedded in the pull request description.
+
+Any automation that moves cards must check every item on this list.
 
 If any item fails later, move the card back to In Progress and convert the pull request to a draft.
 
