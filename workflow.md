@@ -12,7 +12,7 @@
 
 | Column | Meaning | Who moves the card in |
 |---|---|---|
-| Backlog | Approved or proposed, not started | Coordinator or human |
+| Backlog | Issues that define scope and that no pull request has picked up yet | Coordinator or human |
 | In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator |
 | Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator |
 | Pending | Otherwise ready, but blocked on another change or an outside decision | Coordinator |
@@ -21,7 +21,7 @@
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
 
-An issue card stays on the board only until a pull request links it. Once a pull request links the issue, remove the issue card. The pull request card carries the work from then on, so each change shows up once and Human Review lists only pull requests. An issue with no pull request never goes in Human Review or Pending. If it's waiting on the human, put a question on it and leave it where it is.
+Issues define scope, and one issue may lead to several pull requests. An issue that no pull request has picked up yet lives in Backlog. Once a pull request picks it up, remove the issue card. The pull request cards carry the work from then on, so Human Review lists only pull requests and the human only ever merges or rejects pull requests. An issue card with no pull request in any column but Backlog is a stall, and so is an issue nobody has triaged into Backlog. Lots of open issues with no pull request is a stall too: start workers on them, or ask the human to park or close them. If an issue is waiting on the human, put the question on the issue and keep it in Backlog.
 
 ```mermaid
 flowchart LR
@@ -59,7 +59,7 @@ An issue is ready for a worker when:
 - It states the goal, the approach, and what is out of scope.
 - It has acceptance criteria someone can check.
 - The human's stated choices are written into it.
-- It does not depend on unmerged work, or the dependency is named and the card can sit in Pending.
+- It does not depend on unmerged work, or the dependency is named and the issue waits in Backlog until that work merges.
 
 ## Definition of done
 

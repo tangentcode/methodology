@@ -20,7 +20,7 @@ Create one board for the repository with a single-select status field and these 
 
 | Column | Put a card here when | The pull request is |
 |---|---|---|
-| Backlog | The issue is proposed or approved but no worker has started | not yet open |
+| Backlog | The issue defines scope and no pull request has picked it up yet | not yet open |
 | In Progress | A worker is writing code or fixing findings | a draft |
 | Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
 | Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |

@@ -2,6 +2,8 @@
 
 **Automated reviewer.** A code-review service that reads a pull request and posts prioritized findings.
 
+**Backlog.** The column for issues that no pull request has picked up yet. Issues define scope. Pull requests carry the work through the other columns.
+
 **Board.** The project tracker with one card per issue or pull request, arranged in columns.
 
 **Brief.** The coordinator's written instructions to a worker for one issue.
