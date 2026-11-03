@@ -19,6 +19,8 @@ The coordinator runs the loop and keeps the board accurate. It does not write th
 - Checks each change before the first automated review and again after automated review is clean.
 - Requests automated reviews, up to the round cap.
 - Relays findings to the worker with the root-cause rule.
+- Answers every question a worker ends its turn with, or routes it to whoever owns the call (the human for product choices, another bot for its own area), within the same periodic scan that sees it. A question to the coordinator blocks the change as surely as a failing test. When the coordinator routes a question, it tells the worker who has it, and it moves the card to Pending only if the answer must come from the human.
+- Delivers every relay. A message left typed in a worker's input box but never submitted was not delivered. Before sending, the coordinator checks the input is empty; after sending, it checks the worker took the message. A resend that arrives after the worker already did the work is cleared, not submitted.
 - Resolves review threads after it has verified a fix.
 - Moves cards and marks pull requests draft or ready.
 - Merges changes that passed its checks into the staging branch and redeploys staging.
@@ -37,6 +39,7 @@ A worker agent is a coding agent running in a terminal session. Each worker owns
 - Writes tests with the code and never pushes with failing tests.
 - Fixes findings at their root cause and names the neighboring cases it covered.
 - Reports its head commit and test pass counts when it finishes or waits on review.
+- Puts any question at the end of its turn, names who it is for, and says which option it would pick and why, so the coordinator can answer in one line.
 
 A worker must not merge, deploy, touch the staging branch, touch running services, touch other workers' checkouts, or resolve review threads.
 
