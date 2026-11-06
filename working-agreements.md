@@ -10,9 +10,9 @@
 
 ## Scope
 
-- One worker, one issue, one branch, one pull request.
+- One worker, one branch, one pull request. One issue may span several pull requests when each links it with `Part of`.
 - When a worker finds and demonstrates a real defect next to its change, it fixes it in the same change with a regression test. The coordinator doesn't ask the human whether to fix a demonstrated defect.
-- Unrelated ideas become new issues in Backlog, approved by the human before work starts.
+- Unrelated ideas become new issues in Triage. The human decides them there before a worker starts.
 - Items the human has parked stay parked until he says otherwise.
 
 ## Sessions and machines

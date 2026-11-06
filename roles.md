@@ -4,18 +4,31 @@
 
 The human owner is the only person who can approve new work, merge to main, and deploy to production.
 
-- Approves issues before work starts.
+- Decides what to build in a comment on each Triage issue (edits count). That comment is the instruction.
+- Approves issues before a worker starts, when work does not go through Triage.
 - States choices that agents carry into briefs (for example, which browser to support or what a source should be named).
 - Reviews changes in the Human Review column.
 - Merges to main and deploys.
 - Signs in to services himself and types his own passwords.
 
+## Owner bot
+
+The owner bot owns product decisions for its area of the board. It does not write the product code itself.
+
+- Comments on Triage issues with options for the human.
+- Treats the human's comment on a Triage issue as the instruction for what to build, including edits to that comment.
+- Moves an issue to Needs Input and posts questions when it still needs clarification.
+- Writes the brief and moves the card to In Progress when the human's decision is enough to start.
+- Does not invent product choices the human has not made.
+
+The owner bot must not merge to main, deploy to production, or launch workers itself. The coordinator launches the worker from the brief.
+
 ## Coordinator bot
 
-The coordinator runs the loop and keeps the board accurate. It does not write the product code itself.
+The coordinator runs the pull-request loop and keeps the board accurate. It does not write the product code itself, and it does not invent product choices (those belong to the owner bot).
 
-- Files issues the human approved and writes a brief for each.
-- Starts one worker agent per change and sends it instructions.
+- Forwards the human's Triage comments to the owner bot.
+- Starts one worker agent per brief the owner bot writes, and sends the brief.
 - Checks each change before the first automated review and again after automated review is clean.
 - Requests automated reviews, up to the round cap.
 - Relays findings to the worker with the root-cause rule.

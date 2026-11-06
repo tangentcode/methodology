@@ -1,6 +1,6 @@
 # Briefs
 
-A brief is the coordinator's written instruction to one worker agent for one issue. The worker should be able to start from the brief alone, without asking the coordinator for context.
+A brief is the owner bot's written instruction to one worker agent for one issue. The coordinator launches the worker and sends the brief. The worker should be able to start from the brief alone, without asking for more context.
 
 ## What a brief contains
 
@@ -8,7 +8,7 @@ A brief is the coordinator's written instruction to one worker agent for one iss
 - **Where.** The files and modules the change touches, and any nearby code the worker should not revive or touch.
 - **First step.** What to read before writing code, and what decision to explain in the pull request body.
 - **The issue.** The full issue text, copied in, so the brief stands alone.
-- **The human's choices.** Every choice the human has stated, written in the first time. Don't leave them for a review round to discover.
+- **The human's choices.** Every choice from the human's Triage comment (and any later answers), written in the first time. Don't leave them for a review round to discover.
 - **Tests.** The cases that must be tested.
 - **Acceptance.** How the human will check the result.
 - **The root-cause rule.** Always included.
