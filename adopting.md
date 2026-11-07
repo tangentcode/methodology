@@ -32,6 +32,7 @@ Create one board for the repository with a single-select status field and these 
 
 Board settings:
 
+- [ ] Every pull request card has a Status: In Progress for drafts or ongoing pushes; otherwise Auto Review with a review requested.
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
 - [ ] When a pull request links an issue on the host (`Fixes #N`, or `Part of #N`), remove the issue card from the board. The link must show up on the host, not only in free text. The pull request card carries the work, so the board counts it once and Human Review holds only pull requests.
@@ -60,8 +61,16 @@ Add an issue template to the repository:
 ## Goal
 <one or two sentences: what changes for the user>
 
+## Code context and cause
+<relevant component, files or modules, and why the problem happens>
+
+## Fix options
+1. <option>
+2. <option>
+<two to four numbered options, with a recommendation the maintainer can choose in one comment>
+
 ## Approach
-<the design, closest to existing code; name the files or modules>
+<the design chosen by the maintainer>
 
 ## Choices the human owner made
 - <choice>

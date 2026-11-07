@@ -25,6 +25,8 @@ Moving a card to Auto Review also means marking the pull request ready. Moving i
 
 ### Issues and pull requests on the board
 
+Every pull request card must have a Status. Set a new card to In Progress if the pull request is a draft or is still being pushed. Otherwise, set it to Auto Review and request a review. Never leave its Status blank.
+
 An issue with no pull request lives only in Triage, Backlog, Needs Input, or In Progress (while a worker is launched). Issues never sit in Auto Review, Pending, or Human Review.
 
 Once a pull request links the issue on the host (`Fixes #N`, or `Part of #N` when one issue spans several pull requests), remove the issue card. The pull request card carries the work from then on. The link must actually appear on the host, not only in free text. Many open issues with no pull request is a failure: an agreed issue should promptly get a pull request.
@@ -46,6 +48,8 @@ flowchart LR
 ```
 
 ## Triage
+
+New issues and gripes enter Triage. Each issue must include code context for the relevant component, explain why the problem happens, and give two to four numbered fix options with a recommendation. A symptom and expected behavior alone are not enough. The maintainer should be able to choose with one comment.
 
 Work starts as an issue in Triage. The owner bot comments on the issue with options. The human decides in a comment; that comment is the instruction for what to build, and edits to it count too. The coordinator forwards the human's comment to the owner bot.
 
