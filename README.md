@@ -52,3 +52,9 @@ Starting a new project? Begin with [adopting.md](adopting.md).
 ## Adapting it
 
 Nothing here depends on a specific tool. You need a version-control host with pull requests, a board with columns, an automated reviewer that posts findings, a staging environment fed by an integration branch, and a way to send messages to agents in their sessions. Rename the columns and roles to fit your team, but keep the gate into human review and the rule that only the human merges and deploys.
+
+## Lessons
+
+### 2026-11-07: Keep full suites off the shared build box
+
+Moving full test suites onto a shared box without resource limits caused an out-of-memory outage and a reboot. The fix is memory and CPU caps for workers and tests, a two-slot throttle, targeted local tests, full Linux CI back in GitHub Actions, and parking fully pushed idle workers only under memory pressure. Saved sessions make them easy to resume. See [review.md](review.md) and [working-agreements.md](working-agreements.md).

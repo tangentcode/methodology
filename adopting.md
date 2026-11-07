@@ -112,7 +112,7 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
 3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. Moves the card to In Progress.
 4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue.
-5. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
+5. **Worker.** Writes code and tests, runs only the targeted test files locally through the shared two-slot throttle with one Vitest worker, pushes, and reports the head commit and pass counts.
 6. **Coordinator.** Runs the pre-check (checklist A below).
 7. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
 8. **Coordinator.** Reads the findings. For each P1 or P2, converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule.
@@ -136,7 +136,7 @@ Run these on the current head every time. A new push resets them.
 - [ ] The change does what the issue and brief asked, and nothing else.
 - [ ] Every choice in the brief is followed.
 - [ ] Tests exist for the cases in the brief.
-- [ ] The full suite passes when the coordinator runs it, and matches the worker's reported counts.
+- [ ] Targeted local tests pass and match the worker's reported counts; full Linux suites run in GitHub Actions, not on the shared build box.
 - [ ] No secrets, credentials, or machine-specific paths are committed.
 - [ ] The pull request is mergeable against main.
 
@@ -145,19 +145,20 @@ Run these on the current head every time. A new push resets them.
 - [ ] Each relayed finding is fixed on the new head.
 - [ ] The fix addresses the root cause, not only the reported line.
 - [ ] The neighboring cases are listed in the pull request body and each has a test.
-- [ ] The full suite passes.
+- [ ] Targeted tests pass locally. After the PR is marked ready, require current-head Linux suites in GitHub Actions before Human Review.
 - [ ] The coordinator resolves only the threads it has verified.
 
 ### C. Post-check, after automated review is clean or capped
 
 - [ ] Everything in checklist A still holds.
 - [ ] No P1 or P2 findings or threads are open.
-- [ ] The tests pass twice in a row if the change touches timing, concurrency, or shared state.
+- [ ] The relevant tests pass twice in a row if the change touches timing, concurrency, or shared state; local reruns stay targeted and throttled.
 - [ ] The change is not blocked on another unmerged change. If it is, move the card to Pending and stop here.
 
 ### D. Gate into Human Review
 
 - [ ] The pull request is not a draft.
+- [ ] GitHub Actions Linux checks are green on its current head.
 - [ ] It is mergeable against main.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] Checklist C passed on this head.
@@ -171,9 +172,18 @@ Any automation that moves cards must check every item on this list.
 
 If any item fails later, move the card back to In Progress and convert the pull request to a draft.
 
+### CI and staging setup
+
+- Configure Linux full suites for ready-for-review PR pushes (skip drafts and run on ready-for-review) and main pushes. Cancel superseded runs. Run Windows weekly only.
+- Install the shared two-slot throttle for local tests and headless browsers. Target exact changed test files; use `--maxWorkers=1 --no-file-parallelism` for Vitest.
+- Keep post-work-merge checks to the deployed commit, site auth, and a remote smoke test. Do not run full suites on the shared build box.
+
 ## 7. Running more than one worker
 
 - Start one worker per approved issue, each in its own checkout and session.
 - Check the build machine's load and memory before starting more.
-- Keep a list of active workers: issue, branch, session, last reported head.
+- Launch every worker and test command inside the capped cgroup slice automatically, wrapping the command inside the terminal pane rather than the terminal client.
+- Keep a registry of active and parked workers, with issue, branch, PR, worktree, saved session, last pushed head, idle time, and a one-command resume.
+- There is no fixed worker-count limit. Report memory use and limit, swap, available memory, CPU use, and load when resources are tight.
+- Under memory pressure only, park clean, fully pushed workers idle at empty prompts, longest-idle first. Leave workers running when there is headroom. Resume saved sessions in their original worktrees inside the cap, automatically when PR feedback requires more work. See [working-agreements.md](working-agreements.md).
 - When two changes touch the same files, start the second only after the first merges, or put the second in Pending.
