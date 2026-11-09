@@ -71,6 +71,15 @@ A change is done when:
 - It ran on a staging deploy that contained its final head, with screenshots or frames in the pull request if it changed anything a person can see.
 - No review threads are open.
 
+## Worker liveness
+
+A card in In Progress must have a live worker that is doing the work. A shell window or a saved session is not a live worker.
+
+- When a worker finishes, parks or exits, the same action moves its card. A finished draft goes through the pre-check, is marked ready and moves to Auto Review. A card that waits on the human moves to Needs Input. A card that waits on another change moves to Pending.
+- A worker that ends its turn with a question about the next step is not finished. The coordinator answers or routes the question in the same scan, and does not leave the card in In Progress.
+- A resume that fails is a board event. The coordinator reads the resume result. If no worker started, the coordinator starts one or moves the card out of In Progress.
+- Each scan compares In Progress cards with live workers. A card with no live worker, or with an idle worker and no new push, is a stall. The scan fixes it in that run.
+
 ## Blocked work
 
 A change that is otherwise ready but waits on another change goes to Pending, not Auto Review or Human Review. Its pull request body names the blocker. When the blocker merges, the coordinator rebases or merges main into the branch and resumes the loop.
