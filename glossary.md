@@ -24,7 +24,9 @@
 
 **Ops agent.** The one agent allowed to make root-level changes on shared machines.
 
-**Pending.** The column for work that is otherwise ready but blocked on another change or decision.
+**Human Review.** The column that holds exactly one finished pull request waiting on the human to test and merge to main. The next pull request enters only when this slot is empty.
+
+**Pending.** The column for a short, ordered buffer of finished pull requests that are ready to merge and that do not conflict with the current Human Review pull request or with each other. The buffer is rebased ahead of time, kept small, and refilled after each Human Review decision.
 
 **Ready.** A pull request marked for review. Moving a card to Auto Review marks it ready.
 
