@@ -1,6 +1,6 @@
 flowchart TD
-    A([Human approves issue]) --> B[Coordinator writes brief,<br/>starts worker,<br/>issue card to Active]
-    B --> C[Worker opens draft PR<br/>against main, code + tests]
+    A([Human approves issue]) --> B[Coordinator writes brief,<br/>starts worker, opens draft PR<br/>with a closing link,<br/>issue card to Active]
+    B --> C[Worker pushes code and tests<br/>to the draft PR]
     C --> D{Coordinator<br/>pre-check}
     D -->|fails| C
     D -->|passes| E[Mark ready<br/>card to Auto Review]

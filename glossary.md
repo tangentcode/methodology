@@ -1,6 +1,6 @@
 # Glossary
 
-**Active.** The column for open issue cards that have an open linked pull request.
+**Active.** The column for open issue cards that are assigned to the swarm and have open sub-issues or a linked open pull request.
 
 **Automated reviewer.** A code-review service that reads a pull request and posts prioritized findings.
 
@@ -33,6 +33,8 @@
 **Root-cause rule.** Fix the cause of a finding, list its neighboring cases, and test each one.
 
 **Round.** One automated review of the current head. Rounds have a cap.
+
+**Swarm assignment.** The `swarm` label on an issue. An issue in Active must carry it, and must also have open sub-issues or a linked open pull request.
 
 **Staging.** A test environment fed by the staging branch, an integration branch that is never merged into main. Because the branch collects many changes, the commit staging serves is usually a merge that contains a pull request's head, not the head itself.
 

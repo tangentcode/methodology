@@ -21,7 +21,7 @@ Create one board for the repository with a single-select status field and these 
 | Column | Put a card here when | The pull request is |
 |---|---|---|
 | Backlog | The issue is proposed or approved but no worker has started | not yet open |
-| Active | The issue is approved and a pull request is open, or is about to be opened | open, usually a draft at first |
+| Active | The issue is assigned to the swarm and has open sub-issues or a linked open pull request | open, usually a draft at first |
 | In Progress | A worker is writing code or fixing findings | a draft |
 | Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
 | Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
@@ -32,7 +32,7 @@ Board settings:
 
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
-- [ ] When a pull request links an issue, move the issue card to Active. Keep both cards. The pull request card carries the review loop. The issue card stays in Active until the pull request merges or closes.
+- [ ] When a pull request is opened, give it a closing link (Fixes, or an equivalent). A "Part of" mention is not a link. Assign the issue to the swarm (the `swarm` label), then move the issue card to Active. Keep both cards. The pull request card carries the review loop. The issue card stays in Active until the pull request merges or closes, or until its last open sub-issue closes.
 
 ## 3. Create labels
 
@@ -41,6 +41,7 @@ Keep labels few. These are enough to start:
 | Label | Use |
 |---|---|
 | `approved` | The human approved the issue. Workers start only on approved issues. |
+| `swarm` | Assigned to the swarm. Active holds only issues with this label, plus open sub-issues or a linked open pull request. |
 | `parked` | The human paused it. Leave it alone until he says otherwise. |
 | `blocked` | Waiting on another change or decision. Name the blocker in a comment. |
 | `ui` | Changes something a person can see (UI, rendered images or video), so it needs screenshots or frames from staging. |
@@ -109,10 +110,10 @@ Add a short agent instructions file at the repository root with the root-cause r
 
 Use a small, real issue for the first run, so problems with the setup show up early.
 
-1. **Human.** Approves the issue. The coordinator adds the `approved` label, moves the issue card to Active, and launches a draft pull request.
+1. **Human.** Approves the issue. The coordinator adds the `approved` label.
 2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
-3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The pull request card moves to In Progress.
-4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue.
+3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The coordinator opens a draft pull request against main at once, with a closing link, adds the `swarm` label, moves the issue card to Active, and moves the pull request card to In Progress. The issue never sits in Active without that link. A "Part of" mention is not a link.
+4. **Worker.** Cuts the branch from the latest main if it is not already cut, makes a first commit if needed, and pushes to the pull request. The worker does not open the pull request.
 5. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
 6. **Coordinator.** Runs the pre-check (checklist A below).
 7. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.

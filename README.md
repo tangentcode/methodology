@@ -29,7 +29,7 @@ See [roles.md](roles.md).
 
 ## The loop in one paragraph
 
-The human approves an issue. The coordinator writes a brief, starts a worker agent, and moves the issue card to Active. The worker opens a draft pull request against main early and pushes tests with the code. The coordinator checks the change, then the automated reviewer reviews it, for at most a fixed number of rounds. The worker fixes each finding at its root cause. When the change is clean, the coordinator checks it again, merges it into the staging branch, and redeploys staging. If the change passes the gate into human review, the card moves to Human Review. The human reviews it and merges it to main.
+The human approves an issue. The coordinator writes a brief, starts a worker agent, opens a draft pull request against main at once with a closing link, assigns the issue to the swarm, and moves the issue card to Active. The worker pushes tests with the code. The coordinator checks the change, then the automated reviewer reviews it, for at most a fixed number of rounds. The worker fixes each finding at its root cause. When the change is clean, the coordinator checks it again, merges it into the staging branch, and redeploys staging. If the change passes the gate into human review, the card moves to Human Review. The human reviews it and merges it to main.
 
 See [workflow.md](workflow.md) for the board and the full loop, and [review.md](review.md) for review rounds.
 
