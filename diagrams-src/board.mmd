@@ -1,5 +1,6 @@
 flowchart LR
-    B[Backlog] -->|brief written,<br/>worker started| IP[In Progress<br/><i>PR is a draft</i>]
+    B[Backlog] -->|issue approved,<br/>draft PR opened| AC[Active<br/><i>issue card stays here</i>]
+    AC -.->|PR card starts here| IP[In Progress<br/><i>PR is a draft</i>]
     IP -->|coordinator pre-check passes<br/>PR marked ready| AR[Auto Review<br/><i>automated reviewer runs</i>]
     AR -->|P1 or P2 finding<br/>PR back to draft| IP
     AR -->|blocked on another change| P[Pending]

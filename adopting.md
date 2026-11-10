@@ -21,6 +21,7 @@ Create one board for the repository with a single-select status field and these 
 | Column | Put a card here when | The pull request is |
 |---|---|---|
 | Backlog | The issue is proposed or approved but no worker has started | not yet open |
+| Active | The issue is approved and a pull request is open, or is about to be opened | open, usually a draft at first |
 | In Progress | A worker is writing code or fixing findings | a draft |
 | Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
 | Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
@@ -31,7 +32,7 @@ Board settings:
 
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
-- [ ] When a pull request links an issue, remove the issue card from the board. The pull request card carries the work, so the board counts it once and Human Review holds only pull requests.
+- [ ] When a pull request links an issue, move the issue card to Active. Keep both cards. The pull request card carries the review loop. The issue card stays in Active until the pull request merges or closes.
 
 ## 3. Create labels
 
@@ -108,9 +109,9 @@ Add a short agent instructions file at the repository root with the root-cause r
 
 Use a small, real issue for the first run, so problems with the setup show up early.
 
-1. **Human.** Approves the issue. The coordinator adds the `approved` label and puts the card in Backlog.
+1. **Human.** Approves the issue. The coordinator adds the `approved` label, moves the issue card to Active, and launches a draft pull request.
 2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
-3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. Moves the card to In Progress.
+3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The pull request card moves to In Progress.
 4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue.
 5. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
 6. **Coordinator.** Runs the pre-check (checklist A below).

@@ -1,5 +1,5 @@
 flowchart TD
-    A([Human approves issue]) --> B[Coordinator writes brief,<br/>starts worker]
+    A([Human approves issue]) --> B[Coordinator writes brief,<br/>starts worker,<br/>issue card to Active]
     B --> C[Worker opens draft PR<br/>against main, code + tests]
     C --> D{Coordinator<br/>pre-check}
     D -->|fails| C

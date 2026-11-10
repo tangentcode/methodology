@@ -1,5 +1,7 @@
 # Glossary
 
+**Active.** The column for open issue cards that have an open linked pull request.
+
 **Automated reviewer.** A code-review service that reads a pull request and posts prioritized findings.
 
 **Board.** The project tracker with one card per issue or pull request, arranged in columns.
