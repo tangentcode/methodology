@@ -26,7 +26,7 @@ Create one board for the repository with a single-select status field and these 
 | Active | The issue is assigned to the swarm and has sub-issues or a linked open pull request | issue |
 | In Progress | A worker is working on the draft pull request now | draft pull request |
 | Auto Review | The worker signed off and the automated reviewer is reviewing | ready pull request |
-| Needs Input | The latest comment is a worker question that a human must answer | draft pull request |
+| Needs Input | The latest comment is a worker or coordinator question that a human must answer | draft pull request |
 | Human Review | The pull request passed the gate (see step 6) and is deployed to staging | ready pull request |
 | Pending | The pull request is finished but depends on another pull request | ready pull request |
 | Done | The human merged it to main | merged pull request |
@@ -118,8 +118,8 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 
 1. **Human.** Approves the issue. The coordinator adds the `approved` label and puts the card in Backlog.
 2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
-3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. Moves the card to In Progress.
-4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue.
+3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The issue card stays in Backlog.
+4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue. The coordinator then moves the issue card to Active and the pull request card to In Progress.
 5. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
 6. **Coordinator.** Runs the pre-check (checklist A below).
 7. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
@@ -171,7 +171,7 @@ Run these on the current head every time. A new push resets them.
 - [ ] Checklist C passed on this head.
 - [ ] The card is a pull request, not an issue.
 - [ ] The change is merged into the staging branch, staging is redeployed, and the commit staging serves contains this head.
-- [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, move the card to Pending and ask the human.
+- [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, do not use Pending. Convert the pull request to a draft, move the card to Needs Input, and post a comment that names what is missing and who must provide it (the human, or the operator who owns the environment). When it is in place, mark the pull request ready, check staging again, and run this checklist again. If the head changed, go back to In Progress.
 - [ ] The pull request description says where and how to see the change.
 - [ ] Any change a person can see, such as UI, rendered images or video, has current staging screenshots or frames embedded in the pull request description.
 
@@ -184,4 +184,4 @@ If any item fails later, move the card back to In Progress and convert the pull 
 - Start one worker per approved issue, each in its own checkout and session.
 - Check the build machine's load and memory before starting more.
 - Keep a list of active workers: issue, branch, session, last reported head.
-- When two changes touch the same files, start the second only after the first merges, or put the second in Pending.
+- When two changes touch the same files, start the second only after the first merges, or put the second pull request in Pending when it is finished, with the first named as its blocker.
