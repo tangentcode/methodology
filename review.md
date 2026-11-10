@@ -54,6 +54,7 @@ Workers do not resolve review threads. The coordinator resolves a thread after i
 
 Human Review holds exactly one pull request. A card moves to Human Review only when that slot is empty and all of these hold on the current head. Check them in this order and record the result before moving the card:
 
+- Human Review is empty. If it already holds a pull request, the card goes to Pending instead.
 - The card is a pull request. Issue cards never go in Human Review.
 - The pull request is not a draft.
 - It is mergeable against main.
