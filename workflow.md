@@ -22,7 +22,7 @@
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
 
-When the human approves an issue, the coordinator assigns it to the swarm and opens a draft pull request at once, with a closing link such as Fixes. Only then does the issue card move to Active. The issue never sits in Active without that link. A "Part of" mention is not a link.
+When the human approves an issue, the coordinator starts a worker. The worker pushes a first commit on its branch. The coordinator then assigns the issue to the swarm and opens a draft pull request from that branch, with a closing link such as Fixes. Only then does the issue card move to Active, and only then does the worker continue. The issue never sits in Active without that link. A "Part of" mention is not a link.
 
 Active holds only open issues that are assigned to the swarm and have open sub-issues or a linked open pull request. The pull request card keeps moving through In Progress, Auto Review, Pending, and Human Review. Do not move the issue card through those columns, and do not remove it from the board while a linked pull request is open, or while it still has open sub-issues.
 
@@ -49,8 +49,8 @@ The issue card stays in Active while its pull request is open. The pull request 
 ## The loop
 
 1. The human approves an issue.
-2. The coordinator writes a brief and starts a worker. The coordinator opens a draft pull request against main at once, with a closing link, assigns the issue to the swarm, and moves the issue card to Active. The pull request card moves to In Progress.
-3. The worker cuts the branch from main if it is not already cut, and pushes code with tests to the pull request. The issue never sits in Active without a link.
+2. The coordinator writes a brief and starts a worker. The worker cuts a branch from main, pushes a first commit, and stops.
+3. The coordinator opens a draft pull request from that branch against main, with a closing link, assigns the issue to the swarm, and moves the issue card to Active. The pull request card moves to In Progress. The issue never sits in Active without a link. Then the worker pushes code with tests to the pull request.
 4. The coordinator runs its pre-review check (see [review.md](review.md)).
 5. The coordinator marks the pull request ready, moves the card to Auto Review, and requests an automated review.
 6. For each P1 or P2 finding, the coordinator converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule. The worker fixes and pushes. The coordinator verifies the fix, resolves the thread, and returns to step 5.

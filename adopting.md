@@ -112,9 +112,9 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 
 1. **Human.** Approves the issue. The coordinator adds the `approved` label.
 2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
-3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The coordinator opens a draft pull request against main at once, with a closing link, adds the `swarm` label, moves the issue card to Active, and moves the pull request card to In Progress. The issue never sits in Active without that link. A "Part of" mention is not a link.
-4. **Worker.** Cuts the branch from the latest main if it is not already cut, makes a first commit if needed, and pushes to the pull request. The worker does not open the pull request.
-5. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
+3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief.
+4. **Worker.** Cuts the branch from the latest main, makes a first commit, pushes the branch, and stops. The worker does not open the pull request.
+5. **Coordinator, then worker.** The coordinator opens a draft pull request from that branch against main, with a closing link, adds the `swarm` label, moves the issue card to Active, and moves the pull request card to In Progress. The issue never sits in Active without that link. A "Part of" mention is not a link. Then the coordinator tells the worker to continue. The worker writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
 6. **Coordinator.** Runs the pre-check (checklist A below).
 7. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
 8. **Coordinator.** Reads the findings. For each P1 or P2, converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule.

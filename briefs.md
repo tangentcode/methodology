@@ -4,7 +4,7 @@ A brief is the coordinator's written instruction to one worker agent for one iss
 
 ## What a brief contains
 
-- **Base.** The branch name, that it is cut from the latest main, and that the pull request targets main. The coordinator opens the draft pull request, with a closing link to the issue, before the worker starts.
+- **Base.** The branch name, that it is cut from the latest main, and that the pull request targets main. The worker makes and pushes a first commit, then stops. The coordinator opens the draft pull request, with a closing link to the issue, before the worker continues.
 - **Where.** The files and modules the change touches, and any nearby code the worker should not revive or touch.
 - **First step.** What to read before writing code, and what decision to explain in the pull request body.
 - **The issue.** The full issue text, copied in, so the brief stands alone.
@@ -25,8 +25,10 @@ Issue: <issue reference>. Approved by the human owner on <date>.
 
 ## Base
 Use branch `<branch>`, cut from the latest main. Set the pull request base to main.
-The coordinator has already opened a draft pull request for this branch,
-with a closing link to the issue. Push your commits to it.
+Make a first commit, push the branch, report it, and stop. Do not open
+the pull request. The coordinator opens a draft pull request for this
+branch, with a closing link to the issue, and tells you to continue.
+Then push the rest of your commits to that pull request.
 Never merge to main and never deploy. Don't touch the staging branch,
 running services, or other workers' checkouts.
 
@@ -57,7 +59,7 @@ cases of the same class in the pull request body and add tests for them
 before you push. Never push with failing tests.
 
 ## Rules
-- Branch from main, base main, draft pull request early.
+- Branch from main, base main. Push a first commit and wait for the coordinator's draft pull request.
 - Don't merge, deploy, or touch the staging branch or running services.
 - Don't resolve review threads.
 - Keep temporary files in your own working directory, not a shared temp directory.
