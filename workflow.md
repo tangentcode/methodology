@@ -10,26 +10,35 @@
 
 ## Board columns
 
-| Column | Meaning | Who moves the card in |
+| Column | Holds | Who moves the card in |
 |---|---|---|
-| Backlog | Approved or proposed, not started | Coordinator or human |
-| In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator |
-| Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator |
-| Pending | Otherwise ready, but blocked on another change or an outside decision | Coordinator |
-| Human Review | Passed the gate. Waiting on the human. Pull requests only | Coordinator |
-| Done | Merged to main | Human, or the board on merge |
+| Inbox | Anything kept out of the flow for now. After launch, new tickets from customers. A sandboxed agent reviews each ticket, reproduces the problem if there is one, and suggests what to do | Anyone |
+| Triage | Open issues only. Each has clear suggested plans from an agent. They wait on the human to decide whether or when to do the work, to choose a plan, or to send the issue back for more planning | Coordinator |
+| Backlog | Open issues only. Each has an approved plan but is not in the current sprint. Workers can take these lower-priority issues when capacity is available | Human or coordinator |
+| Active | Open issues only. Each is assigned to the swarm and has sub-issues or a linked open pull request | Coordinator |
+| In Progress | Draft pull requests for active issues. A worker is working on each one now | Coordinator |
+| Auto Review | Pull requests marked ready. The worker signed off and the automated, adversarial reviewer is running | Coordinator |
+| Needs Input | Draft pull requests where the worker needs more information. The latest comment is a question from the worker that a human must answer | Coordinator |
+| Human Review | Finished pull requests that are merged into the staging branch and deployed to staging. If possible, each has at least one screenshot and a short before-and-after summary in user terms. They wait on the human to test and merge to main | Gate only |
+| Pending | Finished pull requests that would be in Human Review, but that cannot merge to main yet because they depend on another pull request. The pull request body names the blocker | Coordinator |
+| Done | Pull requests merged to main | Human, or the board on merge |
+| Canceled | Closed pull requests that will not be merged. This is an error state: work started that should not have started | Human or coordinator |
+| Parked | Draft pull requests with real work that we decided not to merge into main or staging yet. Ideally this column is empty | Human or coordinator |
 
-Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
+Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress or Needs Input means converting it to a draft.
 
-An issue card stays on the board only until a pull request links it. Once a pull request links the issue, remove the issue card. The pull request card carries the work from then on, so each change shows up once and Human Review lists only pull requests. An issue with no pull request never goes in Human Review or Pending. If it's waiting on the human, put a question on it and leave it where it is.
+Issues and pull requests use different columns. Issues go in Inbox, Triage, Backlog and Active. Pull requests go in every column from In Progress to Parked. Do not remove an issue card when a pull request links it: the issue moves to Active and stays there while the pull request is open. When the human merges the pull request, close the issue, take it out of Active, and delete the branch. When the blocker of a Pending pull request merges, the coordinator updates the pull request and moves it on to Human Review through the gate.
 
 ```mermaid
 flowchart LR
-    B[Backlog] --> IP[In Progress]
+    T[Triage] -->|human approves| B[Backlog]
+    B -->|assigned to the swarm, draft PR opened| IP[In Progress]
+    IP -->|worker asks a question| NI[Needs Input]
+    NI -->|human answers| IP
     IP -->|coordinator pre-check passes| AR[Auto Review]
     AR -->|P1 or P2 finding| IP
     AR -->|blocked on another change| P[Pending]
-    P -->|blocker cleared| AR
+    P -->|blocker merged, PR updated, gate passes| HR
     AR -->|clean, post-check passes, deployed and verified on staging, screenshots in PR| HR[Human Review]
     HR -->|human requests changes| IP
     HR -->|late finding| IP

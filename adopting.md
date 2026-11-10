@@ -18,20 +18,28 @@ Before setting anything up, confirm these with the human and write the answers i
 
 Create one board for the repository with a single-select status field and these options, in this order:
 
-| Column | Put a card here when | The pull request is |
+| Column | Put a card here when | Card type |
 |---|---|---|
-| Backlog | The issue is proposed or approved but no worker has started | not yet open |
-| In Progress | A worker is writing code or fixing findings | a draft |
-| Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
-| Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
-| Human Review | The pull request passed the gate (see step 6). Pull requests only | ready |
-| Done | The human merged it to main | merged |
+| Inbox | The item is kept out of the flow for now, or is a new customer ticket | issue |
+| Triage | An agent has suggested plans and the human must decide | issue |
+| Backlog | The plan is approved but not in the current sprint | issue |
+| Active | The issue is assigned to the swarm and has sub-issues or a linked open pull request | issue |
+| In Progress | A worker is working on the draft pull request now | draft pull request |
+| Auto Review | The worker signed off and the automated reviewer is reviewing | ready pull request |
+| Needs Input | The latest comment is a worker question that a human must answer | draft pull request |
+| Human Review | The pull request passed the gate (see step 6) and is deployed to staging | ready pull request |
+| Pending | The pull request is finished but depends on another pull request | ready pull request |
+| Done | The human merged it to main | merged pull request |
+| Canceled | The pull request was closed without merging | closed pull request |
+| Parked | The draft has real work but we decided not to merge it yet | draft pull request |
+
+See [workflow.md](workflow.md#board-columns) for the full meaning of each column.
 
 Board settings:
 
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
-- [ ] When a pull request links an issue, remove the issue card from the board. The pull request card carries the work, so the board counts it once and Human Review holds only pull requests.
+- [ ] When a pull request links an issue, move the issue card to Active. Keep it there until the pull request merges or closes. Human Review holds only pull requests.
 
 ## 3. Create labels
 
