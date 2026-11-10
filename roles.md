@@ -33,7 +33,7 @@ The coordinator must not merge to main, deploy to production, commit or push cod
 A worker agent is a coding agent running in a terminal session. Each worker owns exactly one change.
 
 - Works in its own checkout on a branch cut from the latest main.
-- Opens a draft pull request against main as soon as it has a first commit.
+- Pushes its commits to the draft pull request that the coordinator opened against main before the worker started.
 - Writes tests with the code and never pushes with failing tests.
 - Fixes findings at their root cause and names the neighboring cases it covered.
 - Reports its head commit and test pass counts when it finishes or waits on review.

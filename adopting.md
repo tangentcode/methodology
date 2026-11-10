@@ -32,7 +32,7 @@ Board settings:
 
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
-- [ ] When a pull request is opened, give it a closing link (Fixes, or an equivalent). A "Part of" mention is not a link. Assign the issue to the swarm (the `swarm` label), then move the issue card to Active. Keep both cards. The pull request card carries the review loop. The issue card stays in Active until the pull request merges or closes, or until its last open sub-issue closes.
+- [ ] When a pull request is opened, give it a closing link (Fixes, or an equivalent). A "Part of" mention is not a link. Assign the issue to the swarm (the `swarm` label), then move the issue card to Active. Keep both cards. The pull request card carries the review loop. The issue card stays in Active while any linked pull request is open or any sub-issue is open. It leaves Active only when both are gone.
 
 ## 3. Create labels
 

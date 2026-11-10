@@ -4,7 +4,7 @@ A brief is the coordinator's written instruction to one worker agent for one iss
 
 ## What a brief contains
 
-- **Base.** The branch name, that it is cut from the latest main, and that the pull request targets main. Open a draft pull request at the first commit and link the issue.
+- **Base.** The branch name, that it is cut from the latest main, and that the pull request targets main. The coordinator opens the draft pull request, with a closing link to the issue, before the worker starts.
 - **Where.** The files and modules the change touches, and any nearby code the worker should not revive or touch.
 - **First step.** What to read before writing code, and what decision to explain in the pull request body.
 - **The issue.** The full issue text, copied in, so the brief stands alone.
@@ -25,7 +25,8 @@ Issue: <issue reference>. Approved by the human owner on <date>.
 
 ## Base
 Use branch `<branch>`, cut from the latest main. Set the pull request base to main.
-Open a draft pull request at your first commit, linking the issue.
+The coordinator has already opened a draft pull request for this branch,
+with a closing link to the issue. Push your commits to it.
 Never merge to main and never deploy. Don't touch the staging branch,
 running services, or other workers' checkouts.
 
