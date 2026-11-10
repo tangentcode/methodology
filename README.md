@@ -48,6 +48,7 @@ Starting a new project? Begin with [adopting.md](adopting.md).
 | [working-agreements.md](working-agreements.md) | Day-to-day agreements about communication and conduct |
 | [adopting.md](adopting.md) | Setup guide for a new project: board, labels, templates, first issue, gate checklists |
 | [glossary.md](glossary.md) | Terms used in these documents |
+| [suggested-conventions.md](suggested-conventions.md) | Optional conventions and agent prompts a project can adopt, such as sparse comments |
 
 ## Adapting it
 
