@@ -159,7 +159,7 @@ Run these on the current head every time. A new push resets them.
 
 - [ ] The pull request is independent of every pull request in Human Review: it merges cleanly onto main, it contains no unmerged commits of another Human Review pull request, and it merges cleanly together with each of them. Or it is the one permitted stacked pull request: when it enters, Human Review holds only its base, and the body starts with the stacked banner. After it is in Human Review, it stays eligible while its base is in Human Review, even if independent pull requests enter next to it. If neither is true, move the card to Pending and stop here.
 - [ ] If the pull request is stacked, its base is still open in Human Review, or it merged to main. If the base was sent back or closed, reset the stacked pull request first (see [Stacked pull requests](workflow.md#stacked-pull-requests)) and stop here.
-- [ ] If a vN tip is installed as the head, that tip was checked against the current stack and contains no commits from a pull request that was sent back. Checklist C and the staging checks below ran on that head. If the vN tip is stale, the plain branch is kept when it is clean on main.
+- [ ] If a vN tip is installed as the head, that tip was checked against the current stack and contains no commits from a pull request that was rejected (sent back or closed unmerged). This also applies to a Pending pull request whose vN tip was built on a pull request that is no longer in Human Review: rebuild that tip first. Checklist C and the staging checks below ran on that head. If the vN tip is stale, the plain branch is kept when it is clean on main.
 - [ ] The pull request is not a draft.
 - [ ] It is mergeable against main.
 - [ ] No P1 or P2 findings or threads are open.
