@@ -105,7 +105,7 @@ Use a stacked pull request only when Human Review holds exactly one pull request
 - Independent pull requests can still enter Human Review next to A and B. Each one must merge cleanly together with A and with B.
 - The gate fails a stacked pull request when the banner is missing or is not at the top, when its head contains a Human Review pull request's commits but has no banner, or when its base was closed unmerged or has left Human Review.
 
-If the human merges A, B no longer depends on unmerged work. The coordinator removes the banner. No other change is needed.
+If the human merges A, the coordinator checks that B still merges cleanly onto main. If it does, the coordinator removes the banner. No other change is needed. If it does not, for example because A was squash-merged and B still carries A's original commits, the coordinator moves B out of Human Review to In Progress, and asks the worker to rebuild B on the current main without replaying A. Then B goes through the normal loop again.
 
 If the human rejects A (closes it unmerged, or sends it back so that it leaves Human Review), B must never be merged with A's changes. The coordinator acts at once, before the human can merge B:
 
