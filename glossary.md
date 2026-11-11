@@ -8,6 +8,8 @@
 
 **Coordinator bot.** The agent that runs the workflow, steers workers, checks changes, and moves cards.
 
+**Discuss.** The column for issues that need careful thought or a conversation. They are set aside so simple triage items flow first. The human comments on the issue, and the agent responds by rewriting the issue body to match those answers, repeating until the issue is ready for Backlog or Active. No worker starts on a Discuss item. The coordinator does not count it as waiting on the human. Agents do not move the card forward on their own.
+
 **Draft.** A pull request that is not ready for review. Changes in In Progress are drafts.
 
 **Finding.** A defect a reviewer reports. P1 must be fixed. P2 should be fixed before human review.
@@ -27,8 +29,6 @@
 **Pending.** The column for work that is otherwise ready but blocked on another change or decision.
 
 **Ready.** A pull request marked for review. Moving a card to Auto Review marks it ready.
-
-**Rethink.** The column for issues that left Triage but need more design work or conversation before they go on. No worker starts on a Rethink item. The coordinator does not count it as waiting on the human. The human moves it back to Triage or Backlog when he picks it up again. Agents may add design notes or a proposed rewrite, but they do not move the card forward on their own.
 
 **Root-cause rule.** Fix the cause of a finding, list its neighboring cases, and test each one.
 

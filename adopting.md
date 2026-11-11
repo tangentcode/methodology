@@ -26,9 +26,9 @@ Create one board for the repository with a single-select status field and these 
 | Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
 | Human Review | The pull request passed the gate (see step 6). Pull requests only | ready |
 | Done | The human merged it to main | merged |
-| Rethink | The issue came out of Triage but needs more design or conversation before it returns to the flow | not yet open |
+| Discuss | The issue needs careful thought or a conversation. Set aside so simple triage items flow first | not yet open |
 
-On a board that also has Inbox and Triage, put Rethink after Inbox and before Triage.
+On a board that also has Inbox and Triage, put Discuss after Inbox and before Triage.
 
 Board settings:
 

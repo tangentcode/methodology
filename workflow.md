@@ -18,11 +18,11 @@
 | Pending | Otherwise ready, but blocked on another change or an outside decision | Coordinator |
 | Human Review | Passed the gate. Waiting on the human. Pull requests only | Coordinator |
 | Done | Merged to main | Human, or the board on merge |
-| Rethink | Issues that came out of Triage but need a lot of up-front design work, or more conversation. Moved aside temporarily so they do not take attention away from work that is flowing through the system | Human |
+| Discuss | Issues that need careful thought or a conversation. Set aside so simple triage items flow first | Human |
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
 
-Rethink is a side column, not a step in the loop. The coordinator does not launch a worker for a Rethink item, and does not count it as waiting on the human. Agents may add design notes or a proposed rewrite, but they do not move the card forward on their own. When the human picks the issue up again, he moves it back to Triage or to Backlog. On a board that also has Inbox and Triage, Rethink sits after Inbox and before Triage.
+Discuss is a side column, not a step in the loop. It holds issues that need careful thought or a conversation. They are set aside so simple triage items flow first. The coordinator does not launch a worker for a Discuss item, and does not count it as waiting on the human. The human comments on the issue. The agent responds by rewriting the issue body to match those answers. This repeats until the issue is ready for Backlog or Active. Agents do not move the card forward on their own. On a board that also has Inbox and Triage, Discuss sits after Inbox and before Triage.
 
 An issue card stays on the board only until a pull request links it. Once a pull request links the issue, remove the issue card. The pull request card carries the work from then on, so each change shows up once and Human Review lists only pull requests. An issue with no pull request never goes in Human Review or Pending. If it's waiting on the human, put a question on it and leave it where it is.
 
