@@ -28,6 +28,8 @@
 
 **Ready.** A pull request marked for review. Moving a card to Auto Review marks it ready.
 
+**Rethink.** The column for issues that left Triage but need more design work or conversation before they go on. No worker starts on a Rethink item. The coordinator does not count it as waiting on the human. The human moves it back to Triage or Backlog when he picks it up again. Agents may add design notes or a proposed rewrite, but they do not move the card forward on their own.
+
 **Root-cause rule.** Fix the cause of a finding, list its neighboring cases, and test each one.
 
 **Round.** One automated review of the current head. Rounds have a cap.
