@@ -65,6 +65,15 @@ A card moves to Human Review only when all of these hold on the current head. Ch
 
 Whatever automation moves cards has to check every condition on this list. A condition that's written down but not checked isn't part of the gate.
 
+### Checks that do not finish
+
+Waiting for a required check is not progress. A check that has not started or finished within its usual run time, plus a margin, is a stall:
+
+- The coordinator checks queued and running checks on every scan, not only failed ones. Note how long each one has waited.
+- When a required check is stuck, the coordinator starts a new run of the same check on the same head, by a manual run or by the event that starts the check. It records that the old run was stuck.
+- The gate reads only the newest run of each check on the current head. An older run that never finished must not block a newer run that passed. An older run that failed still counts until a newer run passes.
+- If a new run does not start either, the CI service is down. Tell the operator, and say which cards wait on it.
+
 If any condition fails later, for example after a new push or a late finding, the card goes back to In Progress.
 
 ## Human review
