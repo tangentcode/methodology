@@ -90,6 +90,7 @@ The target size of the Pending buffer is three. The In Progress column should st
 Use a stacked pull request only when Human Review holds exactly one pull request (A) and the next finished pull request (B) depends on A or conflicts with it. Then B can enter Human Review as a stacked pull request, so that the human has two items to review. Rules:
 
 - Human Review holds at most one stacked pull request. A is not itself stacked.
+- The rule "A is the only pull request in Human Review" applies when B enters. After B is in Human Review, B stays eligible while A is in Human Review, even when independent pull requests enter next to them.
 - B's head is its vN tip, built on A. It contains A's commits and merges cleanly onto main plus A. Before the coordinator installs the tip, it saves B's plain tip as <branch>-v0, so that the plain content stays available.
 - B's pull request body starts with this banner, before any other text. Replace A with the number of the base pull request:
 

@@ -153,11 +153,11 @@ Run these on the current head every time. A new push resets them.
 - [ ] Everything in checklist A still holds.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] The tests pass twice in a row if the change touches timing, concurrency, or shared state.
-- [ ] The change is not blocked on another unmerged change. If it is, move the card to Pending and stop here.
+- [ ] The change is not blocked on another unmerged change. If it is, move the card to Pending and stop here. One exception: a stacked pull request whose base is the only pull request in Human Review passes this item (see [Stacked pull requests](workflow.md#stacked-pull-requests)).
 
 ### D. Gate into Human Review
 
-- [ ] The pull request is independent of every pull request in Human Review: it merges cleanly onto main, it contains no unmerged commits of another Human Review pull request, and it merges cleanly together with each of them. Or it is the one permitted stacked pull request: Human Review holds only its base, no other stacked pull request is there, and the body starts with the stacked banner. If neither is true, move the card to Pending and stop here.
+- [ ] The pull request is independent of every pull request in Human Review: it merges cleanly onto main, it contains no unmerged commits of another Human Review pull request, and it merges cleanly together with each of them. Or it is the one permitted stacked pull request: when it enters, Human Review holds only its base, and the body starts with the stacked banner. After it is in Human Review, it stays eligible while its base is in Human Review, even if independent pull requests enter next to it. If neither is true, move the card to Pending and stop here.
 - [ ] If the pull request is stacked, its base is still open in Human Review, or it merged to main. If the base was sent back or closed, reset the stacked pull request first (see [Stacked pull requests](workflow.md#stacked-pull-requests)) and stop here.
 - [ ] If a vN tip is installed as the head, that tip was checked against the current stack and contains no commits from a pull request that was sent back. Checklist C and the staging checks below ran on that head. If the vN tip is stale, the plain branch is kept when it is clean on main.
 - [ ] The pull request is not a draft.
