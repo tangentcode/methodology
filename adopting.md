@@ -14,6 +14,8 @@ Before setting anything up, confirm these with the human and write the answers i
 - [ ] Who the ops agent is for root-level changes.
 - [ ] Which test commands count as "the full suite" for each component.
 
+Edit [team-conventions.md](team-conventions.md) so it records this team's naming and coding customs, not the ones written for the original team.
+
 ## 2. Set up the board
 
 Create one board for the repository with a single-select status field and these options, in this order:

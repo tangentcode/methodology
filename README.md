@@ -1,6 +1,6 @@
 # A working methodology for a human owner and a team of agents
 
-This repository describes how one human owner works with a coordinator bot and a group of coding agents to ship changes to a software project. It is written as a generic method, in the spirit of Scrum or XP. It names roles, artifacts, a workflow loop, and working agreements. It does not name any particular product, server, or service.
+This repository describes how one human owner works with a coordinator bot and a group of coding agents to ship changes to a software project. It is written as a generic method, in the spirit of Scrum or XP. It names roles, artifacts, a workflow loop, and working agreements. The core documents do not name any particular product, server, or service. Team-specific naming and coding customs live in [team-conventions.md](team-conventions.md). Teams that adopt this method should edit that page.
 
 ## The problem it solves
 
@@ -48,7 +48,8 @@ Starting a new project? Begin with [adopting.md](adopting.md).
 | [working-agreements.md](working-agreements.md) | Day-to-day agreements about communication and conduct |
 | [adopting.md](adopting.md) | Setup guide for a new project: board, labels, templates, first issue, gate checklists |
 | [glossary.md](glossary.md) | Terms used in these documents |
+| [team-conventions.md](team-conventions.md) | This team's naming and coding customs; edit this page if you adopt the method |
 
 ## Adapting it
 
-Nothing here depends on a specific tool. You need a version-control host with pull requests, a board with columns, an automated reviewer that posts findings, a staging environment fed by an integration branch, and a way to send messages to agents in their sessions. Rename the columns and roles to fit your team, but keep the gate into human review and the rule that only the human merges and deploys.
+Nothing here depends on a specific tool. You need a version-control host with pull requests, a board with columns, an automated reviewer that posts findings, a staging environment fed by an integration branch, and a way to send messages to agents in their sessions. Rename the columns and roles to fit your team, but keep the gate into human review and the rule that only the human merges and deploys. Edit [team-conventions.md](team-conventions.md) so it records your team's customs, not the ones written for the original team.
