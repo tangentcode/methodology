@@ -15,8 +15,8 @@
 | Backlog | Approved or proposed, not started | Coordinator or human |
 | In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator |
 | Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator |
-| Pending | A short, ordered buffer of finished pull requests (target: three). Each one already merges cleanly onto main, onto the single Human Review pull request if one is there, and onto every Pending pull request ahead of it. The pull request body names that stack. If the plain branch conflicts with the stack, a worker creates a <branch>-vN rebase (v0 is the original branch) and the card stays in In Progress until that branch is pushed and stack-clean. The coordinator starts new work only to refill this buffer | Coordinator or gate |
-| Human Review | Exactly one finished pull request that passed the gate, is on staging, and waits on the human to test and merge to main. The next card enters only when this slot is empty, usually by promoting the head of the Pending queue | Gate only |
+| Pending | A short, ordered buffer of finished pull requests (target: three) that are not independent of Human Review. Each one already merges cleanly onto main, onto every Human Review pull request, and onto every Pending pull request ahead of it. The pull request body names that stack. If the plain branch conflicts with the stack, a worker creates a <branch>-vN rebase (v0 is the original branch) and the card stays in In Progress until that branch is pushed and stack-clean. The coordinator starts new work only to refill this buffer | Coordinator or gate |
+| Human Review | Finished pull requests that passed the gate, are on staging, and wait on the human to test and merge to main. Any number of independent pull requests, plus at most one stacked pull request when only its base is there. See [Just-in-time review](#just-in-time-review) | Gate only |
 | Done | Merged to main | Human, or the board on merge |
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
@@ -28,10 +28,11 @@ flowchart LR
     B[Backlog] --> IP[In Progress]
     IP -->|coordinator pre-check passes| AR[Auto Review]
     AR -->|P1 or P2 finding| IP
-    AR -->|finished and stack-clean, slot empty, queue empty| HR[Human Review]
-    AR -->|finished and stack-clean, slot or queue occupied| P[Pending]
-    P -->|slot empty, this is the queue head, gate passes| HR[Human Review]
+    AR -->|finished, independent of Human Review, gate passes| HR[Human Review]
+    AR -->|finished, not independent, stack-clean| P[Pending]
+    P -->|now independent, or the one stacked PR on a lone Human Review PR, gate passes| HR
     HR -->|human requests changes or a late finding| IP
+    HR -->|stacked PR whose base was rejected: reset to plain branch| IP
     HR -->|human merges to main| D[Done]
 ```
 
@@ -47,8 +48,8 @@ flowchart LR
 8. When no P1 or P2 findings remain, the coordinator runs its post-review check.
 9. The coordinator merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change.
 10. For any change a person can see, current screenshots or frames from staging go into the pull request description. The description also says where and how to see the change.
-11. When Human Review is empty, the coordinator takes the head of the Pending queue, or a finished pull request if the queue is empty, and checks the full gate in [review.md](review.md). If that pull request has a vN branch that is clean on the current stack, the coordinator first installs the vN tip as the head and reruns the checks and staging verification on it. A vN tip built on a pull request that was sent back is never installed (see [Just-in-time review](#just-in-time-review)). Only if the gate passes does the card move to Human Review. Human Review holds exactly one pull request. A finished pull request that cannot enter the slot goes to Pending if it is clean on the current stack.
-12. The human reviews. If he merges to main, the card goes to Done and the next Pending item is promoted into the empty slot. If he sends the change back, the card returns to step 6, and the coordinator still promotes the next Pending item, then re-checks the rest of the buffer against the new stack. Start new In Progress work only to refill Pending up to the target.
+11. The coordinator checks the full gate in [review.md](review.md). A finished pull request that is independent of every Human Review pull request goes to Human Review. Human Review has no size limit for independent pull requests. A finished pull request that is not independent goes to Pending if it is clean on the current stack. When Human Review holds only one pull request and the next finished work depends on it, one stacked pull request can enter (see [Stacked pull requests](#stacked-pull-requests)). If a pull request enters with a vN tip as its head, the coordinator first installs the tip and reruns the checks and staging verification on it. A vN tip built on a pull request that was sent back is never installed.
+12. The human reviews. If he merges to main, the card goes to Done, and the coordinator promotes every Pending pull request that is now independent. If he sends the change back, the card returns to step 6. Before anything else, the coordinator resets a stacked pull request built on it (see [Stacked pull requests](#stacked-pull-requests)). Then it promotes every Pending pull request that is now independent and re-checks the rest of the buffer against the new stack. Start new In Progress work only to refill Pending up to the target.
 
 ## Definition of ready
 
@@ -72,10 +73,41 @@ A change is done when:
 
 ## Just-in-time review
 
-Human Review holds exactly one pull request. Pending is a small, mutually clean buffer in front of that slot. Each Pending pull request must merge cleanly onto main, onto the Human Review pull request if one is there, and onto every Pending pull request ahead of it, in queue order. The pull request body names that stack.
+Human Review is a buffer for the human's attention. Keep at least two pull requests there when finished work allows it.
+
+Human Review holds any number of independent pull requests. A pull request is independent when it merges cleanly onto main, it contains no unmerged commits of another Human Review pull request, and it merges cleanly together with each Human Review pull request. The human can merge or reject each independent pull request without an effect on the others.
+
+Pending is a small buffer of finished pull requests that are not independent of Human Review. Each Pending pull request must merge cleanly onto main, onto every Human Review pull request, and onto every Pending pull request ahead of it, in queue order. The pull request body names that stack. When a Pending pull request becomes independent, for example because the pull request it conflicted with merged, it goes to Human Review.
 
 If a finished pull request's plain branch conflicts with the stack, a worker rebases the work onto the stack as <branch>-vN (the next free number; v0 is the unadorned original). The worker pushes that branch only and leaves the original branch and the pull request head untouched. The card stays in In Progress until the vN branch is pushed and is stack-clean, and then it may enter Pending.
 
-When the human merges the Human Review pull request or sends it back, the slot is empty. The coordinator takes the head of the Pending queue. If it has a vN branch and the previous Human Review pull request merged, the coordinator first installs the vN tip as the pull request head. Then it reruns the tests, the post-check, and the staging merge, redeploy and verification on that new head. Only then does it try to promote the pull request through the gate. Never run the gate on the old head and update the head after, because the old head may conflict with main and a new head voids the checks and staging evidence. If the previous pull request was sent back, the coordinator re-checks every remaining Pending pull request against the new stack and requests a new vN branch only when the plain branch no longer applies cleanly. A Pending pull request whose plain branch is still clean keeps that branch.
+Before a pull request enters Human Review with a vN tip as its head, the coordinator installs the tip: it moves the pull request branch to the commit that the worker pushed and tested. This is not new code, so the coordinator or its gate tooling can do it, but only before the card enters Human Review. Never move the branch of a card that is in Human Review. Then the coordinator reruns the tests, the post-check, and the staging merge, redeploy and verification on the new head. Only then does it try to promote the pull request through the gate. Never run the gate on the old head and update the head after, because the old head may conflict with main and a new head voids the checks and staging evidence. A vN tip built on a pull request that was sent back is never installed. If a pull request was sent back, the coordinator re-checks every remaining Pending pull request against the new stack and requests a new vN branch only when the plain branch no longer applies cleanly. A Pending pull request whose plain branch is still clean keeps that branch.
 
 The target size of the Pending buffer is three. The In Progress column should stay small (at most three). Start new work only to refill Pending. The buffer runs empty only when there is no remaining work.
+
+### Stacked pull requests
+
+Use a stacked pull request only when Human Review holds exactly one pull request (A) and the next finished pull request (B) depends on A or conflicts with it. Then B can enter Human Review as a stacked pull request, so that the human has two items to review. Rules:
+
+- Human Review holds at most one stacked pull request. A is not itself stacked.
+- B's head is its vN tip, built on A. It contains A's commits and merges cleanly onto main plus A. Before the coordinator installs the tip, it saves B's plain tip as <branch>-v0, so that the plain content stays available.
+- B's pull request body starts with this banner, before any other text. Replace A with the number of the base pull request:
+
+  ```
+  # STACKED ON #A: MERGE #A INTO MAIN FIRST
+
+  > **This pull request contains the changes of #A.** Merge it only after #A is merged into main.
+  > If #A is rejected, do not merge this pull request. The coordinator resets it to its plain branch,
+  > without the changes of #A, before it can be merged.
+  ```
+
+- Independent pull requests can still enter Human Review next to A and B. Each one must merge cleanly together with A and with B.
+- The gate fails a stacked pull request when the banner is missing or is not at the top, when its head contains a Human Review pull request's commits but has no banner, or when its base was closed unmerged or has left Human Review.
+
+If the human merges A, B no longer depends on unmerged work. The coordinator removes the banner. No other change is needed.
+
+If the human rejects A (closes it unmerged, or sends it back so that it leaves Human Review), B must never be merged with A's changes. The coordinator acts at once, before the human can merge B:
+
+1. It moves B's card out of Human Review to In Progress. This comes first, so that the branch of a card in Human Review is never moved.
+2. It resets B's branch to the saved plain tip (<branch>-v0) and removes the banner. If no plain tip was saved, it asks the worker to rebuild B on main without A's commits.
+3. It runs the normal loop again on the new head: tests, review, post-check, staging, screenshots, and the gate. B can then enter Human Review again as an independent pull request.

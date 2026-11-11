@@ -52,9 +52,10 @@ Workers do not resolve review threads. The coordinator resolves a thread after i
 
 ## The gate into human review
 
-Human Review holds exactly one pull request. A card moves to Human Review only when that slot is empty and all of these hold on the current head. Check them in this order and record the result before moving the card:
+Human Review holds any number of independent pull requests, plus at most one stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). A card moves to Human Review only when all of these hold on the current head. Check them in this order and record the result before moving the card:
 
-- Human Review is empty. If it already holds a pull request, the card goes to Pending instead.
+- The pull request is independent of every pull request in Human Review. Or it is the one permitted stacked pull request: its base is the only other pull request in Human Review, and its body starts with the stacked banner. If neither is true, the card goes to Pending instead.
+- If the pull request is stacked, its base is still open in Human Review, or it merged to main. A stacked pull request whose base was sent back or closed fails the gate, even if it is already in Human Review.
 - The card is a pull request. Issue cards never go in Human Review.
 - The pull request is not a draft.
 - It is mergeable against main.
