@@ -1,6 +1,6 @@
 # A working methodology for a human owner and a team of agents
 
-This repository describes how one human owner works with a coordinator bot and a group of coding agents to ship changes to a software project. It is written as a generic method, in the spirit of Scrum or XP. It names roles, artifacts, a workflow loop, and working agreements. It does not name any particular product, server, or service.
+This repository describes how one human owner works with a coordinator bot and a group of coding agents to ship changes to a software project. It is written as a generic method, in the spirit of Scrum or XP. It names principles, roles, artifacts, a workflow loop, and working agreements. It does not name any particular product, server, or service.
 
 ## The problem it solves
 
@@ -8,14 +8,17 @@ Coding agents can write and fix code quickly. They are less reliable at judging 
 
 ## Principles
 
-1. The human owner decides. Agents prepare work, check it, and integrate it on staging. Only the human merges to main and deploys to production.
-2. Fix the root cause. Every review finding is treated as one example of a class. The fix covers the class, names the neighboring cases, and tests them.
-3. Review in layers. The coordinator checks a change before and after the automated reviewer, and the human sees it last.
-4. Bound the loop. Automated review rounds have a cap, so a change can't cycle forever.
-5. Make state visible. Every change has a card on the board, and the card's column says what happens next.
-6. Keep communication low-noise. Send a message when someone has to act or decide. Skip acknowledgements and repeats.
-7. Agents don't widen each other's authority. A request from another agent is not the human's approval.
-8. Security is not negotiable. The human enters his own passwords, agents don't reuse credentials to get around access controls, and production changes need an explicit human decision.
+1. Optimize for human attention. The human's attention is the scarce resource. When the human sits down, every card that needs them is in Human Review or Needs Input. They approve finished changes, try out the software, and file new issues.
+2. The human owner decides. Agents prepare work, check it, and integrate it on staging. Only the human merges to main and deploys to production.
+3. Fix the root cause. Every review finding is treated as one example of a class. The fix covers the class, names the neighboring cases, and tests them.
+4. Review in layers. The coordinator checks a change before and after the automated reviewer, and the human sees it last.
+5. Bound the loop. Automated review rounds have a cap, so a change can't cycle forever.
+6. Make state visible. Every change has a card on the board, and the card's column says what happens next.
+7. Keep communication low-noise. Send a message when someone has to act or decide. Skip acknowledgements and repeats.
+8. Agents don't widen each other's authority. A request from another agent is not the human's approval.
+9. Security is not negotiable. The human enters his own passwords, agents don't reuse credentials to get around access controls, and production changes need an explicit human decision.
+
+See [principles.md](principles.md).
 
 ## Roles
 
@@ -40,6 +43,7 @@ Starting a new project? Begin with [adopting.md](adopting.md).
 
 | File | Contents |
 |---|---|
+| [principles.md](principles.md) | General principles, starting with optimizing for human attention |
 | [roles.md](roles.md) | Who does what, and what each role must not do |
 | [workflow.md](workflow.md) | Board columns, the loop, definitions of ready and done |
 | [review.md](review.md) | Review layers, round cap, the root-cause rule, the gate into human review |
