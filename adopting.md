@@ -120,7 +120,7 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 10. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 7 until a round comes back clean or the cap is reached.
 11. **Coordinator.** Runs the post-check (checklist C).
 12. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
-13. **Coordinator.** Checks the gate (checklist D). Human Review holds exactly one pull request. If it already holds one, moves the card to Pending instead. When the slot is empty, promotes the head of the Pending queue first. If that pull request has a vN branch, installs the vN tip as its head and repeats steps 11 and 12 on it before checking the gate. If the gate passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
+13. **Coordinator.** Checks the gate (checklist D). Human Review holds exactly one pull request. If it already holds one, moves the card to Pending instead. When the slot is empty, promotes the head of the Pending queue first. If that pull request has a vN branch that is clean on the current stack (main plus any pull request still ahead of it), installs the vN tip as its head and repeats steps 11 and 12 on it before checking the gate. If the vN tip was built on a pull request that was sent back, it does not install that tip: it keeps the plain branch if that is clean on main, or asks the worker for a new vN branch without the rejected work. If the gate passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
 14. **Human.** Reviews, then merges to main or sends it back with comments.
 
 After the first issue, note anything in the setup that didn't work and fix it before starting more workers.
@@ -159,7 +159,7 @@ Run these on the current head every time. A new push resets them.
 
 - [ ] Human Review is empty. It holds at most one pull request. If it is not empty, move the card to Pending and stop here.
 - [ ] The card is the head of the Pending queue, or Pending is empty.
-- [ ] If the pull request has a vN branch, its tip is the current head, and checklist C and the staging checks below ran on that head.
+- [ ] If a vN tip is installed as the head, that tip was checked against the current stack and contains no commits from a pull request that was sent back. Checklist C and the staging checks below ran on that head. If the vN tip is stale, the plain branch is kept when it is clean on main.
 - [ ] The pull request is not a draft.
 - [ ] It is mergeable against main.
 - [ ] No P1 or P2 findings or threads are open.
