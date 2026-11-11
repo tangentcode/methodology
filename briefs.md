@@ -22,6 +22,7 @@ A brief is the coordinator's written instruction to one worker agent for one iss
 
 Work only in your own checkout. One pull request, targeting main.
 Issue: <issue reference>. Approved by the human owner on <date>.
+Pull request title: an imperative phrase that completes "Merging this pull request will ...".
 
 ## Base
 Use branch `<branch>`, cut from the latest main. Set the pull request base to main.

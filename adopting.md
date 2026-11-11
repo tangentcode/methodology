@@ -100,6 +100,8 @@ For each review finding: the root cause, the neighboring cases, and the tests.
 <current staging screenshots or frames for anything a person can see, with a side-by-side for generated media that has a reference, or "nothing visible changed">
 ```
 
+Title rules: an issue title describes the present state. A wanted change uses "should" (example: "Save As should work for every file that can be saved"). A plain statement such as "X does Y" reads as a bug report. Every issue gets a GitHub issue type: Feature, Bug, or Task. A pull request title completes the sentence "Merging this pull request will ..." and starts with an imperative verb (example: "Make the Save As command work for every file that can be saved"). See [working-agreements.md](working-agreements.md).
+
 Copy the brief template from [briefs.md](briefs.md) into the coordinator's own notes. Briefs don't go in the repository.
 
 Add a short agent instructions file at the repository root with the root-cause rule, the branch rules, and the rule that workers don't merge, deploy, or resolve review threads. Open it as the first pull request (step 5), so the human approves the rules the same way as code.

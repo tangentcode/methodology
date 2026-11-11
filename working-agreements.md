@@ -8,6 +8,16 @@
 - Talk to worker agents only through the sanctioned messaging tool, never by typing into their sessions by hand.
 - Write the human's stated choices into the brief the first time, so he doesn't have to repeat them in review.
 
+## Issue and pull request titles
+
+Issue titles describe the present state. Never word an issue title as an aspiration.
+
+- A plain statement such as "X does Y" reads as a bug report. It means this happens now, and we do not want it.
+- A wanted change uses "should". Example: "Save As should work for every file that can be saved". Do not write "Save As works for every file that can be saved".
+- Every issue has a GitHub issue type: Feature, Bug, or Task. Use Bug when the title states a present, unwanted behavior. Use Feature when the title states a wanted change. Use Task when the work is a specific piece of work that is not a user-facing feature or a bug.
+
+Pull request titles complete the sentence "Merging this pull request will ...". They start with an imperative verb. Example: "Make the Save As command work for every file that can be saved".
+
 ## Scope
 
 - One worker, one issue, one branch, one pull request.

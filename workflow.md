@@ -2,9 +2,9 @@
 
 ## Artifacts
 
-- **Issue.** States one goal, the approach, and acceptance criteria. The human approves it before work starts.
+- **Issue.** States one goal, the approach, and acceptance criteria. The human approves it before work starts. The title describes the present state, and every issue has a type: Feature, Bug, or Task. See [working-agreements.md](working-agreements.md).
 - **Brief.** The coordinator's instructions to one worker for one issue. See [briefs.md](briefs.md).
-- **Pull request.** One per issue, branched from main and targeting main. It starts as a draft.
+- **Pull request.** One per issue, branched from main and targeting main. It starts as a draft. The title completes the sentence "Merging this pull request will ..." and starts with an imperative verb.
 - **Board.** One card per issue or pull request. The column says what happens next.
 - **Staging branch.** An integration branch that collects changes for testing on the staging environment. It is never merged into main.
 

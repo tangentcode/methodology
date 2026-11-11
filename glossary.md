@@ -18,6 +18,10 @@
 
 **Human owner.** The person who approves work, reviews it, merges to main, and deploys.
 
+**Issue title.** A short headline that describes the present state. A plain statement such as "X does Y" is a bug report: it happens now, and we do not want it. A wanted change uses "should".
+
+**Issue type.** A GitHub type on every issue: Feature, Bug, or Task.
+
 **Main.** The production branch. Only the human merges into it.
 
 **Neighboring cases.** Other instances of the same class of defect as a finding.
@@ -25,6 +29,8 @@
 **Ops agent.** The one agent allowed to make root-level changes on shared machines.
 
 **Pending.** The column for work that is otherwise ready but blocked on another change or decision.
+
+**Pull request title.** A short headline that completes the sentence "Merging this pull request will ..." and starts with an imperative verb.
 
 **Ready.** A pull request marked for review. Moving a card to Auto Review marks it ready.
 
