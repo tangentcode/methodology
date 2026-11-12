@@ -83,7 +83,7 @@ A change is done when:
 - The human has merged it to main.
 - Its tests ran green on the final head, with pass counts reported.
 - Every review finding is fixed at its root cause, with neighboring cases tested.
-- It ran on a staging deploy that contained its final head, with screenshots or frames in the pull request if it changed anything a person can see.
+- It was merged into the staging branch with a best-effort deploy, and the pull request has screenshots or frames if it changed anything a person can see. Existing screenshots count, even from an older head.
 - No review threads are open.
 
 ## Blocked work

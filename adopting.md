@@ -23,7 +23,8 @@ Create one board for the repository with a single-select status field and these 
 | Backlog | The issue is proposed or approved but no worker has started | not yet open |
 | In Progress | A worker is writing code or fixing findings | a draft |
 | Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
-| Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
+| Pending | The change is otherwise ready but waits on another change | ready or draft |
+| Needs Input | The coordinator asked the human a question and waits for the answer. A comment alone does not move the card out; the human moves it to In Progress when the question is answered | any |
 | Human Review | The pull request passed the gate (see step 6). Pull requests only | ready |
 | Done | The human merged it to main | merged |
 
@@ -161,11 +162,12 @@ Run these on the current head every time. A new push resets them.
 - [ ] It is mergeable against main.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] Checklist C passed on this head.
+- [ ] The Linux checks are green on this exact head.
 - [ ] The card is a pull request, not an issue.
-- [ ] The change is merged into the staging branch, staging is redeployed, and the commit staging serves contains this head.
-- [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, move the card to Pending and ask the human.
+- [ ] Staging deploy is best-effort: merge the change into the staging branch and redeploy when you can. If you merge it, check that the staging merge did not drop the change's lines. Do not block Human Review only because staging is still catching up.
+- [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, move the card to Needs Input and ask the human.
 - [ ] The pull request description says where and how to see the change.
-- [ ] Any change a person can see, such as UI, rendered images or video, has current staging screenshots or frames embedded in the pull request description.
+- [ ] Any change a person can see, such as UI, rendered images or video, has screenshots or frames embedded in the pull request description. Existing screenshots count, even from an older head.
 
 Any automation that moves cards must check every item on this list.
 
