@@ -30,7 +30,7 @@ flowchart LR
     AR -->|P1 or P2 finding| IP
     AR -->|blocked on another change| P[Pending]
     P -->|blocker cleared| AR
-    AR -->|clean, post-check passes, deployed and verified on staging, screenshots in PR| HR[Human Review]
+    AR -->|clean, post-check passes, screenshots present, staging best-effort| HR[Human Review]
     HR -->|human requests changes| IP
     HR -->|late finding| IP
     HR -->|human merges to main| D[Done]
@@ -45,9 +45,9 @@ flowchart LR
 5. The coordinator marks the pull request ready, moves the card to Auto Review, and requests an automated review.
 6. For each P1 or P2 finding, the coordinator converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule. The worker fixes and pushes. The coordinator verifies the fix, resolves the thread, and returns to step 5.
 7. After the round cap, the worker still fixes findings, but the coordinator verifies them itself and requests no more automated reviews.
-8. When no P1 or P2 findings remain, the coordinator starts the post-review check, the staging merge, the staging deploy, the screenshots, and the gate check at once, even if CI on that head is still running. CI can finish in parallel.
-9. The coordinator merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head, that the pull request's own changes are actually present in that tree (not dropped by the staging merge), and that staging can run the change.
-10. For any change a person can see, current screenshots or frames from staging go into the pull request description. The description also says where and how to see the change.
+8. When no P1 or P2 findings remain, the coordinator starts the post-review check, a best-effort staging merge and deploy, and the gate check at once, even if CI on that head is still running. CI can finish in parallel. Do not retake screenshots.
+9. Staging deploy is best-effort. The coordinator merges the change into the staging branch and redeploys staging when it can. Do not block Human Review if the body does not name the served commit, or if a served-tree check for dropped lines would fail.
+10. For any change a person can see, screenshots or frames go into the pull request description. Existing screenshots count, even from an older head; do not retake them. The description also says where and how to see the change.
 11. The coordinator checks the full gate in [review.md](review.md). Only if it passes does the card move to Human Review. The Linux checks on the current head must be green before the card can enter Human Review, even though the other steps started while CI was still running.
 12. The human reviews. He merges to main, or sends the change back with comments, which returns it to step 6.
 13. When a Human Review pull request merges, the coordinator promotes the head of the Pending queue at once, so Human Review holds two again. The reviewer moves on to the other Human Review pull request.

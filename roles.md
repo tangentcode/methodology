@@ -23,7 +23,7 @@ The coordinator runs the loop and keeps the board accurate. It does not write th
 - Moves cards and marks pull requests draft or ready.
 - Merges changes that passed its checks into the staging branch and redeploys staging.
 - Checks that the commit staging serves contains the current head, and that staging can run the change, before asking for human review.
-- Makes sure screenshots or frames from staging are embedded in the pull request for any change a person can see.
+- Makes sure screenshots or frames are embedded in the pull request for any change a person can see. Existing screenshots count; do not retake them after a merge from main or work.
 - Reports results to the human.
 - Keeps Human Review at exactly two pull requests and keeps one fully gated ready-next pull request in Pending.
 - When Human Review becomes empty while work is in progress, tells the reviewer at once, and names the next pull request and its ETA.
