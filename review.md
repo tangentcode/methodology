@@ -56,16 +56,22 @@ A card moves to Human Review only when all of these hold on the current head. Ch
 
 - The card is a pull request. Issue cards never go in Human Review.
 - The pull request is not a draft.
-- It is mergeable against main.
+- It is mergeable against main. The gate trusts the forge's own mergeable state. If the forge reports conflicts with the pull request base, this check fails, even if a local merge-tree looks clean.
 - No P1 or P2 findings or threads are open.
 - The coordinator's post-check passed on this head.
+- The Linux checks in GitHub Actions are green on this exact head.
 - The change is deployed where the human will review it, and the deploy is verified. The change is merged into the staging branch and staging was redeployed. The commit staging is actually serving contains the pull request's current head. Staging is an integration branch, so that commit is usually a merge rather than the head itself. Record the commit staging is serving. The staged environment must also be able to run the change, with any configuration, credentials or services it needs. If staging can't run it, the card goes to Pending with a question for the human, not to Human Review.
+- A staging merge is also checked for dropped changes. It is not enough that the served commit is a descendant of the pull request head. The pull request's own changes must actually be present in the tree that staging serves.
 - The pull request description says where and how to see the change.
 - Any change a person can see, such as UI, rendered images or generated video, has current screenshots or frames from staging embedded in the pull request description. Generated media includes a side-by-side with its reference when there is one. If there's any doubt about whether a change is visible, treat it as visible.
 
 Whatever automation moves cards has to check every condition on this list. A condition that's written down but not checked isn't part of the gate.
 
 If any condition fails later, for example after a new push or a late finding, the card goes back to In Progress.
+
+When automated review comes back clean on the current head, the coordinator starts the post-check, the staging merge, the staging deploy, the screenshots, and the gate check at once, even if CI on that head is still running. CI can finish in parallel. The card still cannot enter Human Review until the Linux checks on that head are green.
+
+When CI completes for a pull request head that is in Auto Review or Pending, a webhook event re-runs the gate. This is event-driven, not a timer.
 
 ## Human review
 
