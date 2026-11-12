@@ -76,6 +76,8 @@ When CI completes for a pull request head that is in Auto Review or Pending, a w
 
 The human reviews the change on staging and in the pull request. Only the human merges to main and deploys to production.
 
+A human comment on a pull request in Human Review, or on a card in Needs Input, does not move the card. The human may come back later and add more comments. Only an explicit column move by the human starts the next workflow step. Human Review to In Progress means the human rejected the change: the coordinator relays the comments to the worker. Needs Input to In Progress means the human answered the questions: the coordinator relays the answers and the worker continues the work. Automation must react to these column-move events directly.
+
 The human reviewer's attention is the constraint of the whole system. The reviewer must never wait for work. Human Review must never be empty while work is in progress.
 
 ### Two slots and one ready-next pull request

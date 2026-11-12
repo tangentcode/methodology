@@ -16,10 +16,18 @@
 | In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator |
 | Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator |
 | Pending | A queue of otherwise ready pull requests, sorted by conflict count. Independents wait here with no rebase. The queue head enters Human Review as soon as a slot opens | Coordinator |
+| Needs Input | Waiting on an answer from the human. A comment alone does not leave this column | Coordinator (in), human (out) |
 | Human Review | Passed the gate. Waiting on the human. Exactly two pull requests. Pull requests only | Coordinator |
 | Done | Merged to main | Human, or the board on merge |
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
+
+A human comment on a pull request in Human Review, or on a card in Needs Input, does not move the card. The human may come back later and add more comments. Only an explicit column move by the human starts the next workflow step:
+
+- Human Review to In Progress means the human rejected the change. The coordinator relays the human's comments to the worker, and the loop returns to the fix step.
+- Needs Input to In Progress means the human answered the questions. The coordinator relays the answers to the worker, and the worker continues the work.
+
+Automation must react to these column-move events directly. A comment event is not a signal to move the card.
 
 An issue card stays on the board only until a pull request links it. Once a pull request links the issue, remove the issue card. The pull request card carries the work from then on, so each change shows up once and Human Review lists only pull requests. An issue with no pull request never goes in Human Review or Pending. If it's waiting on the human, put a question on it and leave it where it is.
 
@@ -30,8 +38,10 @@ flowchart LR
     AR -->|P1 or P2 finding| IP
     AR -->|blocked on another change| P[Pending]
     P -->|blocker cleared| AR
+    IP -->|waiting on a human answer| NI[Needs Input]
+    NI -->|human moves the card to In Progress| IP
     AR -->|clean, post-check passes, screenshots present, staging best-effort| HR[Human Review]
-    HR -->|human requests changes| IP
+    HR -->|human moves the card to In Progress| IP
     HR -->|late finding| IP
     HR -->|human merges to main| D[Done]
 ```
@@ -49,7 +59,7 @@ flowchart LR
 9. Staging deploy is best-effort. The coordinator merges the change into the staging branch and redeploys staging when it can. Do not block Human Review if the body does not name the served commit, or if a served-tree check for dropped lines would fail.
 10. For any change a person can see, screenshots or frames go into the pull request description. Existing screenshots count, even from an older head; do not retake them. The description also says where and how to see the change.
 11. The coordinator checks the full gate in [review.md](review.md). Only if it passes does the card move to Human Review. The Linux checks on the current head must be green before the card can enter Human Review, even though the other steps started while CI was still running.
-12. The human reviews. He merges to main, or sends the change back with comments, which returns it to step 6.
+12. The human reviews. He merges to main, or he moves the card from Human Review to In Progress to reject the change, which returns it to step 6. A comment in Human Review does not move the card.
 13. When a Human Review pull request merges, the coordinator promotes the head of the Pending queue at once, so Human Review holds two again. The reviewer moves on to the other Human Review pull request.
 14. While Human Review holds two pull requests and any work is in progress, the coordinator keeps one fully gated ready-next pull request that can enter once both merge. Prefer a pull request that conflicts with nothing. Only when none exists, rebase one pull request onto main plus both Human Review pull requests and gate that tip. If the reviewer rejects a Human Review pull request, rebuild that speculative tip without it.
 15. If Human Review becomes empty while work is in progress, the swarm manager tells the reviewer at once, and names the next pull request and its ETA.
@@ -79,3 +89,5 @@ A change is done when:
 ## Blocked work
 
 A change that is otherwise ready but waits on another change goes to Pending, not Auto Review or Human Review. Its pull request body names the blocker. When the blocker merges, the coordinator rebases or merges main into the branch and resumes the loop.
+
+A change that waits on an answer from the human goes to Needs Input, not Pending. A comment on that card does not move it. When the human moves the card to In Progress, the coordinator relays the answers and the work continues.

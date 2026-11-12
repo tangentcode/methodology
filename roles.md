@@ -27,6 +27,7 @@ The coordinator runs the loop and keeps the board accurate. It does not write th
 - Reports results to the human.
 - Keeps Human Review at exactly two pull requests and keeps one fully gated ready-next pull request in Pending.
 - When Human Review becomes empty while work is in progress, tells the reviewer at once, and names the next pull request and its ETA.
+- Reacts when the human moves a card from Human Review or from Needs Input to In Progress. A human comment alone does not move the card.
 
 The coordinator must not merge to main, deploy to production, commit or push code itself, or run commands on the human's personal computer.
 
