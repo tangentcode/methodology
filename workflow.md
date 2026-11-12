@@ -15,8 +15,8 @@
 | Backlog | Approved or proposed, not started | Coordinator or human |
 | In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator |
 | Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator |
-| Pending | Otherwise ready, but blocked on another change or an outside decision | Coordinator |
-| Human Review | Passed the gate. Waiting on the human. Pull requests only | Coordinator |
+| Pending | A queue of otherwise ready pull requests, sorted by conflict count. Independents wait here with no rebase. The queue head enters Human Review as soon as a slot opens | Coordinator |
+| Human Review | Passed the gate. Waiting on the human. Exactly two pull requests. Pull requests only | Coordinator |
 | Done | Merged to main | Human, or the board on merge |
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
@@ -50,6 +50,9 @@ flowchart LR
 10. For any change a person can see, current screenshots or frames from staging go into the pull request description. The description also says where and how to see the change.
 11. The coordinator checks the full gate in [review.md](review.md). Only if it passes does the card move to Human Review. The Linux checks on the current head must be green before the card can enter Human Review, even though the other steps started while CI was still running.
 12. The human reviews. He merges to main, or sends the change back with comments, which returns it to step 6.
+13. When a Human Review pull request merges, the coordinator promotes the head of the Pending queue at once, so Human Review holds two again. The reviewer moves on to the other Human Review pull request.
+14. While Human Review holds two pull requests and any work is in progress, the coordinator keeps one fully gated ready-next pull request that can enter once both merge. Prefer a pull request that conflicts with nothing. Only when none exists, rebase one pull request onto main plus both Human Review pull requests and gate that tip. If the reviewer rejects a Human Review pull request, rebuild that speculative tip without it.
+15. If Human Review becomes empty while work is in progress, the swarm manager tells the reviewer at once, and names the next pull request and its ETA.
 
 When CI completes for a pull request head that is in Auto Review or Pending, a webhook event re-runs the gate in step 11. This is event-driven, not a timer.
 

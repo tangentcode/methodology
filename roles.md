@@ -25,6 +25,8 @@ The coordinator runs the loop and keeps the board accurate. It does not write th
 - Checks that the commit staging serves contains the current head, and that staging can run the change, before asking for human review.
 - Makes sure screenshots or frames from staging are embedded in the pull request for any change a person can see.
 - Reports results to the human.
+- Keeps Human Review at exactly two pull requests and keeps one fully gated ready-next pull request in Pending.
+- When Human Review becomes empty while work is in progress, tells the reviewer at once, and names the next pull request and its ETA.
 
 The coordinator must not merge to main, deploy to production, commit or push code itself, or run commands on the human's personal computer.
 

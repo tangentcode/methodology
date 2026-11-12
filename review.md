@@ -76,3 +76,17 @@ When CI completes for a pull request head that is in Auto Review or Pending, a w
 ## Human review
 
 The human reviews the change on staging and in the pull request. Only the human merges to main and deploys to production.
+
+The human reviewer's attention is the constraint of the whole system. The reviewer must never wait for work. Human Review must never be empty while work is in progress.
+
+### Two slots and one ready-next pull request
+
+1. Human Review holds exactly two pull requests. Plan for the happy path, where the reviewer merges both.
+2. Pending is a queue sorted by conflict count. Pull requests that conflict with nothing (main, the Human Review pull requests, and each other) come first. Fully independent pull requests wait in Pending with no rebase.
+3. A merge pulls the next pull request at once. When the reviewer merges a Human Review pull request, it leaves Human Review. The head of the Pending queue enters immediately, so Human Review holds two again. The reviewer moves on to the other Human Review pull request at once.
+4. The ready-next invariant. While Human Review holds two pull requests and any work is in progress, at least one pull request is fully gated and can enter Human Review once both merge. "Fully gated" means: clean automated review, the second-reviewer pass, green CI, deployed to staging, and screenshots, all on the exact head that will enter. Prefer a pull request that has no conflicts. Only when none exists, speculatively rebase one pull request onto main plus both Human Review pull requests (a `-vN` branch) and gate it there. Do only one speculative rebase at a time.
+5. A rejection rebuilds the speculative tip. If the reviewer rejects a Human Review pull request, rebuild the speculative tip without the rejected pull request (start from its `-v0` plain branch), while the reviewer reviews the other pull request.
+6. Events drive the flow, not timers. A clean automated review and a CI-completion event each run the next gate step at once, even when CI is still running at review time. The gate uses the forge's own mergeable state. A staging merge is checked so that it does not silently drop a pull request's changes.
+7. The reviewer always knows the state. When Human Review becomes empty, the swarm manager tells the reviewer at once that it noticed, and names the next pull request and its ETA.
+
+`flow-status` reports whether the invariant holds (OK or VIOLATED) and shows the sorted queue. `pending-promote` keeps Human Review at two pull requests and keeps one pull request ready next.
