@@ -21,17 +21,22 @@ Before setting anything up, confirm these with the human and write the answers i
 
 Create one board for the repository with a single-select status field and these options, in this order:
 
-| Column | Put a card here when | Holds |
+| Column | Put a card here when | Card type |
 |---|---|---|
-| Triage | A new issue waits for options and the human's decision | Issues only |
-| Backlog | The issue defines scope and no pull request has picked it up yet | Issues only |
-| Needs Input | The owner bot posted questions on the issue | Issues only |
-| Active | The issue is assigned to the swarm and has open sub-issues or a linked open pull request | Issues only |
-| In Progress | A worker is writing code or fixing findings (pull request is a draft) | Pull requests only |
-| Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | Pull requests only |
-| Pending | The change is otherwise ready but waits on another change or a decision | Pull requests only |
-| Human Review | The pull request passed the gate (see step 6) | Pull requests only |
-| Done | The human merged it to main | Pull requests |
+| Inbox | The item is kept out of the flow for now, or is a new customer ticket | issue |
+| Triage | An agent has suggested plans and the human must decide | issue |
+| Backlog | The plan is approved but not in the current sprint | issue |
+| Active | The issue is assigned to the swarm and has sub-issues or a linked open pull request | issue |
+| In Progress | A worker is working on the draft pull request now | draft pull request |
+| Auto Review | The worker signed off and the automated reviewer is reviewing | ready pull request |
+| Needs Input | The latest comment is a worker or coordinator question that a human must answer | draft pull request |
+| Human Review | The pull request passed the gate (see step 6) and is deployed to staging | ready pull request |
+| Pending | The pull request is finished but depends on another pull request | ready pull request |
+| Done | The human merged it to main | merged pull request |
+| Canceled | The pull request was closed without merging | closed pull request |
+| Parked | The draft has real work but we decided not to merge it yet | draft pull request |
+
+See [workflow.md](workflow.md#board-columns) for the full meaning of each column.
 
 Board settings:
 
@@ -127,7 +132,7 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 
 1. **Human or tracker.** Puts the issue in Triage.
 2. **Owner bot.** Comments with options. **Human.** Decides in a comment (edits count). The coordinator forwards that comment to the owner bot.
-3. **Owner bot.** Writes the brief from the template, including every choice from the human's comment, and moves the card to Backlog (or to Needs Input with questions first).
+3. **Owner bot.** Writes the brief from the template, including every choice from the human's comment, and moves the card to Backlog (or posts questions on the issue and leaves it in Triage).
 4. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief.
 5. **Worker.** Cuts the branch from the latest main, makes a first commit, pushes the branch, and stops. The worker does not open the pull request.
 6. **Coordinator, then worker.** The coordinator opens a draft pull request from that branch against main, with a closing link, adds the `swarm` label, moves the issue card to Active, and moves the pull request card to In Progress. The issue never sits in Active without that link. A "Part of" mention is not a link. Then the coordinator tells the worker to continue. The worker writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
@@ -183,7 +188,7 @@ Run these on the current head every time. A new push resets them.
 - [ ] Checklist C passed on this head.
 - [ ] The card is a pull request, not an issue.
 - [ ] The change is merged into the staging branch, staging is redeployed, and the commit staging serves contains this head.
-- [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, move the card to Pending and ask the human.
+- [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, do not use Pending. Convert the pull request to a draft, move the card to Needs Input, and post a comment that names what is missing and who must provide it (the human, or the operator who owns the environment). When it is in place, mark the pull request ready, check staging again, and run this checklist again. If the head changed, go back to In Progress.
 - [ ] The pull request description says where and how to see the change.
 - [ ] Any change a person can see, such as UI, rendered images or video, has current staging screenshots or frames embedded in the pull request description.
 

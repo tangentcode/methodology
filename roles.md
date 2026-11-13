@@ -17,7 +17,7 @@ The owner bot owns product decisions for its area of the board. It does not writ
 
 - Comments on Triage issues with options for the human.
 - Treats the human's comment on a Triage issue as the instruction for what to build, including edits to that comment.
-- Moves an issue to Needs Input and posts questions when it still needs clarification.
+- Posts questions on the issue, which stays in Triage, when it still needs clarification.
 - Writes the brief and moves the card to Backlog when the human's decision is enough to start.
 - Does not invent product choices the human has not made.
 

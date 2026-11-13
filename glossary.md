@@ -24,15 +24,15 @@
 
 **Main.** The production branch. Only the human merges into it.
 
-**Needs Input.** The column for an issue where the owner bot has posted questions for the human.
+**Needs Input.** The column for draft pull requests where a human must answer a question from the worker or the coordinator.
 
-**Owner bot.** The agent that owns product decisions for an area of the board: Triage options, Needs Input questions, and briefs.
+**Owner bot.** The agent that owns product decisions for an area of the board: Triage options, questions on Triage issues, and briefs.
 
 **Neighboring cases.** Other instances of the same class of defect as a finding.
 
 **Ops agent.** The one agent allowed to make root-level changes on shared machines.
 
-**Pending.** The column for work that is otherwise ready but blocked on another change or decision.
+**Pending.** The column for finished pull requests that would be in Human Review but depend on another pull request that has not merged. The pull request body names the blocker.
 
 **Ready.** A pull request marked for review. Moving a card to Auto Review marks it ready.
 
