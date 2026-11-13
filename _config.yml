@@ -26,6 +26,7 @@ defaults:
       layout: default
 nav:
   - { file: README.md, label: Home }
+  - { file: principles.md, label: Principles }
   - { file: roles.md, label: Roles }
   - { file: workflow.md, label: Workflow }
   - { file: review.md, label: Review }
