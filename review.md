@@ -34,6 +34,8 @@ Automated review is capped at a fixed number of rounds (ten works well). After t
 
 A finding that arrives late, after a card has reached Human Review, still counts. The card returns to In Progress until it is fixed.
 
+Every review request has a deadline of 30 minutes. The coordinator records when it asked and which head it asked about. An acknowledgement, such as a reaction, doesn't count as a review. If no review of that head arrives in time, the coordinator asks once more. If the second request also passes its deadline, it marks the pull request as timed out, counts the round as used, says so in its next report to the human, and goes on to its post-check.
+
 ## The root-cause rule
 
 Every finding, from any reviewer, is handled the same way:
