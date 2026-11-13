@@ -17,7 +17,7 @@ The pre-check asks:
 
 - Does the change match the issue and brief, and nothing more?
 - Is the branch cut from main and the base set to main?
-- Do the tests exist, and do they pass when the coordinator runs them?
+- Do tests cover the change, and do the targeted local tests pass? Check any available current-head CI results too; drafts do not run full suites.
 - Did the worker report pass counts?
 
 The post-check repeats the pre-check on the current head and adds:
@@ -26,13 +26,26 @@ The post-check repeats the pre-check on the current head and adds:
 - Does the pull request body list the neighboring cases for each fix?
 - Is the pull request mergeable against main?
 
-The coordinator runs the tests twice when a change touches timing, concurrency, or shared state.
+The coordinator verifies two passing runs of the relevant tests when a change touches timing, concurrency, or shared state. Local reruns remain targeted and throttled; full suites run in Actions.
+
+## Testing and CI
+
+The maintainer set this policy on 2026-11-07. Earlier that day, PR CI was disabled to save Actions costs and full suites moved to the shared build box. Those suites exhausted memory and forced a reboot.
+
+- Full suites run in GitHub Actions on Linux for pushes to ready-for-review PRs and pushes to main. Skip drafts; marking a PR ready also starts validation. A newer push cancels the older run for that PR or branch.
+- Windows testing runs weekly only, not on PR pushes or manual dispatch.
+- Workers run only the targeted test files they changed locally. Use one Vitest worker: `--maxWorkers=1 --no-file-parallelism`. Broad validation belongs in Actions.
+- All local test and headless-browser runs use the shared slot throttle, which allows two runs at once across workers. Each run also stays inside the worker resource cap described in [working-agreements.md](working-agreements.md).
+- After staging (`work`) branch merges, the shared build box runs only quick staging smoke checks: verify the deployed commit, site authentication, and a remote smoke test. It never runs full suites.
+- The Human Review gate requires green Linux checks on the current PR head. An older head's results do not count.
 
 ## Round cap
 
 Automated review is capped at a fixed number of rounds (ten works well). After the cap, workers still fix every finding the coordinator or the human raises, but the coordinator verifies those fixes itself and requests no more automated reviews. The cap stops a change from cycling indefinitely on findings of diminishing value.
 
 A finding that arrives late, after a card has reached Human Review, still counts. The card returns to In Progress until it is fixed.
+
+Every review request has a deadline of 30 minutes. The coordinator records when it asked and which head it asked about. An acknowledgement, such as a reaction, doesn't count as a review. If no review of that head arrives in time, the coordinator asks once more. If the second request also passes its deadline, it marks the pull request as timed out, counts the round as used, says so in its next report to the human, and goes on to its post-check.
 
 ## The root-cause rule
 
@@ -50,6 +63,10 @@ The coordinator includes this rule in every message that relays a finding. If a 
 
 Workers do not resolve review threads. The coordinator resolves a thread after it has checked the fix on the current head. This keeps one party responsible for saying a finding is closed.
 
+## Acting on a clean review
+
+A clean review is an event too. When the latest automated review of the current head is clean and no P1 or P2 threads are open, the coordinator's automation starts the next step right away: the post-check, the staging merge, and the gate. It doesn't wait for the worker, which has usually finished already. The periodic scan treats a clean review with no post-check after it as a stall.
+
 ## The gate into human review
 
 A card moves to Human Review only when all of these hold on the current head. Check them in this order and record the result before moving the card:
@@ -59,6 +76,7 @@ A card moves to Human Review only when all of these hold on the current head. Ch
 - It is mergeable against main.
 - No P1 or P2 findings or threads are open.
 - The coordinator's post-check passed on this head.
+- The Linux checks in GitHub Actions are green on this exact head.
 - The change is deployed where the human will review it, and the deploy is verified. The change is merged into the staging branch and staging was redeployed. The commit staging is actually serving contains the pull request's current head. Staging is an integration branch, so that commit is usually a merge rather than the head itself. Record the commit staging is serving. The staged environment must also be able to run the change, with any configuration, credentials or services it needs. If staging can't run it, the card goes to Pending with a question for the human, not to Human Review.
 - The pull request description says where and how to see the change.
 - Any change a person can see, such as UI, rendered images or generated video, has current screenshots or frames from staging embedded in the pull request description. Generated media includes a side-by-side with its reference when there is one. If there's any doubt about whether a change is visible, treat it as visible.

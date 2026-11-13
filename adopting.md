@@ -10,29 +10,36 @@ Before setting anything up, confirm these with the human and write the answers i
 - [ ] Whether there is a staging environment yet. If not, skip staging steps until there is one, and say so in each pull request.
 - [ ] Where worker agents run (a shared build machine, never the human's personal computer).
 - [ ] Which automated reviewer is used, how a review is requested, and from which account.
+- [ ] The automation that moves finished work forward is running before the first worker starts. At minimum, within an hour of a worker finishing a draft with passing tests, it runs the pre-check, marks the pull request ready and requests review. Until that automation exists, the coordinator checks every worker by hand at least once an hour.
+- [ ] Workers end every turn with one status line a scan can read: done and waiting for review, waiting on the human for a named thing, or continuing. A worker that is waiting on the human for one part says which other parts can go to review now.
 - [ ] The round cap (ten unless the human says otherwise).
 - [ ] Who the ops agent is for root-level changes.
+- [ ] Who the owner bot is for this board (product decisions, Triage, briefs).
 - [ ] Which test commands count as "the full suite" for each component.
 
 ## 2. Set up the board
 
 Create one board for the repository with a single-select status field and these options, in this order:
 
-| Column | Put a card here when | The pull request is |
+| Column | Put a card here when | Holds |
 |---|---|---|
-| Backlog | The issue is proposed or approved but no worker has started | not yet open |
-| Active | The issue is assigned to the swarm and has open sub-issues or a linked open pull request | open, usually a draft at first |
-| In Progress | A worker is writing code or fixing findings | a draft |
-| Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
-| Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
-| Human Review | The pull request passed the gate (see step 6). Pull requests only | ready |
-| Done | The human merged it to main | merged |
+| Triage | A new issue waits for options and the human's decision | Issues only |
+| Backlog | The issue defines scope and no pull request has picked it up yet | Issues only |
+| Needs Input | The owner bot posted questions on the issue | Issues only |
+| Active | The issue is assigned to the swarm and has open sub-issues or a linked open pull request | Issues only |
+| In Progress | A worker is writing code or fixing findings (pull request is a draft) | Pull requests only |
+| Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | Pull requests only |
+| Pending | The change is otherwise ready but waits on another change or a decision | Pull requests only |
+| Human Review | The pull request passed the gate (see step 6) | Pull requests only |
+| Done | The human merged it to main | Pull requests |
 
 Board settings:
 
+- [ ] Every pull request card has a Status: In Progress for drafts or ongoing pushes; otherwise Auto Review with a review requested.
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
 - [ ] When a pull request is opened, give it a closing link (Fixes, or an equivalent). A "Part of" mention is not a link. Assign the issue to the swarm (the `swarm` label), then move the issue card to Active. Keep both cards. The pull request card carries the review loop. The issue card stays in Active while any linked pull request is open or any sub-issue is open. It leaves Active only when both are gone.
+- [ ] New issues land in Triage. Issues with no pull request never go in Auto Review, Pending, or Human Review.
 
 ## 3. Create labels
 
@@ -58,8 +65,16 @@ Add an issue template to the repository:
 ## Goal
 <one or two sentences: what changes for the user>
 
+## Code context and cause
+<relevant component, files or modules, and why the problem happens>
+
+## Fix options
+1. <option>
+2. <option>
+<two to four numbered options, with a recommendation the maintainer can choose in one comment>
+
 ## Approach
-<the design, closest to existing code; name the files or modules>
+<the design chosen by the maintainer>
 
 ## Choices the human owner made
 - <choice>
@@ -77,7 +92,7 @@ Add an issue template to the repository:
 Add a pull request template:
 
 ```markdown
-Fixes <issue reference>
+Fixes <issue reference>   (or: Part of <issue reference>, when this pull request covers only part of the issue)
 
 ## What changed
 <summary>
@@ -102,7 +117,7 @@ For each review finding: the root cause, the neighboring cases, and the tests.
 <current staging screenshots or frames for anything a person can see, with a side-by-side for generated media that has a reference, or "nothing visible changed">
 ```
 
-Copy the brief template from [briefs.md](briefs.md) into the coordinator's own notes. Briefs don't go in the repository.
+Copy the brief template from [briefs.md](briefs.md) into the owner bot's notes. Briefs don't go in the repository. The coordinator keeps a copy when it launches the worker.
 
 Add a short agent instructions file at the repository root with the root-cause rule, the branch rules, and the rule that workers don't merge, deploy, or resolve review threads. Open it as the first pull request (step 5), so the human approves the rules the same way as code.
 
@@ -110,20 +125,22 @@ Add a short agent instructions file at the repository root with the root-cause r
 
 Use a small, real issue for the first run, so problems with the setup show up early.
 
-1. **Human.** Approves the issue. The coordinator adds the `approved` label.
-2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
-3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief.
-4. **Worker.** Cuts the branch from the latest main, makes a first commit, pushes the branch, and stops. The worker does not open the pull request.
-5. **Coordinator, then worker.** The coordinator opens a draft pull request from that branch against main, with a closing link, adds the `swarm` label, moves the issue card to Active, and moves the pull request card to In Progress. The issue never sits in Active without that link. A "Part of" mention is not a link. Then the coordinator tells the worker to continue. The worker writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
-6. **Coordinator.** Runs the pre-check (checklist A below).
-7. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
-8. **Coordinator.** Reads the findings. For each P1 or P2, converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule.
-9. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
-10. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 7 until a round comes back clean or the cap is reached.
-11. **Coordinator.** Runs the post-check (checklist C).
-12. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
-13. **Coordinator.** Checks the gate (checklist D). If it passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
-14. **Human.** Reviews, then merges to main or sends it back with comments.
+1. **Human or tracker.** Puts the issue in Triage.
+2. **Owner bot.** Comments with options. **Human.** Decides in a comment (edits count). The coordinator forwards that comment to the owner bot.
+3. **Owner bot.** Writes the brief from the template, including every choice from the human's comment, and moves the card to Backlog (or to Needs Input with questions first).
+4. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief.
+5. **Worker.** Cuts the branch from the latest main, makes a first commit, pushes the branch, and stops. The worker does not open the pull request.
+6. **Coordinator, then worker.** The coordinator opens a draft pull request from that branch against main, with a closing link, adds the `swarm` label, moves the issue card to Active, and moves the pull request card to In Progress. The issue never sits in Active without that link. A "Part of" mention is not a link. Then the coordinator tells the worker to continue. The worker writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
+7. **Worker.** Writes code and tests, runs only the targeted test files locally through the shared two-slot throttle with one Vitest worker, pushes, and reports the head commit and pass counts.
+8. **Coordinator.** Runs the pre-check (checklist A below).
+9. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
+10. **Coordinator.** Reads the findings. For each P1 or P2, converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule.
+11. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
+12. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 8 until a round comes back clean or the cap is reached.
+13. **Coordinator.** Runs the post-check (checklist C).
+14. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
+15. **Coordinator.** Checks the gate (checklist D). If it passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
+16. **Human.** Reviews, then merges to main or sends it back with comments.
 
 After the first issue, note anything in the setup that didn't work and fix it before starting more workers.
 
@@ -133,12 +150,12 @@ Run these on the current head every time. A new push resets them.
 
 ### A. Pre-check, before the first automated review
 
-- [ ] The issue is approved and not parked.
+- [ ] The human has decided the issue (Triage comment or approval) and it is not parked.
 - [ ] The branch is cut from main and the pull request base is main.
 - [ ] The change does what the issue and brief asked, and nothing else.
 - [ ] Every choice in the brief is followed.
 - [ ] Tests exist for the cases in the brief.
-- [ ] The full suite passes when the coordinator runs it, and matches the worker's reported counts.
+- [ ] Targeted local tests pass and match the worker's reported counts; full Linux suites run in GitHub Actions, not on the shared build box.
 - [ ] No secrets, credentials, or machine-specific paths are committed.
 - [ ] The pull request is mergeable against main.
 
@@ -147,19 +164,20 @@ Run these on the current head every time. A new push resets them.
 - [ ] Each relayed finding is fixed on the new head.
 - [ ] The fix addresses the root cause, not only the reported line.
 - [ ] The neighboring cases are listed in the pull request body and each has a test.
-- [ ] The full suite passes.
+- [ ] Targeted tests pass locally. After the PR is marked ready, require current-head Linux suites in GitHub Actions before Human Review.
 - [ ] The coordinator resolves only the threads it has verified.
 
 ### C. Post-check, after automated review is clean or capped
 
 - [ ] Everything in checklist A still holds.
 - [ ] No P1 or P2 findings or threads are open.
-- [ ] The tests pass twice in a row if the change touches timing, concurrency, or shared state.
+- [ ] The relevant tests pass twice in a row if the change touches timing, concurrency, or shared state; local reruns stay targeted and throttled.
 - [ ] The change is not blocked on another unmerged change. If it is, move the card to Pending and stop here.
 
 ### D. Gate into Human Review
 
 - [ ] The pull request is not a draft.
+- [ ] GitHub Actions Linux checks are green on its current head.
 - [ ] It is mergeable against main.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] Checklist C passed on this head.
@@ -173,9 +191,28 @@ Any automation that moves cards must check every item on this list.
 
 If any item fails later, move the card back to In Progress and convert the pull request to a draft.
 
+### CI and staging setup
+
+- Configure Linux full suites for ready-for-review PR pushes (skip drafts and run on ready-for-review) and main pushes. Cancel superseded runs. Run Windows weekly only.
+- Install the shared two-slot throttle for local tests and headless browsers. Target exact changed test files; use `--maxWorkers=1 --no-file-parallelism` for Vitest.
+- Keep post-work-merge checks to the deployed commit, site auth, and a remote smoke test. Do not run full suites on the shared build box.
+
 ## 7. Running more than one worker
 
-- Start one worker per approved issue, each in its own checkout and session.
+- Start one worker per brief, each in its own checkout and session.
 - Check the build machine's load and memory before starting more.
-- Keep a list of active workers: issue, branch, session, last reported head.
+- Launch every worker and test command inside the capped cgroup slice automatically, wrapping the command inside the terminal pane rather than the terminal client.
+- Keep a registry of active and parked workers, with issue, branch, PR, worktree, saved session, last pushed head, idle time, and a one-command resume.
+- There is no fixed worker-count limit. Report memory use and limit, swap, available memory, CPU use, and load when resources are tight.
+- Under memory pressure only, park clean, fully pushed workers idle at empty prompts, longest-idle first. Leave workers running when there is headroom. Resume saved sessions in their original worktrees inside the cap, automatically when PR feedback requires more work. See [working-agreements.md](working-agreements.md).
 - When two changes touch the same files, start the second only after the first merges, or put the second in Pending.
+- Start every worker in its agent's automatic-review mode by default, where a reviewer model approves routine actions instead of a person. Use it together with the standing allow list below. Pick a mode that reviews each action, never one that skips checks. Mode names change, so check each agent's current documentation. At the time of writing:
+  - **Claude Code:** auto mode, `--permission-mode auto`.
+  - **Codex CLI:** auto-review, `--sandbox workspace-write --ask-for-approval on-request` with `approvals_reviewer = "auto_review"`.
+  - **Gemini CLI:** no reviewer mode. Start it with `--approval-mode auto_edit` and write the allow list as allow rules in its policy settings.
+  - **Any other agent:** use its reviewer mode if it has one. If it has none, start it with its allow-list or policy settings, and rely on the short prompt check below to catch what's left.
+
+  Never start a worker in a mode that skips all checks, such as Claude Code's `--dangerously-skip-permissions`, Codex's `--yolo` or Gemini's `yolo` approval mode. The guardrails are the same in every mode: no pushes to main, the staging branch or another worker's branch, and nothing destructive or touching secrets or credentials without asking first. Write those as deny or ask rules in the agent's settings, so a reviewer model can't approve them. If an agent can't enter its automatic mode, for example because the account or model doesn't support it, it falls back to prompting. The coordinator checks the mode when it starts each worker and switches it on if the agent started without it.
+- Give every worker, whatever agent it runs, a standing allow list for the routine actions of its own change: read-only commands, running tests, installing dependencies inside its own checkout, and committing and pushing its own branch. Never allow pushes to main, the staging branch or another worker's branch. If a worker hits the same permission prompt on every change, that's a setup bug. Fix the allow list instead of approving the prompt each time.
+- Give each checkout its own dependency install, not a link into another checkout, so removing or reinstalling dependencies stays inside the worker's own directory.
+- Check for workers stopped on a permission prompt every 10 to 15 minutes, separately from the slower stall scan. A prompt that has waited more than 10 minutes counts as a stall. The coordinator approves it if the action stays inside the worker's own checkout and branch, and asks the human otherwise.
