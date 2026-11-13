@@ -61,6 +61,7 @@ before you push. Never push with failing tests.
 - Don't resolve review threads.
 - Keep temporary files in your own working directory, not a shared temp directory.
 - <secret-handling rule, if the change touches credentials>
+- Write issues, pull request bodies, commit messages, and replies in ASD-STE100 style, in ASCII only (see working-agreements.md, Writing style).
 - Run the full suite for each component you touched and report pass counts.
 
 ## Reporting

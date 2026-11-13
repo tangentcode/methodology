@@ -18,7 +18,7 @@ The coordinator runs the loop and keeps the board accurate. It does not write th
 - Starts one worker agent per change and sends it instructions.
 - Checks each change before the first automated review and again after automated review is clean.
 - Requests automated reviews, up to the round cap.
-- Relays findings to the worker with the root-cause rule.
+- Relays findings to the worker with the root-cause rule, as soon as each review arrives. If the worker is idle, the relay wakes it. If it's busy, the relay is queued and delivered when its turn ends. The periodic scan relays any review with open threads that is newer than the pull request's last push. Text an agent's input box suggests is never a status report.
 - Resolves review threads after it has verified a fix.
 - Moves cards and marks pull requests draft or ready.
 - Merges changes that passed its checks into the staging branch and redeploys staging.
