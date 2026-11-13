@@ -29,7 +29,7 @@ Make one board for the repository. Give it a single-select status field with the
 | Discuss | The issue needs careful thought or a conversation. It waits here so that simple Triage items move first | issue |
 | Triage | An agent suggested plans, and the human must decide | issue |
 | Backlog | The plan is approved, but it is not in the current sprint | issue |
-| Active | The issue is assigned to the swarm, it does not have the `work2` label, and it has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns | issue |
+| Active | The issue is assigned to the swarm, it does not have the `work2` label, and it has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label | issue |
 | In Progress | A worker works on the draft pull request now | draft pull request |
 | Auto Review | The worker is finished, and the automated reviewer reviews the change | ready pull request |
 | Needs Input | The latest comment is a question from a worker or the coordinator that a human must answer. A comment does not move the card out. The human moves it to In Progress when the question has an answer | draft pull request |
@@ -46,7 +46,7 @@ Board settings:
 - [ ] Each pull request card has a Status. Use In Progress for drafts and for pull requests that still get pushes. Use Auto Review, with a review request, for all others.
 - [ ] If the tracker can do it, add new issues and pull requests of the repository to the board automatically.
 - [ ] When a pull request merges, move its card to Done automatically.
-- [ ] When a pull request opens, give it a closing link (`Fixes`, or an equivalent). A "Part of" mention is not a closing link. Assign the issue to the swarm (the `swarm` label). Then move the issue card to Active, or keep it there if the human already moved it to Active. Keep the two cards, unless the issue has the `work2` label. The pull request card goes through the review loop. The issue card stays in Active while it has exactly one open linked pull request in a flow column. Do not put a second pull request for the same issue into a flow column while the first is still there. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. Issues with the `work2` label stay in Inbox, and their pull requests do not go into a flow column. The issue goes out of Active when it no longer has exactly one open linked pull request in a flow column.
+- [ ] When a pull request opens, give it a closing link (`Fixes`, or an equivalent). A "Part of" mention is not a closing link. Assign the issue to the swarm (the `swarm` label). Then move the issue card to Active, or keep it there if the human already moved it to Active. Keep the two cards, unless the issue has the `work2` label. The pull request card goes through the review loop. The issue card stays in Active while it has exactly one open linked pull request in a flow column. Do not put a second pull request for the same issue into a flow column while the first is still there. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. Issues with the `work2` label stay in Inbox. Their pull requests still move through the review loop, but they do not count toward the Active total. The issue goes out of Active when it no longer has exactly one open linked pull request in a flow column.
 - [ ] New issues go to Inbox or Triage. An issue without a pull request never goes in Auto Review, Pending, or Human Review. The only time it is in Active without a pull request is the short interval after the human moves it there and before the coordinator opens the draft pull request.
 
 ## 3. Make labels
@@ -57,7 +57,7 @@ Use few labels. These labels are sufficient to start:
 |---|---|
 | `approved` | The human approved the issue. Workers start only on approved issues. A move to Active also counts as approval. |
 | `swarm` | The issue is assigned to the swarm. Active holds only issues with this label that do not have the `work2` label and that have exactly one open linked pull request in a flow column. |
-| `work2` | The issue stays in Inbox, even when it has a linked pull request. That pull request does not go into a flow column. The issue is not part of the Active count. |
+| `work2` | The issue stays in Inbox, even when it has a linked pull request. That pull request still moves through the flow columns, but it does not count toward the Active total. |
 | `parked` | The human stopped the work for now. Do not touch it until he says otherwise. |
 | `blocked` | The item waits on another change or a decision. Name the blocker in a comment. |
 | `ui` | The change has an effect that a person can see (UI, rendered images, or video). It needs screenshots or frames. |
