@@ -6,7 +6,7 @@ This page describes the tools that run the workflow on the coordinator host. The
 
 The tools run the loop and the gate in [workflow.md](workflow.md) and [review.md](review.md). They use the published board columns, with one optional queue in front of Pending.
 
-- **Ready** is an optional queue of finished pull requests. Each one has a finished coding agent, a clean automated review, and a bot pass on the current head. A Ready pull request is not yet merged into the integration branch, not yet deployed, and not yet gated. Ready may be a board column, or only an ordered list that the tools keep. A team that follows the board setup in [adopting.md](adopting.md) does not need a Ready column.
+- **Ready** is an optional queue of finished pull requests. Each one has a finished coding agent, a bot pass on the current head, and no open P1 or P2 findings. The automated review of the current head is clean, or it is at the round limit or has timed out. In those later cases, the post-check of the coordinator must have passed. A Ready pull request is not yet merged into the integration branch, not yet deployed, and not yet gated. Ready may be a board column, or only an ordered list that the tools keep. A team that follows the board setup in [adopting.md](adopting.md) does not need a Ready column.
 - **Pending** is the published column for finished, gated pull requests that wait for Human Review. Some boards rename this column to Staging. The option id does not change, so no card loses its status. Commands that say "Pending" in their names act on this column under either name. This page uses the published name, Pending. Tools match columns by option id, not by name.
 - **Human Review** holds exactly two pull requests.
 
@@ -30,7 +30,7 @@ A move of a project card is a signal. It can mean that Human Review dropped to o
 
 A timer runs one pass of the tools on a regular interval. The tick is a safety net for lost events. It also does work that events do not cover. It reports stalls. It starts held launches when memory is free. It refills Pending when the buffer is short. New launches must not take memory or API quota away from the pull request that is closest to Human Review.
 
-On each pass, the tick reports the board status. If Human Review holds fewer than two pull requests, it promotes a prepared pull request from Pending. If the prepared buffer in Pending is below its target, it starts the pull step for one Ready pull request. If a pull request has a clean automated review but no bot pass on that head, the tick records the pass. It then adds the pull request to Ready, as a column move or as an update of the ordered list.
+On each pass, the tick reports the board status. If Human Review holds fewer than two pull requests, it promotes a prepared pull request from Pending. If the prepared buffer in Pending is below its target, it starts the pull step for one Ready pull request. If a pull request is eligible for Ready but has no bot pass on that head, the tick records the pass. It then adds the pull request to Ready, as a column move or as an update of the ordered list.
 
 The tick opens a draft pull request only when its worker can start, and it checks that the worker started. A draft with no live worker does not sit in In Progress.
 
@@ -44,7 +44,7 @@ When the prepared buffer in Pending is below its target, one worker takes the to
 2. Merge the pull request into the integration branch.
 3. Deploy the staging environment again when that is possible, and verify the served commit when that is possible. This step is best-effort. A deploy that does not finish, or a staging environment that is not up to date, does not by itself fail the pull step. For a change that cannot go to the staging environment, the check that the pull request names replaces the deploy conditions. See [Pull requests that do not target main](workflow.md#pull-requests-that-do-not-target-main).
 4. Confirm that CI is green on this head, and that the pull request body is complete.
-5. Run the Human Review gate, including its best-effort staging rule. If the gate passes, the card goes to Pending. If the gate fails, the card goes back to In Progress with the reason, and the worker tries the next Ready pull request.
+5. Run the Human Review gate, including its best-effort staging rule. If the gate passes, the card goes to Pending. If the gate fails because staging lacks configuration, credentials, or a required service, the tools change the pull request to a draft. They move the card to Needs Input. The comment names what is missing and who must supply it. For other gate failures, the card goes back to In Progress with the reason, and the worker tries the next Ready pull request.
 
 When Human Review drops to one, the first prepared pull request in Pending moves to Human Review at once. Then the pull step refills the prepared buffer. The tools do not merge, deploy, or gate any pull request other than the one that is being pulled into Pending.
 
