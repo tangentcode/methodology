@@ -1,6 +1,6 @@
 # Glossary
 
-**Active.** The column for open issue cards that are assigned to the swarm. Each one does not have the `work2` label, and each one has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns. To keep that equality true, a pull request of a `work2` issue does not go into a flow column, and an issue has only one pull request in a flow column at a time. A move of an issue to this column, with no comment, is sufficient approval to start its worker.
+**Active.** The column for open issue cards that are assigned to the swarm. Each one does not have the `work2` label, and each one has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns. To keep that equality true, a pull request of a `work2` issue does not go into a flow column, and an issue has only one pull request in a flow column at a time. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. A move of an issue to this column, with no comment, is sufficient approval to start its worker.
 
 **Automated reviewer.** A code review service. It reads a pull request and writes findings with priorities.
 
