@@ -1,6 +1,6 @@
 # Glossary
 
-**Active.** The column for open issue cards that are assigned to the swarm. Each one has open sub-issues or a linked open pull request.
+**Active.** The column for open issue cards that are assigned to the swarm. Each one does not have the `work2` label, and each one has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Ready, Staging, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label. A pull request of a `work2` issue still moves through the flow columns, but it does not count in that total. A pull request in a flow column belongs to exactly one Active issue. If one pull request fixes more than one issue, only one of those issues is in Active. An Active issue has only one pull request in a flow column at a time. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. A move of an issue to this column, with no comment, is sufficient approval to start its worker.
 
 **Automated reviewer.** A code review service. It reads a pull request and writes findings with priorities.
 
@@ -20,13 +20,14 @@
 
 **Gate.** The conditions that a pull request must meet before it enters Staging. Automation and people check each condition on the current head, during the pull step, one pull request at a time. A later move from Staging to Human Review is only a card move. A gate check, a promotion from Staging, and a merge into the staging branch share one lock, so only one of them runs at a time. A second operation stops at once and reports `busy`. Gate operations skip draft pull requests and pull requests that are still in Ready. See [The pull into Staging](review.md#the-pull-into-staging).
 
+
 **Head.** The latest commit on the branch of a pull request. Checks apply only to the current head.
 
 **Human owner.** The person who decides Triage issues, reviews finished work, merges to main, and deploys.
 
 **Human Review.** The column for finished pull requests that wait on the human to test them and merge them to main. It holds exactly two pull requests whenever two prepared pull requests are available, and never more than two. The next card comes from the front of Staging, as a card move, in seconds after a slot opens. When it holds only one pull request, the first Staging pull request can go in as a stacked pull request if it depends on that one.
 
-**Inbox.** The column for items that are out of the flow for now, and, after launch, for new tickets from customers.
+**Inbox.** The column for items that are out of the flow for now, and, after launch, for new tickets from customers. Issues with the `work2` label stay here, even when they have a linked pull request.
 
 **Independent pull request.** A pull request that merges cleanly onto main, has no unmerged commits of another Human Review pull request, and merges cleanly together with each Human Review pull request. The human can merge or reject it with no effect on the others.
 
@@ -62,8 +63,10 @@
 
 **Staging environment.** A test environment that the staging branch feeds. The staging branch is an integration branch. It is never merged into main. Only pull requests in the Staging column and in Human Review are merged into that branch and deployed here. Thus the commit that the staging environment serves is usually a merge that contains the head of a pull request, not the head itself.
 
-**Swarm assignment.** The `swarm` label on an issue. An issue in Active must have this label. It must also have open sub-issues or a linked open pull request.
+**Swarm assignment.** The `swarm` label on an issue. An issue in Active must have this label. It must also have exactly one open linked pull request in a flow column, and it must not have the `work2` label.
 
-**Triage.** The column for open issues that have suggested plans. They wait on the human to decide.
+**Triage.** The column for open issues that have suggested plans. They wait on the human to decide, in a comment or by a move of the issue to Active or to Backlog.
+
+**work2.** A label that keeps an issue in Inbox, even when the issue has a linked pull request. The pull request of a `work2` issue still moves through the flow columns in the usual way, but it does not move the issue out of Inbox and it does not count in the Active total.
 
 **Worker agent.** A coding agent in a terminal session. It owns one change.

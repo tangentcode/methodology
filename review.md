@@ -67,6 +67,7 @@ Workers do not resolve review threads. The coordinator resolves a thread after i
 
 A clean review is also an event. The latest automated review of the current head can be clean, with no open P1 or P2 threads. Then the automation of the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. The coordinator does not start a staging merge or a gate at this point. See [The pull into Staging](#the-pull-into-staging). It does not wait for the worker, because the worker is usually already finished. The periodic scan counts a clean review with no post-check after it as a stall.
 
+
 ## The gate into Human Review
 
 The coordinator runs this gate when it pulls a pull request into Staging, not when it later moves the card from Staging to Human Review. That later move is only a card move, and it happens when a Human Review slot is open. Human Review holds exactly two pull requests whenever two prepared pull requests are available, and never more than two. One of them can be a stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). A card enters Staging only when all these conditions are true on the current head. Check them in this sequence. Record the result before you move the card.
@@ -74,7 +75,7 @@ The coordinator runs this gate when it pulls a pull request into Staging, not wh
 - The pull request merges cleanly onto the current stack: main, the Human Review pull requests, and the Staging pull requests ahead of it. Or it is prepared as the one speculative rebase when no pull request in Ready fits that stack. If it is a stacked pull request, its body starts with the stacked banner. If the pull request conflicts with a Human Review pull request, do not put it in Staging. Prefer the next pull request in Ready that does not conflict.
 - If the pull request is stacked, its base is open in Human Review or in Staging, or its base merged to main. A stacked pull request fails the gate when the human sent its base back or closed it. This is also true when the stacked pull request is already in Human Review or already in Staging.
 - The card is a pull request. Issue cards never go in Human Review.
-- The pull request is not a draft.
+- The pull request is not a draft. A gate check does not start on a draft. See [The pull into Staging](#the-pull-into-staging).
 - The pull request can merge into main. The gate uses the mergeable state that the forge reports. If the forge reports conflicts with the base of the pull request, this check fails. This is also true when a local merge-tree test shows no conflicts.
 - No P1 or P2 findings or threads are open.
 - The post-check of the coordinator passed on this head.
@@ -98,7 +99,8 @@ If a condition fails later, for example after a new push or a late finding, the 
 
 When the automated review of the current head is clean, the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. Do not start a staging merge or a gate until the pull step takes this pull request. Do not take the screenshots again. Screenshots that are already in the pull request count. The pull request cannot enter Staging until the Linux checks on that head are green.
 
-A webhook event does not run the gate for a draft pull request, or for a pull request that is in Ready and has not been pulled. The hook makes those checks before it makes any API call. It also ignores repeated CI events for the same head. If a CI event is for the pull request that is currently in the pull step, the event can continue that step when the lock is free. If the lock is busy, the event reports `busy` and does not wait.
+A webhook event does not run the gate for a draft pull request, or for a pull request that is in Ready and has not been pulled. The hook makes those checks before it makes any API call. It also ignores repeated CI events for the same head. If a CI event is for the pull request that is currently in the pull step, or for a pull request already in Staging, the event can continue that step or run the gate again when the lock is free. If the lock is busy, the event reports `busy` and does not wait.
+
 
 ## Human review
 
@@ -124,7 +126,7 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
    - That move is the signal that only one pull request is left. The next pull request must enter in seconds, not minutes.
    - While the human reviews the remaining pull request, a new one goes in behind it.
    - When Human Review holds exactly one pull request, and the first Staging pull request depends on it, that Staging pull request can go in as the one stacked pull request. It has a banner at the top of the body that names the Human Review pull request that it depends on. See [Stacked pull requests](workflow.md#stacked-pull-requests). If that base merges first, remove the banner. Then the pull request is a plain pull request.
-2. Staging is a buffer of 3 to 5 pull requests. This column was formerly named Pending. Keep it small. It must be large enough that the human can review 4 or 5 items while the next pull request is prepared, even if about 3 pull requests in Ready fail the gate in a row. Only Staging and Human Review are merged into the staging branch and deployed to the staging environment, about 7 pull requests in total. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
+2. Staging is a buffer of 3 to 5 prepared pull requests. This column was formerly named Pending. Keep it small. It must be large enough that the human can review 4 or 5 items while the next pull request is prepared, even if about 3 pull requests in Ready fail the gate in a row. Blocked pull requests can also sit in Staging, but they do not count toward that target, and they do not stop a promotion or a pull step. Only Staging and Human Review are merged into the staging branch and deployed to the staging environment, about 7 pull requests in total. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
    - Each Staging pull request is fully prepared:
      - It is merged into the staging branch.
      - It is deployed to the staging environment, and that environment is verified to serve it.
@@ -135,7 +137,7 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
    - The pre-merge and the gate checks happen only for a pull request that is being pulled into Staging, and only one at a time.
    - Moving the first Staging pull request to Human Review is only a card move, so it is almost instant.
 3. Ready is a board column between Needs Input and Staging. It holds finished pull requests that wait to be pulled into Staging. Ready is the finish line for coding agents. Agents work the backlog until their pull requests are in Ready.
-   - A pull request in Ready is finished. Its worker is done, the automated review is clean, and the post-check of the coordinator passed on the head commit.
+   - A pull request in Ready is finished. Its worker is done. The automated review of the current head is clean, or it is at the round limit or has timed out and the post-check of the coordinator has passed. No P1 or P2 findings are open.
    - A pull request in Ready is not merged into the staging branch, not deployed, not gated, and not on the staging environment.
    - Pull requests in Ready wait in this order:
      1. Pull requests with a milestone first, ordered by the milestone.
@@ -145,9 +147,21 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
 
 #### The pull into Staging
 
+<a id="one-gate-or-merge-at-a-time"></a>
+
 Only one process can merge into the staging branch, deploy staging again, run the gate, or promote a pull request from Staging at a time. This applies to every caller, including the event hook, the periodic scan, and helper agents.
 
-These operations share one lock. If a second operation starts while the lock is held, that second operation does not wait. It stops at once and reports `busy`. It tries again later, on the next event or the next periodic scan.
+These operations share one lock:
+
+- A gate check (the conditions in [The gate into Human Review](#the-gate-into-human-review)), including a later check on a pull request that is already in Staging.
+- A promotion of a pull request from Staging into Human Review.
+- A merge of a change into the staging branch.
+
+If a second operation starts while the lock is held, that second operation does not wait. It stops at once and reports `busy`. It tries again later, on the next event or the next periodic scan.
+
+Gate operations skip draft pull requests and pull requests that are still in Ready and have not been pulled. Do not start a gate check or a promotion from Staging on a draft. Leave the card where it is.
+
+This lock does not stop the human from a merge to main, or from a review of the cards in Human Review.
 
 The pull step starts when Staging has fewer pull requests than its target size, for example because one pull request just moved to Human Review. The single worker then takes the first pull request in Ready and does these steps:
 
@@ -163,7 +177,7 @@ Expect one or two failures before a pull request fits. That is why the buffer ex
 
 When Human Review drops to 1, because the human moved one out, move the first Staging pull request to Human Review at once. This promotion takes the shared lock. If the lock is busy, the promotion stops at once, reports `busy`, and tries again later. Then start the pull step to refill Staging. If Human Review has an open slot and Staging still has pull requests, fill Human Review first, up to two.
 
-Do not merge, deploy, or gate any pull request other than the one that is being pulled into Staging, except the follow-up evidence case in [Blocked work](workflow.md#blocked-work). Pull requests in Ready get no merges, gates, or checks after they move to Ready.
+Do not merge, deploy, or gate a pull request that is still in Ready, except the follow-up evidence case in [Blocked work](workflow.md#blocked-work). Prepare only one Ready pull request at a time. The tools can still run the gate again on a pull request that is already in Staging, for example when CI finishes, when main advances, or when they promote the card. If that later check fails, the card leaves Staging.
 
 - Do not make speculative rebased copies of every pull request.
 - Do not merge the whole queue again after every merge to main.

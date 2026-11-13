@@ -1,11 +1,12 @@
 flowchart TD
     A([Issue in Triage]) --> B[Owner bot writes options]
-    B --> C{Human decides<br/>in a comment}
-    C -->|owner bot has questions| Q[Questions on the issue,<br/>issue stays in Triage]
+    B --> C{Human decides in a comment,<br/>or moves the issue}
+    C -->|owner bot has questions,<br/>issue not moved to Active| Q[Questions on the issue,<br/>issue stays in Triage]
     Q --> C
-    C -->|brief written| D[Card to Backlog,<br/>coordinator starts worker]
+    C -->|brief written,<br/>card to Backlog| D[Coordinator starts worker]
+    C -->|moves the issue to Active| D
     D --> D2[Worker pushes<br/>a first commit]
-    D2 --> D3[Coordinator opens draft PR<br/>with a closing link,<br/>issue card to Active]
+    D2 --> D3[Coordinator opens draft PR<br/>with a closing link,<br/>issue card stays in Active<br/>or moves to Active]
     D3 --> E[Worker pushes code and tests<br/>to the draft PR]
     E --> F{Coordinator<br/>pre-check}
     F -->|fails| E

@@ -30,6 +30,7 @@ nav:
   - { file: roles.md, label: Roles }
   - { file: workflow.md, label: Workflow }
   - { file: review.md, label: Review }
+  - { file: tooling.md, label: Tooling }
   - { file: briefs.md, label: Briefs }
   - { file: safety.md, label: Safety }
   - { file: working-agreements.md, label: Working agreements }

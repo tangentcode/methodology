@@ -25,11 +25,11 @@ Make one board for the repository. Give it a single-select status field with the
 
 | Column | Put a card here when | Card type |
 |---|---|---|
-| Inbox | The item is out of the flow for now, or it is a new ticket from a customer | issue |
+| Inbox | The item is out of the flow for now, or it is a new ticket from a customer. Issues with the `work2` label stay here, even when they have a linked pull request | issue |
 | Discuss | The issue needs careful thought or a conversation. It waits here so that simple Triage items move first | issue |
 | Triage | An agent suggested plans, and the human must decide | issue |
 | Backlog | The plan is approved, but it is not in the current sprint | issue |
-| Active | The issue is assigned to the swarm, and it has sub-issues or a linked open pull request | issue |
+| Active | The issue is assigned to the swarm, it does not have the `work2` label, and it has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Ready, Staging, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label | issue |
 | In Progress | A worker works on the draft pull request now | draft pull request |
 | Auto Review | The worker is finished, and the automated reviewer reviews the change | ready pull request |
 | Needs Input | The latest comment is a question from a worker or the coordinator that a human must answer. A comment does not move the card out. The human moves it to In Progress when the question has an answer | draft pull request |
@@ -47,8 +47,9 @@ Board settings:
 - [ ] Each pull request card has a Status. Use In Progress for drafts and for pull requests that still get pushes. Use Auto Review, with a review request, for all others.
 - [ ] If the tracker can do it, add new issues and pull requests of the repository to the board automatically.
 - [ ] When a pull request merges, move its card to Done automatically.
-- [ ] When a pull request opens, give it a closing link (`Fixes`, or an equivalent). A "Part of" mention is not a closing link. Assign the issue to the swarm (the `swarm` label). Then move the issue card to Active. Keep the two cards. The pull request card goes through the review loop. The issue card stays in Active while a linked pull request or a sub-issue is open. It goes out of Active only when there are no open linked pull requests and no open sub-issues.
-- [ ] New issues go to Inbox or Triage. An issue without a pull request never goes in Auto Review, Ready, Staging, or Human Review.
+- [ ] When a pull request opens, give it a closing link (`Fixes`, or an equivalent). A "Part of" mention is not a closing link. Assign the issue to the swarm (the `swarm` label). Then move the issue card to Active, or keep it there if the human already moved it to Active. Keep the two cards, unless the issue has the `work2` label. The pull request card goes through the review loop. The issue card stays in Active while it has exactly one open linked pull request in a flow column. A pull request in a flow column belongs to exactly one Active issue. If one pull request fixes more than one issue, only one of those issues is in Active, and the others stay in Backlog until the pull request merges. Do not put a second pull request for the same issue into a flow column while the first is still there. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. Issues with the `work2` label stay in Inbox. Their pull requests still move through the review loop, but they do not count toward the Active total. The issue goes out of Active when it no longer has exactly one open linked pull request in a flow column.
+- [ ] New issues go to Inbox or Triage. An issue without a pull request never goes in Auto Review, Ready, Staging, or Human Review. The only time it is in Active without a pull request is the short interval after the human moves it there and before the coordinator opens the draft pull request.
+
 
 ## 3. Make labels
 
@@ -56,8 +57,9 @@ Use few labels. These labels are sufficient to start:
 
 | Label | Use |
 |---|---|
-| `approved` | The human approved the issue. Workers start only on approved issues. |
-| `swarm` | The issue is assigned to the swarm. Active holds only issues with this label that also have open sub-issues or a linked open pull request. |
+| `approved` | The human approved the issue. Workers start only on approved issues. A move to Active also counts as approval. |
+| `swarm` | The issue is assigned to the swarm. Active holds only issues with this label that do not have the `work2` label and that have exactly one open linked pull request in a flow column. |
+| `work2` | The issue stays in Inbox, even when it has a linked pull request. That pull request still moves through the flow columns, but it does not count toward the Active total. |
 | `parked` | The human stopped the work for now. Do not touch it until he says otherwise. |
 | `blocked` | The item waits on another change or a decision. Name the blocker in a comment. |
 | `ui` | The change has an effect that a person can see (UI, rendered images, or video). It needs screenshots or frames. |
@@ -137,11 +139,11 @@ Add a short agent instructions file at the root of the repository. Put these rul
 Use a small, real issue for the first run. Then problems with the setup show early.
 
 1. **Human or tracker.** Puts the issue in Triage.
-2. **Owner bot.** Writes options in a comment. **Human.** Decides in a comment. Edits to the comment also count. The coordinator sends that comment to the owner bot.
-3. **Owner bot.** Writes the brief from the template, with each choice from the comment of the human. Moves the card to Backlog. Or it writes questions on the issue and keeps the issue in Triage.
-4. **Coordinator.** Makes a checkout for the worker on the build machine. Starts the worker in its own terminal session and sends the brief.
-5. **Worker.** Makes the branch from the latest main, makes a first commit, pushes the branch, and stops. The worker does not open the pull request.
-6. **Coordinator.** Opens a draft pull request from that branch against main, with a closing link. Adds the `swarm` label. Moves the issue card to Active and the pull request card to In Progress. The issue is never in Active without that link. A "Part of" mention is not a closing link. Then the coordinator tells the worker to continue.
+2. **Owner bot.** Writes options in a comment. **Human.** Decides in a comment, or by a move of the issue to Active or to Backlog. Edits to the comment also count. The coordinator sends that comment to the owner bot. A move to Active, with no comment, is sufficient approval to start the worker.
+3. **Owner bot.** Writes the brief from the template, with each choice from the comment of the human, or with the default or recommended answers if the human moved the issue to Active with no comment. Moves the card to Backlog, unless the human already moved it to Active. Or it writes questions on the issue and keeps the issue in Triage, unless the human already moved it to Active.
+4. **Coordinator.** Makes a checkout for the worker on the build machine. Starts the worker in its own terminal session and sends the brief. If the human moved the issue to Active, start the worker even when questions are still open.
+5. **Worker.** Makes the branch from the latest main, makes a first commit, pushes the branch, and stops. The worker does not open the pull request. If it takes a default or recommended answer, it will state that default in the pull request body.
+6. **Coordinator.** Opens a draft pull request from that branch against main, with a closing link. Adds the `swarm` label. Moves the issue card to Active, or keeps it there, and moves the pull request card to In Progress. After the pull request is open, the issue is never in Active without that link. A "Part of" mention is not a closing link. Then the coordinator tells the worker to continue.
 7. **Worker.** Writes code and tests. Runs locally only the targeted test files, through the shared two-slot throttle, with one test worker process. Pushes, and reports the head commit and the number of tests that pass.
 8. **Coordinator.** Does the pre-check (checklist A below).
 9. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of the automated review.
@@ -159,9 +161,10 @@ After the first issue, record each part of the setup that did not work. Fix it b
 
 Do these checks on the current head each time. A new push resets them. Run the gate (checklist D) only when you pull a pull request into Staging, and only one at a time. If the shared lock is busy, the second operation stops at once, reports `busy`, and tries again later. Do not start a gate check on a draft pull request, or on a pull request that is still in Ready. See [The pull into Staging](review.md#the-pull-into-staging).
 
+
 ### A. Pre-check, before the first automated review
 
-- [ ] The human decided the issue (with a Triage comment or an approval), and the issue is not parked.
+- [ ] The human decided the issue (with a Triage comment, a move to Active, a move to Backlog, or another approval), and the issue is not parked.
 - [ ] The branch starts from main, and the base of the pull request is main.
 - [ ] The change does what the issue and the brief asked, and nothing more.
 - [ ] The change obeys each choice in the brief.
