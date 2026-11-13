@@ -1,24 +1,26 @@
 flowchart TD
-    A([Issue in Triage]) --> B[Owner bot proposes options]
+    A([Issue in Triage]) --> B[Owner bot writes options]
     B --> C{Human decides<br/>in a comment}
-    C -->|needs clarification| NI[Needs Input]
-    NI --> C
-    C -->|brief written| D[Coordinator starts worker,<br/>issue stays in Backlog]
+    C -->|owner bot has questions| Q[Questions on the issue,<br/>issue stays in Triage]
+    Q --> C
+    C -->|brief written| D[Card to Backlog,<br/>coordinator starts worker]
     D --> D2[Worker pushes<br/>a first commit]
     D2 --> D3[Coordinator opens draft PR<br/>with a closing link,<br/>issue card to Active]
     D3 --> E[Worker pushes code and tests<br/>to the draft PR]
     E --> F{Coordinator<br/>pre-check}
     F -->|fails| E
-    F -->|passes| G[Mark ready<br/>card to Auto Review]
-    G --> H{Automated review<br/>round ≤ cap}
-    H -->|P1 or P2 finding| I[Back to draft, In Progress<br/>worker fixes the root cause,<br/>neighboring cases + tests]
-    I --> J[Coordinator verifies fix,<br/>resolves thread]
-    J -->|under the cap| G
-    J -->|cap reached:<br/>coordinator verifies,<br/>no more automated rounds| K
+    F -->|passes| G[Mark ready,<br/>card to Auto Review]
+    G --> H{Automated review,<br/>round within the limit}
+    H -->|P1 or P2 finding| I[Back to draft, In Progress,<br/>worker fixes the root cause,<br/>neighboring cases + tests]
+    I --> J[Coordinator examines the fix,<br/>resolves the thread]
+    J -->|under the limit| G
+    J -->|limit reached:<br/>coordinator examines,<br/>no more automated rounds| K
     H -->|clean| K{Coordinator<br/>post-check}
-    K --> L[Merge into staging branch,<br/>redeploy, verify staging serves<br/>a commit containing the head,<br/>screenshots in the PR if visible]
-    L --> M{Gate into<br/>Human Review}
-    M -->|passes| N[Human Review]
+    K --> L[Best-effort merge into staging,<br/>deploy staging,<br/>screenshots in the PR if visible]
+    L --> M{Gate into Human Review,<br/>Linux checks green}
+    M -->|passes, slot open| N[Human Review,<br/>two slots]
+    M -->|passes, no slot| P[Pending queue]
+    P -->|slot opens| N
     M -->|fails| I
-    N -->|changes requested<br/>or late finding| I
+    N -->|human moves card to In Progress,<br/>or late finding| I
     N -->|human merges| O([Main])

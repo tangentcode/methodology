@@ -1,49 +1,49 @@
 # Briefs
 
-A brief is the owner bot's written instruction to one worker agent for one change: a whole issue, or a named part of one. The coordinator launches the worker and sends the brief. The worker should be able to start from the brief alone, without asking for more context.
+A brief is the written instruction of the owner bot to one worker agent for one change. A change is a full issue or a named part of one. The coordinator starts the worker and sends the brief. The worker must be able to start from the brief only, without a request for more context.
 
-## What a brief contains
+## The contents of a brief
 
-- **Base.** The branch name, that it is cut from the latest main, and that the pull request targets main. The worker makes and pushes a first commit, then stops. The coordinator opens the draft pull request, with a closing link to the issue, before the worker continues.
-- **Where.** The files and modules the change touches, and any nearby code the worker should not revive or touch.
-- **First step.** What to read before writing code, and what decision to explain in the pull request body.
-- **The issue.** The full issue text, copied in, so the brief stands alone.
-- **The human's choices.** Every choice from the human's Triage comment (and any later answers), written in the first time. Don't leave them for a review round to discover.
-- **Tests.** The cases that must be tested.
+- **Base.** The branch name. The branch starts from the latest main, and the pull request targets main. The worker makes and pushes a first commit, and then stops. The coordinator opens the draft pull request, with a closing link to the issue, before the worker continues.
+- **Where.** The files and modules that the change touches. Also any nearby code that the worker must not use again or change.
+- **First step.** What to read before the worker writes code, and which decision to explain in the pull request body.
+- **The issue.** The full text of the issue, copied into the brief. Then the brief is complete without other documents.
+- **The choices of the human.** Each choice from the Triage comment of the human, and from all later answers. Write them in the first time. Do not let a review round find them.
+- **Tests.** The cases that the worker must test.
 - **Acceptance.** How the human will check the result.
-- **The root-cause rule.** Always included.
+- **The root-cause rule.** Always include it.
 - **Rules.** What the worker must not do.
-- **Reporting.** What to report and when.
+- **Reports.** What to report, and when.
 
 ## Template
 
 ```markdown
 # Brief: <short title> (<issue reference>)
 
-Work only in your own checkout. One pull request, targeting main.
-Issue: <issue reference>. Approved by the human owner on <date>.
+Work only in your own checkout. Make one pull request that targets main.
+Issue: <issue reference>. The human owner approved it on <date>.
 Pull request title: an imperative phrase that completes "Merging this pull request will ...".
 
 ## Base
-Use branch `<branch>`, cut from the latest main. Set the pull request base to main.
+Use branch `<branch>`. Start it from the latest main. Set the pull request base to main.
 Make a first commit, push the branch, report it, and stop. Do not open
 the pull request. The coordinator opens a draft pull request for this
 branch, with a closing link to the issue, and tells you to continue.
-Then push the rest of your commits to that pull request.
-Never merge to main and never deploy. Don't touch the staging branch,
-running services, or other workers' checkouts.
+Then push all your other commits to that pull request.
+Never merge to main. Never deploy. Do not change the staging branch,
+running services, or the checkouts of other workers.
 
 ## Where
-- <module or directory>: <what lives there>
-- Don't revive <old code or closed approach>.
+- <module or directory>: <what is in it>
+- Do not use <old code or closed approach> again.
 
-Step 1, before you code: read <existing mechanism> and pick the approach
-closest to the existing code. Explain the choice in the pull request body.
+Step 1, before you write code: read <existing mechanism>. Select the approach
+that is nearest to the existing code. Explain the choice in the pull request body.
 
 ## Issue
 <full issue text>
 
-## The human's choices
+## The choices of the human
 - <choice 1>
 - <choice 2>
 
@@ -52,32 +52,32 @@ closest to the existing code. Explain the choice in the pull request body.
 - <case>
 
 ## Acceptance
-<how the human will verify it, usually on staging>
+<how the human will check it, usually on staging>
 
-## Root-cause rule (applies to every review finding)
-For each finding, fix the root cause, not the instance. List the neighboring
-cases of the same class in the pull request body and add tests for them
-before you push. Never push with failing tests.
+## Root-cause rule (for each review finding)
+For each finding, fix the root cause, not only the one example. In the pull
+request body, write a list of the neighboring cases of the same class. Add
+tests for them before you push. Never push when tests fail.
 
 ## Rules
-- Branch from main, base main. Push a first commit and wait for the coordinator's draft pull request.
-- Don't merge, deploy, or touch the staging branch or running services.
-- Don't resolve review threads.
-- Keep temporary files in your own working directory, not a shared temp directory.
-- <secret-handling rule, if the change touches credentials>
+- Start the branch from main. The base is main. Push a first commit and wait for the draft pull request from the coordinator.
+- Do not merge or deploy. Do not change the staging branch or running services.
+- Do not resolve review threads.
+- Keep temporary files in your own working directory, not in a shared temporary directory.
+- <rule for secrets, if the change touches credentials>
 - Write issues, pull request bodies, commit messages, and replies in ASD-STE100 style, in ASCII only (see working-agreements.md, Writing style).
-- Run the full suite for each component you touched and report pass counts.
+- Run only the targeted tests for the files that you changed. Report the number of tests that pass.
 
-## Reporting
-When you finish, or are waiting on review, report the head commit and test pass counts.
+## Reports
+When you are finished, or when you wait on review, report the head commit and the number of tests that pass.
 ```
 
-## Relaying findings
+## How to send findings
 
-When the coordinator relays a review finding to a worker, the message includes:
+When the coordinator sends a review finding to a worker, the message includes:
 
-- The finding, quoted, with its file and line.
+- The finding, as a quote, with its file and line.
 - The root-cause rule.
-- Any choice the human has made that bears on the fix.
+- Each choice of the human that has an effect on the fix.
 
-Send one complete message per round, not a stream of partial ones. Before sending, check the worker's input box. Text already sitting there is usually the agent's own suggestion, not an instruction from the human, so don't submit it.
+Send one complete message for each round. Do not send many partial messages. Before you send, look at the input box of the worker. Text that is already there is usually a suggestion from the agent, not an instruction from the human. Do not submit it.

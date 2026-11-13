@@ -1,13 +1,13 @@
 flowchart LR
-    T[Triage] -->|human approves| B[Backlog]
+    T[Triage] -->|human decides,<br/>brief written| B[Backlog]
     B -->|assigned to the swarm,<br/>draft PR opened| AC[Active<br/><i>issue card</i>]
     AC -.->|PR card starts here| IP[In Progress<br/><i>PR is a draft</i>]
-    IP -->|worker asks a question| NI[Needs Input]
-    NI -->|human answers| IP
+    IP -->|question for a human| NI[Needs Input]
+    NI -->|human moves the card| IP
     IP -->|coordinator pre-check passes<br/>PR marked ready| AR[Auto Review<br/><i>automated reviewer runs</i>]
     AR -->|P1 or P2 finding<br/>PR back to draft| IP
-    AR -->|blocked on another change| P[Pending]
-    P -->|blocker merged, PR updated,<br/>gate passes| HR
-    AR -->|clean + post-check +<br/>deployed and verified on staging,<br/>screenshots in PR| HR[Human Review]
-    HR -->|human requests changes<br/>or late finding| IP
+    AR -->|waits for a slot<br/>or another PR| P[Pending<br/><i>queue</i>]
+    P -->|slot opens,<br/>gate passes| HR
+    AR -->|clean + post-check +<br/>Linux checks green +<br/>screenshots in PR| HR[Human Review<br/><i>two slots</i>]
+    HR -->|human moves the card<br/>or late finding| IP
     HR -->|human merges to main| D[Done]

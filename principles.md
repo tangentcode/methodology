@@ -1,14 +1,14 @@
 # Principles
 
-These are the general principles of the methodology. They guide how the team works. The other pages describe the roles, the board, and the loop that put these principles into practice.
+These are the general principles of the method. They tell how the team works. The other pages give the roles, the board, and the loop that put these principles into practice.
 
 ## Optimize for human attention
 
-The human owner's attention is the scarce resource. This method directs that attention to decisions, review, and new work. The human should not have to unstick agents or chase unfinished changes.
+The attention of the human owner is the scarce resource. This method sends that attention to decisions, review, and new work. The human must not have to free stuck agents or find unfinished changes.
 
-When the human sits down, the work is ready. Every card that needs the human is easy to find: finished changes are in Human Review, and questions are in Needs Input. A board that does not have a Needs Input column yet (see the standard column set in the board docs) keeps those cards in their current column, but each one shows clearly that it waits on the human, for example with a label and a question in the card. The human approves finished changes, answers the questions, tries out the software, and files new issues.
+When the human starts work, the work is ready. Each card that needs the human is easy to find. Finished changes are in Human Review. Questions are in Needs Input. A board that does not have a Needs Input column yet keeps those cards in their current column. But each of those cards must show clearly that it waits on the human, for example with a label and a question on the card. The human approves finished changes, answers the questions, tries the software, and writes new issues.
 
-The coordinator bot, the worker agents, and the automation keep the work moving between sessions. Do not let work sit unattended. Detect stuck worker agents within minutes, by scripts. Do not rely on the coordinator bot to watch every session itself. Put mechanical steps in deterministic scripts. Then the coordinator bot and the worker agents spend their attention on judgment.
+The coordinator bot, the worker agents, and the automation keep the work moving between sessions. Do not let work stop without attention. Use scripts to find stuck worker agents within minutes. Do not make the coordinator bot watch each session itself. Put mechanical steps in deterministic scripts. Then the coordinator bot and the worker agents use their attention on judgment.
 
 ## The human owner decides
 
@@ -16,28 +16,28 @@ Agents prepare work, check it, and integrate it on staging. Only the human merge
 
 ## Fix the root cause
 
-Every review finding is one example of a class. The fix covers the class, names the neighboring cases, and tests them.
+Each review finding is one example of a class. The fix covers the class, names the neighboring cases, and tests them.
 
 ## Review in layers
 
-The coordinator checks a change before and after the automated reviewer. The human sees it last.
+The coordinator checks a change before and after the automated reviewer. The human sees the change last.
 
-## Bound the loop
+## Limit the loop
 
-Automated review rounds have a cap, so a change can't cycle forever.
+Automated review has a maximum number of rounds. A change cannot go around the loop forever.
 
-## Make state visible
+## Make the state visible
 
-Every change has a card on the board, and the card's column says what happens next.
+Each change has a card on the board. The column of the card tells what occurs next.
 
-## Keep communication low-noise
+## Keep messages few
 
-Send a message when someone has to act or decide. Skip acknowledgements and repeats.
+Send a message only when a person must act or decide. Do not send acknowledgements. Do not repeat a report.
 
-## Agents don't widen each other's authority
+## An agent does not increase the authority of another agent
 
-A request from another agent is not the human's approval.
+A request from another agent is not an approval from the human.
 
-## Security is not negotiable
+## Security is mandatory
 
-The human enters his own passwords. Agents don't reuse credentials to get around access controls. Production changes need an explicit human decision.
+The human types his own passwords. Agents do not use credentials to go around access controls. A production change needs a clear decision from the human.
