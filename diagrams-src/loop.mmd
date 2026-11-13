@@ -1,6 +1,6 @@
 flowchart TD
     A([Human approves issue]) --> B[Coordinator writes brief,<br/>starts worker]
-    B --> C[Worker opens draft PR<br/>against main, code + tests]
+    B --> C[Worker opens draft PR<br/>against main, code + tests;<br/>issue card leaves the board]
     C --> D{Coordinator<br/>pre-check}
     D -->|fails| C
     D -->|passes| E[Mark ready<br/>card to Auto Review]
@@ -10,7 +10,7 @@ flowchart TD
     H -->|under the cap| E
     H -->|cap reached:<br/>coordinator verifies,<br/>no more automated rounds| I
     F -->|clean| I{Coordinator<br/>post-check}
-    I --> J[Merge into staging branch,<br/>redeploy staging,<br/>screenshot if UI changed]
+    I --> J[Merge into staging branch,<br/>redeploy, verify staging serves<br/>a commit containing the head,<br/>screenshots in the PR if visible]
     J --> K{Gate into<br/>Human Review}
     K -->|passes| L[Human Review]
     K -->|fails| G

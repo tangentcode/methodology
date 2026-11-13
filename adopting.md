@@ -10,6 +10,8 @@ Before setting anything up, confirm these with the human and write the answers i
 - [ ] Whether there is a staging environment yet. If not, skip staging steps until there is one, and say so in each pull request.
 - [ ] Where worker agents run (a shared build machine, never the human's personal computer).
 - [ ] Which automated reviewer is used, how a review is requested, and from which account.
+- [ ] The automation that moves finished work forward is running before the first worker starts. At minimum, within an hour of a worker finishing a draft with passing tests, it runs the pre-check, marks the pull request ready and requests review. Until that automation exists, the coordinator checks every worker by hand at least once an hour.
+- [ ] Workers end every turn with one status line a scan can read: done and waiting for review, waiting on the human for a named thing, or continuing. A worker that is waiting on the human for one part says which other parts can go to review now.
 - [ ] The round cap (ten unless the human says otherwise).
 - [ ] Who the ops agent is for root-level changes.
 - [ ] Which test commands count as "the full suite" for each component.
@@ -20,7 +22,7 @@ Create one board for the repository with a single-select status field and these 
 
 | Column | Put a card here when | The pull request is |
 |---|---|---|
-| Backlog | The issue is proposed or approved but no worker has started | not yet open |
+| Backlog | The issue defines scope and no pull request has picked it up yet | not yet open |
 | In Progress | A worker is writing code or fixing findings | a draft |
 | Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
 | Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
@@ -75,7 +77,7 @@ Add an issue template to the repository:
 Add a pull request template:
 
 ```markdown
-Fixes <issue reference>
+Fixes <issue reference>   (or: Part of <issue reference>, when this pull request covers only part of the issue)
 
 ## What changed
 <summary>
@@ -110,8 +112,8 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 
 1. **Human.** Approves the issue. The coordinator adds the `approved` label and puts the card in Backlog.
 2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
-3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. Moves the card to In Progress.
-4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue.
+3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The issue card stays in Backlog.
+4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue. The coordinator then removes the issue card and puts the pull request card in In Progress.
 5. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
 6. **Coordinator.** Runs the pre-check (checklist A below).
 7. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
@@ -177,3 +179,13 @@ If any item fails later, move the card back to In Progress and convert the pull 
 - Check the build machine's load and memory before starting more.
 - Keep a list of active workers: issue, branch, session, last reported head.
 - When two changes touch the same files, start the second only after the first merges, or put the second in Pending.
+- Start every worker in its agent's automatic-review mode by default, where a reviewer model approves routine actions instead of a person. Use it together with the standing allow list below. Pick a mode that reviews each action, never one that skips checks. Mode names change, so check each agent's current documentation. At the time of writing:
+  - **Claude Code:** auto mode, `--permission-mode auto`.
+  - **Codex CLI:** auto-review, `--sandbox workspace-write --ask-for-approval on-request` with `approvals_reviewer = "auto_review"`.
+  - **Gemini CLI:** no reviewer mode. Start it with `--approval-mode auto_edit` and write the allow list as allow rules in its policy settings.
+  - **Any other agent:** use its reviewer mode if it has one. If it has none, start it with its allow-list or policy settings, and rely on the short prompt check below to catch what's left.
+
+  Never start a worker in a mode that skips all checks, such as Claude Code's `--dangerously-skip-permissions`, Codex's `--yolo` or Gemini's `yolo` approval mode. The guardrails are the same in every mode: no pushes to main, the staging branch or another worker's branch, and nothing destructive or touching secrets or credentials without asking first. Write those as deny or ask rules in the agent's settings, so a reviewer model can't approve them. If an agent can't enter its automatic mode, for example because the account or model doesn't support it, it falls back to prompting. The coordinator checks the mode when it starts each worker and switches it on if the agent started without it.
+- Give every worker, whatever agent it runs, a standing allow list for the routine actions of its own change: read-only commands, running tests, installing dependencies inside its own checkout, and committing and pushing its own branch. Never allow pushes to main, the staging branch or another worker's branch. If a worker hits the same permission prompt on every change, that's a setup bug. Fix the allow list instead of approving the prompt each time.
+- Give each checkout its own dependency install, not a link into another checkout, so removing or reinstalling dependencies stays inside the worker's own directory.
+- Check for workers stopped on a permission prompt every 10 to 15 minutes, separately from the slower stall scan. A prompt that has waited more than 10 minutes counts as a stall. The coordinator approves it if the action stays inside the worker's own checkout and branch, and asks the human otherwise.
