@@ -32,7 +32,7 @@ Team-specific title prefixes are in [team-conventions.md](team-conventions.md).
 
 - One worker, one change, one branch, one pull request. A change is a full issue or a named part of one. You can divide an issue into many pull requests. Each pull request links its issue with `Fixes` or `Part of`.
 - A worker can find and show a real defect near its change. Then it fixes the defect in the same change, with a regression test. The coordinator does not ask the human whether to fix a defect that the worker showed.
-- Ideas that are not related to the change become new issues in Triage. The human decides them there before a worker starts.
+- Ideas that are not related to the change become new issues in Triage. The human decides them there, in a comment or by a move to Active or to Backlog, before a worker starts.
 - Items that the human parked stay parked until he says otherwise.
 
 ## Sessions and machines

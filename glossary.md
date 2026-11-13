@@ -1,6 +1,6 @@
 # Glossary
 
-**Active.** The column for open issue cards that are assigned to the swarm. Each one has open sub-issues or a linked open pull request.
+**Active.** The column for open issue cards that are assigned to the swarm. Each one does not have the `work2` label, and each one has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns. A move of an issue to this column, with no comment, is sufficient approval to start its worker.
 
 **Automated reviewer.** A code review service. It reads a pull request and writes findings with priorities.
 
@@ -26,7 +26,7 @@
 
 **Human Review.** The column for finished pull requests that wait on the human to test them and merge them to main. It holds exactly two pull requests. When it holds only one pull request and no independent pull request is ready, one stacked pull request on that one can go in.
 
-**Inbox.** The column for items that are out of the flow for now, and, after launch, for new tickets from customers.
+**Inbox.** The column for items that are out of the flow for now, and, after launch, for new tickets from customers. Issues with the `work2` label stay here, even when they have a linked pull request.
 
 **Independent pull request.** A pull request that merges cleanly onto main, has no unmerged commits of another Human Review pull request, and merges cleanly together with each Human Review pull request. The human can merge or reject it with no effect on the others.
 
@@ -58,8 +58,10 @@
 
 **Staging.** A test environment that the staging branch feeds. The staging branch is an integration branch. It is never merged into main. The branch collects many changes. Thus the commit that staging serves is usually a merge that contains the head of a pull request, not the head itself.
 
-**Swarm assignment.** The `swarm` label on an issue. An issue in Active must have this label. It must also have open sub-issues or a linked open pull request.
+**Swarm assignment.** The `swarm` label on an issue. An issue in Active must have this label. It must also have exactly one open linked pull request in a flow column, and it must not have the `work2` label.
 
-**Triage.** The column for open issues that have suggested plans. They wait on the human to decide.
+**Triage.** The column for open issues that have suggested plans. They wait on the human to decide, in a comment or by a move of the issue to Active or to Backlog.
+
+**work2.** A label that keeps an issue in Inbox, even when the issue has a linked pull request. A `work2` issue does not go into Active, and it does not count in the Active total.
 
 **Worker agent.** A coding agent in a terminal session. It owns one change.
