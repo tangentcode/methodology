@@ -156,7 +156,7 @@ After the first issue, record each part of the setup that did not work. Fix it b
 
 ## 6. Gate checklists
 
-Do these checks on the current head each time. A new push resets them.
+Do these checks on the current head each time. A new push resets them. Only one gate check, promotion from Pending, or merge into the staging branch runs at a time. If the shared lock is busy, the second operation stops at once, reports `busy`, and tries again later. Do not start a gate check on a draft pull request. See [One gate or merge at a time](review.md#one-gate-or-merge-at-a-time).
 
 ### A. Pre-check, before the first automated review
 

@@ -65,7 +65,7 @@ Workers do not resolve review threads. The coordinator resolves a thread after i
 
 ## Act on a clean review
 
-A clean review is also an event. The latest automated review of the current head can be clean, with no open P1 or P2 threads. Then the automation of the coordinator immediately starts the next step: the post-check, the staging merge, and the gate. It does not wait for the worker, because the worker is usually already finished. The periodic scan counts a clean review with no post-check after it as a stall.
+A clean review is also an event. The latest automated review of the current head can be clean, with no open P1 or P2 threads. Then the automation of the coordinator immediately starts the next step: the post-check, the staging merge, and the gate. It does not wait for the worker, because the worker is usually already finished. If the shared lock is busy, that start stops at once and reports `busy`. See [One gate or merge at a time](#one-gate-or-merge-at-a-time). The periodic scan counts a clean review with no post-check after it as a stall.
 
 ## The gate into Human Review
 
@@ -74,7 +74,7 @@ Human Review holds exactly two pull requests. One of them can be a stacked pull 
 - The pull request is independent of each pull request in Human Review. Or it is the one permitted stacked pull request, and its body starts with the stacked banner. A stacked pull request can go in only when its base is the only pull request in Human Review. After it is in, it can stay while its base is in Human Review, also when independent pull requests go in next to it. If the pull request is not independent and not the permitted stacked pull request, the card goes to Pending.
 - If the pull request is stacked, its base is open in Human Review, or its base merged to main. A stacked pull request fails the gate when the human sent its base back or closed it. This is also true when the stacked pull request is already in Human Review.
 - The card is a pull request. Issue cards never go in Human Review.
-- The pull request is not a draft.
+- The pull request is not a draft. A gate check does not start on a draft. See [One gate or merge at a time](#one-gate-or-merge-at-a-time).
 - The pull request can merge into main. The gate uses the mergeable state that the forge reports. If the forge reports conflicts with the base of the pull request, this check fails. This is also true when a local merge-tree test shows no conflicts.
 - No P1 or P2 findings or threads are open.
 - The post-check of the coordinator passed on this head.
@@ -96,9 +96,23 @@ A wait for a required check is not progress. A check is a stall when it did not 
 
 If a condition fails later, for example after a new push or a late finding, the card goes back to In Progress.
 
-When the automated review of the current head is clean, the coordinator immediately starts the post-check, a best-effort staging merge and deploy, and the gate check. It does this also when CI on that head still runs. CI can finish at the same time. Do not take the screenshots again. Screenshots that are already in the pull request count. But the card cannot go into Human Review until the Linux checks on that head are green.
+When the automated review of the current head is clean, the coordinator immediately starts the post-check, a best-effort staging merge and deploy, and the gate check. It does this also when CI on that head still runs. CI can finish at the same time. Do not take the screenshots again. Screenshots that are already in the pull request count. But the card cannot go into Human Review until the Linux checks on that head are green. If the shared lock is busy, that start stops at once and reports `busy`.
 
-When CI finishes for a pull request head that is in Auto Review or Pending, a webhook event runs the gate again. An event starts this, not a timer.
+When CI finishes for a pull request head that is in Auto Review or Pending, a webhook event runs the gate again. An event starts this, not a timer. If the lock is busy, the event reports `busy` and does not wait.
+
+## One gate or merge at a time
+
+Only one gate or merge operation runs at a time across the swarm. These operations share one lock:
+
+- A gate check (the conditions in [The gate into Human Review](#the-gate-into-human-review)).
+- A promotion of a pull request from Pending into Human Review.
+- A merge of a change into the staging branch.
+
+If a second operation starts while the lock is held, that second operation does not wait. It stops at once and reports `busy`. It tries again on the next event or the next periodic scan.
+
+Gate operations skip draft pull requests. Do not start a gate check or a promotion from Pending on a draft. Leave the card where it is.
+
+This lock does not stop the human from a merge to main, or from a review of the cards in Human Review.
 
 ## Human review
 
@@ -117,10 +131,10 @@ The attention of the human reviewer is the limit of the full system. The reviewe
 
 1. Human Review holds exactly two pull requests. Plan for the best result, where the reviewer merges the two. When Human Review holds exactly one pull request and no independent pull request is ready, one stacked pull request can go in. It has a banner at the top of the body that names the Human Review pull request that it depends on. If that base merges first, remove the banner. Then the pull request is a plain pull request.
 2. Pending is a queue sorted by conflict count. Pull requests that have no conflicts (with main, with the Human Review pull requests, and with each other) are first. Fully independent pull requests wait in Pending without a rebase.
-3. A merge immediately pulls the next pull request. When the reviewer merges a Human Review pull request, it goes out of Human Review. The first pull request in the Pending queue goes in immediately. Then Human Review holds two again. The pull request that goes in must have no unmerged change other than its own changes. The only exception is the other Human Review pull request, when the new pull request is the one stacked pull request with a banner in item 1. A speculative tip that has a change that is not merged and not in Human Review stays in Pending until that change merges. The reviewer immediately starts on the other Human Review pull request.
+3. A merge immediately pulls the next pull request. When the reviewer merges a Human Review pull request, it goes out of Human Review. The first pull request in the Pending queue goes in immediately. Then Human Review holds two again. This promotion takes the shared lock in [One gate or merge at a time](#one-gate-or-merge-at-a-time). If the lock is busy, the promotion stops at once, reports `busy`, and tries again later. The pull request that goes in must have no unmerged change other than its own changes. The only exception is the other Human Review pull request, when the new pull request is the one stacked pull request with a banner in item 1. A speculative tip that has a change that is not merged and not in Human Review stays in Pending until that change merges. The reviewer immediately starts on the other Human Review pull request.
 4. The ready-next rule. While Human Review holds two pull requests and work continues, at least one pull request is fully gated. It can go into Human Review when the two merge. "Fully gated" means: a clean automated review, the pass of the second reviewer, and green CI on the exact head that will go in. It also needs screenshots in the pull request (existing screenshots count, also from an older head) and a best-effort staging deploy. Select a pull request with no conflicts. Only when there is no such pull request, rebase one pull request onto main and the two Human Review pull requests (a `-vN` branch), and gate it there. Do only one speculative rebase at a time.
 5. A rejection makes a new speculative tip. If the reviewer rejects a Human Review pull request, make the speculative tip again without the rejected pull request. Start from its plain `-v0` branch. Do this while the reviewer reviews the other pull request. The other Human Review pull request can be the stacked pull request with a banner from item 1. Then it contains the rejected change, and a merge of it would also merge that change. Remove it from Human Review immediately: move it back to Pending, make it again from its plain branch without the rejected change, and gate it again before it can go back. Tell the reviewer that you removed it, and why.
-6. Events move the work, not timers. A clean automated review and a CI-finished event each immediately start the next gate step, also when CI still runs at review time. The gate uses the mergeable state that the forge reports. Check each staging merge, so that it does not remove the changes of a pull request without a report.
+6. Events move the work, not timers. A clean automated review and a CI-finished event each immediately start the next gate step, also when CI still runs at review time. Each of those steps takes the shared lock. If the lock is busy, the event reports `busy` and does not wait. The gate uses the mergeable state that the forge reports. Check each staging merge, so that it does not remove the changes of a pull request without a report.
 7. The reviewer always knows the state. When Human Review becomes empty, the swarm manager immediately tells the reviewer. It gives the next pull request and the time when it will be ready.
 
-The swarm tools include a status command and a promote command. The status command reports whether the ready-next rule is true (OK or VIOLATED) and shows the sorted queue. The promote command keeps two pull requests in Human Review and keeps one pull request ready next.
+The swarm tools include a status command and a promote command. The status command reports whether the ready-next rule is true (OK or VIOLATED) and shows the sorted queue. The promote command keeps two pull requests in Human Review and keeps one pull request ready next. The promote command also takes the shared lock. If the lock is busy, it stops at once and reports `busy`.

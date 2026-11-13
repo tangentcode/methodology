@@ -37,6 +37,7 @@ The coordinator runs the pull request loop and keeps the board correct. It does 
 - Resolves review threads after it makes sure that the fix is correct.
 - Moves cards. Marks pull requests as draft or ready.
 - Merges changes that passed its checks into the staging branch, and deploys staging again.
+- Runs only one gate check, Pending promotion, or staging merge at a time. These operations share one lock. If the lock is busy, the second operation stops at once and reports `busy`. It tries again later. Gate operations skip draft pull requests. See [One gate or merge at a time](review.md#one-gate-or-merge-at-a-time).
 - Makes sure that staging can run the change before it requests human review. The staging deploy is best-effort. A staging merge must not remove lines of the change. But if staging is not up to date yet, that does not stop human review.
 - Makes sure that each change that a person can see has screenshots or frames in the pull request. Existing screenshots count. Do not take them again after a merge from main or from the staging branch.
 - Reports results to the human.

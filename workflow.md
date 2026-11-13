@@ -120,6 +120,8 @@ Parked items stay parked until the human says otherwise. Product choices belong 
 
 When CI finishes for a pull request head that is in Auto Review or Pending, a webhook event runs the gate in step 11 again. An event starts this, not a timer.
 
+A gate check, a promotion from Pending, and a merge into the staging branch take one shared lock. Only one of these operations runs at a time. If the lock is busy, the second operation stops at once, reports `busy`, and tries again later. Gate operations skip draft pull requests. See [One gate or merge at a time](review.md#one-gate-or-merge-at-a-time).
+
 ### Pull requests that do not target main
 
 The human can approve a change that targets another long-lived branch, such as a deploy tools branch. It follows the same loop. It skips only the steps that cannot apply. For a change that cannot go to staging, the check that its pull request names replaces the deploy conditions of the gate. An example is the test suite of the tools, run and recorded on the current head. "Can merge into main" becomes "can merge into its base". A skipped step never means that the loop stops. After a clean automated review, the coordinator still does its post-check and the gate, and moves the card to Human Review.
