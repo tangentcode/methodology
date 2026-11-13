@@ -46,7 +46,7 @@ When the prepared buffer in Pending is below its target, one worker takes the to
 4. Confirm that CI is green on this head, and that the pull request body is complete.
 5. Run the Human Review gate, including its best-effort staging rule. If the gate passes, the card goes to Pending. If the gate fails because staging lacks configuration, credentials, or a required service, the tools change the pull request to a draft. They move the card to Needs Input. The comment names what is missing and who must supply it. For other gate failures, the card goes back to In Progress with the reason, and the worker tries the next Ready pull request.
 
-When Human Review drops to one, the first prepared pull request in Pending moves to Human Review at once. Then the pull step refills the prepared buffer. The tools do not merge, deploy, or gate any pull request other than the one that is being pulled into Pending.
+When Human Review drops to one, the first prepared pull request in Pending moves to Human Review at once, through `hr-gate --apply`. Then the pull step refills the prepared buffer. The tools prepare only one Ready pull request at a time. They can still run the gate again on a pull request that is already in Pending, including when CI finishes, when main advances, or when they promote the card. If that later check fails, the card leaves Pending, as the gate in [review.md](review.md#the-gate-into-human-review) requires.
 
 ## The global lock
 
