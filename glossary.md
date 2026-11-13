@@ -18,7 +18,7 @@
 
 **Finding.** A defect that a reviewer reports. You must fix a P1. You must fix a P2 before human review.
 
-**Gate.** The conditions that a pull request must meet before its card moves to Human Review. Automation and people check each condition on the current head.
+**Gate.** The conditions that a pull request must meet before its card moves to Human Review. Automation and people check each condition on the current head. A gate check, a promotion from Pending, and a merge into the staging branch share one lock, so only one of them runs at a time. A second operation stops at once and reports `busy`. Gate operations skip draft pull requests. See [One gate or merge at a time](review.md#one-gate-or-merge-at-a-time).
 
 **Head.** The latest commit on the branch of a pull request. Checks apply only to the current head.
 
