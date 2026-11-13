@@ -38,6 +38,12 @@ Pull request titles complete the sentence "Merging this pull request will ...". 
 - Don't close or kill worker sessions without the maintainer's approval, except for the memory-pressure parking policy below.
 - Keep temporary files in the worker's own directory, not a shared temp directory.
 - Check machine load before starting many workers at once.
+- Name each worker's tmux window `<code>-<PR>-<branch>`.
+  - `code` is a short code for the git repository, not the product. Every window for the platform repository uses `mn`. The methodology repository uses `meth`. Other repositories each have their own short code; the swarm tooling repository uses `swarm`.
+  - `PR` is the pull request number, not the issue number. Do not pad the number with zeros. For a speculative branch named `<branch>-vN`, use the pull request number of the base branch.
+  - `branch` is the branch name with each `/` replaced by `-`.
+  - Keep the windows in a session sorted by name, so that codes stay in groups and, inside a group, pull request numbers stay in numeric order.
+  - Example: a platform window for pull request 372 on branch `mn-view-renders` is named `mn-372-mn-view-renders`.
 
 ### Worker resource limits
 
