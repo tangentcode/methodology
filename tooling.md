@@ -1,6 +1,14 @@
 # Tooling
 
-This page describes the tools that run the workflow on the coordinator host. The rules live in [workflow.md](workflow.md) and [review.md](review.md). The tools enforce those rules. The text of the method lives in this repository. The tools live in the swarm tools repository. Local settings and credentials stay outside every public repository.
+This page describes the tools that run the workflow on the coordinator host. The rules for the loop and the Human Review gate live in [workflow.md](workflow.md) and [review.md](review.md). The text of the method lives in this repository. The tools live in the swarm tools repository. Local settings and credentials stay outside every public repository.
+
+## Board states that the tools use
+
+The tools use these just-in-time board states:
+
+- **Ready** is the finish line for coding agents. A Ready pull request has a finished coding agent, a clean automated review, and a bot pass on the current head. It is not merged into the integration branch. It is not deployed to the staging environment. It is not gated. A team that has not added a Ready column can keep an ordered list of finished pull requests in its place. The tools treat that list as Ready.
+- **Staging** is the buffer of finished, gated pull requests that wait for Human Review. This is the same column that [workflow.md](workflow.md) and [adopting.md](adopting.md) call Pending. The column was renamed. The option id did not change. Commands that still say "Pending" in their names act on this column. Tools match columns by option id, not by name, so a rename does not break them.
+- **Human Review** holds exactly two pull requests.
 
 ## What starts the tools
 
@@ -26,17 +34,15 @@ The tick opens a draft pull request only when its worker can start, and it check
 
 ## The pull step into the Staging column
 
-Ready is the finish line for coding agents. A Ready pull request has a finished coding agent, a clean automated review, and a bot pass on the current head. It is not merged into the integration branch. It is not deployed to the staging environment. It is not gated.
-
-The Staging column is a buffer of three to five pull requests. Each of those pull requests is already merged into the integration branch, deployed to the staging environment, and gated. It is stacked on main, on the Human Review pull requests, and on the Staging pull requests ahead of it. Human Review and the Staging column together are the only pull requests that are merged into the integration branch and deployed to the staging environment. That is about seven pull requests in total.
+The Staging column is a buffer of three to five pull requests. Each of those pull requests is already merged into the integration branch and gated. It is stacked on main, on the Human Review pull requests, and on the Staging pull requests ahead of it. Human Review and the Staging column together are the only pull requests that are merged into the integration branch. The deploy to the staging environment is best-effort. That is about seven pull requests in total.
 
 When the Staging column has fewer pull requests than its target, one worker takes the top Ready pull request and prepares it. Ready pull requests wait in this order: milestone first, then fewest conflicts, then oldest. This preparation is the pull step. Only one pull request is prepared at a time.
 
 1. Merge main into the pull request if that is needed. The coding agent of that pull request makes any code fixes.
 2. Merge the pull request into the integration branch.
-3. Deploy the staging environment again, and verify that it serves the correct commit.
+3. Deploy the staging environment again when that is possible, and verify the served commit when that is possible. This step is best-effort. A deploy that does not finish, or a staging environment that is not up to date, does not by itself fail the pull step. For a change that cannot go to the staging environment, the check that the pull request names replaces the deploy conditions. See [Pull requests that do not target main](workflow.md#pull-requests-that-do-not-target-main).
 4. Confirm that CI is green on this head, and that the pull request body is complete.
-5. Run the Human Review gate. If the gate passes, the card goes to the Staging column. If the gate fails, the card goes back to In Progress with the reason, and the worker tries the next Ready pull request.
+5. Run the Human Review gate, including its best-effort staging rule. If the gate passes, the card goes to the Staging column. If the gate fails, the card goes back to In Progress with the reason, and the worker tries the next Ready pull request.
 
 When Human Review drops to one, the first Staging card moves to Human Review at once. Then the pull step refills the Staging column. The tools do not merge, deploy, or gate any pull request other than the one that is being pulled into the Staging column.
 
@@ -58,7 +64,7 @@ If the API quota is exhausted, the tools read the reset time and wait for that t
 
 ## Board option ids
 
-Tools match board columns by option id, not by name. A rename of a column does not change the id, so no card loses its status. The column that was named Pending is now named Staging. It is the same option. Commands that still say "Pending" in their names act on that same column.
+Tools match board columns by option id, not by name. A rename of a column does not change the id, so no card loses its status. See [Board states that the tools use](#board-states-that-the-tools-use).
 
 ## The tools
 
