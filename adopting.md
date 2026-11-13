@@ -10,6 +10,8 @@ Before setting anything up, confirm these with the human and write the answers i
 - [ ] Whether there is a staging environment yet. If not, skip staging steps until there is one, and say so in each pull request.
 - [ ] Where worker agents run (a shared build machine, never the human's personal computer).
 - [ ] Which automated reviewer is used, how a review is requested, and from which account.
+- [ ] The automation that moves finished work forward is running before the first worker starts. At minimum, within an hour of a worker finishing a draft with passing tests, it runs the pre-check, marks the pull request ready and requests review. Until that automation exists, the coordinator checks every worker by hand at least once an hour.
+- [ ] Workers end every turn with one status line a scan can read: done and waiting for review, waiting on the human for a named thing, or continuing. A worker that is waiting on the human for one part says which other parts can go to review now.
 - [ ] The round cap (ten unless the human says otherwise).
 - [ ] Who the ops agent is for root-level changes.
 - [ ] Which test commands count as "the full suite" for each component.
