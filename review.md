@@ -69,8 +69,10 @@ A clean review is an event too. When the latest automated review of the current 
 
 ## The gate into human review
 
-A card moves to Human Review only when all of these hold on the current head. Check them in this order and record the result before moving the card:
+Human Review holds any number of independent pull requests, plus at most one stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). A card moves to Human Review only when all of these hold on the current head. Check them in this order and record the result before moving the card:
 
+- The pull request is independent of every pull request in Human Review. Or it is the one permitted stacked pull request, and its body starts with the stacked banner. To enter, its base must be the only pull request in Human Review. After it entered, it stays eligible while its base is in Human Review, even when independent pull requests enter next to it. If neither is true, the card goes to Pending instead.
+- If the pull request is stacked, its base is still open in Human Review, or it merged to main. A stacked pull request whose base was sent back or closed fails the gate, even if it is already in Human Review.
 - The card is a pull request. Issue cards never go in Human Review.
 - The pull request is not a draft.
 - It is mergeable against main.

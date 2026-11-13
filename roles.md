@@ -41,7 +41,7 @@ The coordinator runs the pull-request loop and keeps the board accurate. It does
 - Makes sure screenshots or frames from staging are embedded in the pull request for any change a person can see.
 - Reports results to the human.
 
-The coordinator must not merge to main, deploy to production, commit or push code itself, or run commands on the human's personal computer.
+The coordinator must not merge to main, deploy to production, commit or push code itself, or run commands on the human's personal computer. One exception is not new code: before a card enters Human Review, the coordinator (or its gate tooling) can move a pull request branch to a tip that a worker already pushed and tested, or back to a saved plain tip. See [Just-in-time review](workflow.md#just-in-time-review).
 
 ## Worker agents
 
