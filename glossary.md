@@ -24,6 +24,10 @@
 
 **Human owner.** The person who decides Triage issues, reviews finished work, merges to main, and deploys.
 
+**Issue title.** A short headline that describes the present state. A plain statement such as "X does Y" is a bug report: it happens now, and we do not want it. A wanted change uses "should".
+
+**Issue type.** A GitHub type on every issue: Feature, Bug, or Task.
+
 **Main.** The production branch. Only the human merges into it.
 
 **Needs Input.** The column for draft pull requests where a human must answer a question from the worker or the coordinator.
@@ -41,6 +45,8 @@
 **Pending.** The column for a short, ordered buffer of finished pull requests that are ready to merge and that do not conflict with the current Human Review pull requests or with each other. The buffer is rebased ahead of time, kept small, and refilled after each Human Review decision.
 
 **Stacked pull request.** A pull request whose head also contains the changes of a base pull request that is in Human Review. Its body starts with a banner that names the base. Human Review holds at most one, and only when the base is the only other pull request there. If the base is rejected, the coordinator resets it to its plain branch before the human can merge it.
+
+**Pull request title.** A short headline that completes the sentence "Merging this pull request will ..." and starts with an imperative verb.
 
 **Ready.** A pull request marked for review. Moving a card to Auto Review marks it ready.
 

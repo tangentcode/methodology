@@ -16,6 +16,16 @@ Use this style in all chats, issues, pull request descriptions, commit messages,
 - Use simple, clear, direct English. Use short sentences. Use one instruction in each sentence.
 - Use ASCII characters only. Do not use emojis, Unicode symbols, smart quotes, or long dashes. Use a straight quote (' or ") and a hyphen (-).
 
+## Issue and pull request titles
+
+Issue titles describe the present state. Never word an issue title as an aspiration.
+
+- A plain statement such as "X does Y" reads as a bug report. It means this happens now, and we do not want it.
+- A wanted change uses "should". Example: "Save As should work for every file that can be saved". Do not write "Save As works for every file that can be saved".
+- Every issue has a GitHub issue type: Feature, Bug, or Task. Use Bug when the title states a present, unwanted behavior. Use Feature when the title states a wanted change. Use Task when the work is a specific piece of work that is not a user-facing feature or a bug.
+
+Pull request titles complete the sentence "Merging this pull request will ...". They start with an imperative verb. Example: "Make the Save As command work for every file that can be saved".
+
 ## Scope
 
 - One worker, one change, one branch, one pull request. A change covers a whole issue or a named part of one. Splitting an issue across several pull requests is fine. Each pull request links its issue with `Fixes` or `Part of`.

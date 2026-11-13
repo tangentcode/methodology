@@ -46,7 +46,7 @@ Starting a new project? Begin with [adopting.md](adopting.md).
 | [review.md](review.md) | Review layers, round cap, the root-cause rule, the gate into human review |
 | [briefs.md](briefs.md) | What a brief contains (written by the owner bot), with a template |
 | [safety.md](safety.md) | Credentials, production, root-level operations, agent requests |
-| [working-agreements.md](working-agreements.md) | Day-to-day agreements about communication and conduct |
+| [working-agreements.md](working-agreements.md) | Day-to-day agreements about communication, titles, and conduct |
 | [adopting.md](adopting.md) | Setup guide for a new project: board, labels, templates, first issue, gate checklists |
 | [glossary.md](glossary.md) | Terms used in these documents |
 | [suggested-conventions.md](suggested-conventions.md) | Optional conventions and agent prompts a project can adopt, such as sparse comments |
