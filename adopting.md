@@ -32,9 +32,9 @@ Create one board for the repository with a single-select status field and these 
 | Active | The issue is assigned to the swarm and has sub-issues or a linked open pull request | issue |
 | In Progress | A worker is working on the draft pull request now | draft pull request |
 | Auto Review | The worker signed off and the automated reviewer is reviewing | ready pull request |
-| Needs Input | The latest comment is a worker or coordinator question that a human must answer | draft pull request |
-| Human Review | The pull request passed the gate (see step 6). Any number of independent pull requests, plus at most one stacked pull request when only its base is there | ready pull request |
-| Pending | The change is otherwise ready but waits on another change or a decision | ready pull request |
+| Needs Input | The latest comment is a worker or coordinator question that a human must answer. A comment alone does not move the card out. The human moves it to In Progress when the question is answered | draft pull request |
+| Human Review | The pull request passed the gate (see step 6). Exactly two pull requests. One stacked pull request may enter when Human Review holds only one pull request and no independent pull request is ready | ready pull request |
+| Pending | The change is otherwise ready but waits on another change, or waits for a Human Review slot | ready pull request |
 | Done | The human merged it to main | merged pull request |
 | Canceled | The pull request was closed without merging | closed pull request |
 | Parked | The draft has real work but we decided not to merge it yet | draft pull request |
@@ -182,7 +182,7 @@ Run these on the current head every time. A new push resets them.
 - [ ] Everything in checklist A still holds.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] The relevant tests pass twice in a row if the change touches timing, concurrency, or shared state; local reruns stay targeted and throttled.
-- [ ] The change is not blocked on another unmerged change. If it is, move the card to Pending and stop here. One exception: a stacked pull request whose base is the only pull request in Human Review passes this item (see [Stacked pull requests](workflow.md#stacked-pull-requests)).
+- [ ] The change is not blocked on another unmerged change. If it is, move the card to Pending and stop here. Exception: when Human Review holds exactly one pull request and no independent pull request is ready, one stacked pull request may continue to the gate, with a banner at the top of the body that names the Human Review pull request it depends on.
 
 ### D. Gate into Human Review
 
@@ -194,11 +194,12 @@ Run these on the current head every time. A new push resets them.
 - [ ] It is mergeable against main.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] Checklist C passed on this head.
+- [ ] The Linux checks are green on this exact head.
 - [ ] The card is a pull request, not an issue.
-- [ ] The change is merged into the staging branch, staging is redeployed, and the commit staging serves contains this head.
+- [ ] Staging deploy is best-effort: merge the change into the staging branch and redeploy when you can. If you merge it, check that the staging merge did not drop the change's lines. Do not block Human Review only because staging is still catching up.
 - [ ] Staging can run the change, with the configuration, credentials and services it needs. If it can't, do not use Pending. Convert the pull request to a draft, move the card to Needs Input, and post a comment that names what is missing and who must provide it (the human, or the operator who owns the environment). When it is in place, mark the pull request ready, check staging again, and run this checklist again. If the head changed, go back to In Progress.
 - [ ] The pull request description says where and how to see the change.
-- [ ] Any change a person can see, such as UI, rendered images or video, has current staging screenshots or frames embedded in the pull request description.
+- [ ] Any change a person can see, such as UI, rendered images or video, has screenshots or frames embedded in the pull request description. Existing screenshots count, even from an older head.
 
 Any automation that moves cards must check every item on this list.
 

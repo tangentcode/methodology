@@ -38,7 +38,7 @@
 
 **Ops agent.** The one agent allowed to make root-level changes on shared machines.
 
-**Human Review.** The column for finished pull requests that wait on the human to test and merge to main. It holds any number of independent pull requests. When it holds only one pull request, it can also hold one stacked pull request built on that one.
+**Human Review.** The column for finished pull requests that wait on the human to test and merge to main. It holds exactly two pull requests. When it holds only one pull request and no independent pull request is ready, one stacked pull request built on that one may enter.
 
 **Independent pull request.** A pull request that merges cleanly onto main, contains no unmerged commits of another Human Review pull request, and merges cleanly together with each Human Review pull request. The human can merge or reject it without an effect on the others.
 
