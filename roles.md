@@ -36,16 +36,17 @@ The coordinator runs the pull request loop and keeps the board correct. It does 
 - Makes sure that each message arrives. A message that is typed in the input box of a worker but not submitted did not arrive. Before it sends, the coordinator makes sure that the input box is empty. After it sends, it makes sure that the worker accepted the message. If the worker already did the work before a second copy arrives, the coordinator clears that copy and does not submit it.
 - Resolves review threads after it makes sure that the fix is correct.
 - Moves cards. Marks pull requests as draft or ready.
-- Merges a change into the staging branch, and deploys staging again, only when it pulls that pull request into Pending. It does this for one pull request at a time.
-- Makes sure that staging serves the correct commit before the pull request enters Pending. A staging merge must not remove lines of the change.
-- Runs only one gate check, Pending promotion, or staging merge at a time. These operations share one lock. If the lock is busy, the second operation stops at once and reports `busy`. It tries again later. Gate operations skip draft pull requests and pull requests that are still in the Ready queue. See [The pull into Pending](review.md#the-pull-into-pending).
+- Merges a change into the staging branch, and deploys staging again, only when it pulls that pull request into Staging. It does this for one pull request at a time.
+- Makes sure that staging serves the correct commit before the pull request enters Staging. A staging merge must not remove lines of the change.
+- Runs only one gate check, Staging promotion, or staging merge at a time. These operations share one lock. If the lock is busy, the second operation stops at once and reports `busy`. It tries again later. Gate operations skip draft pull requests and pull requests that are still in Ready. See [The pull into Staging](review.md#the-pull-into-staging).
 - Makes sure that each change that a person can see has screenshots or frames in the pull request. Existing screenshots count. Do not take them again after a merge from main or from the staging branch.
 - Reports results to the human.
-- Keeps exactly two pull requests in Human Review whenever two are ready. Keeps a buffer of 3 to 5 fully prepared pull requests in Pending. Pulls the next finished pull request from the Ready queue only when Pending is below that target, one at a time.
+- Treats Ready as the finish line for coding agents. Agents work the backlog until their pull requests are in Ready.
+- Keeps exactly two pull requests in Human Review whenever two prepared pull requests are available. Keeps a buffer of 3 to 5 fully prepared pull requests in Staging. Only Staging and Human Review are merged into the staging branch and deployed to the staging environment, about 7 pull requests in total. Pulls the next finished pull request from Ready only when Staging is below that target, one at a time. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order.
 - If Human Review becomes empty while work continues, tells the reviewer immediately. Gives the next pull request and the time when it will be ready.
 - Acts when the human moves a card from Human Review or from Needs Input to In Progress. A comment from the human does not move the card.
 
-The coordinator must not merge to main, deploy to production, commit or push code, or run commands on the personal computer of the human. There is one exception, because it is not new code. Before a card goes into Pending, the coordinator (or its gate tools) can move a pull request branch to a tip that a worker pushed and tested. It can also move the branch back to a saved plain tip. It must not move the branch of a card that is already in Pending or in Human Review. See [Just-in-time review](workflow.md#just-in-time-review).
+The coordinator must not merge to main, deploy to production, commit or push code, or run commands on the personal computer of the human. There is one exception, because it is not new code. Before a card goes into Staging, the coordinator (or its gate tools) can move a pull request branch to a tip that a worker pushed and tested. It can also move the branch back to a saved plain tip. It must not move the branch of a card that is already in Staging or in Human Review. See [Just-in-time review](workflow.md#just-in-time-review).
 
 ## Worker agents
 

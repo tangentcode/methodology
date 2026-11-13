@@ -65,13 +65,13 @@ Workers do not resolve review threads. The coordinator resolves a thread after i
 
 ## Act on a clean review
 
-A clean review is also an event. The latest automated review of the current head can be clean, with no open P1 or P2 threads. Then the automation of the coordinator immediately starts the post-check. If the post-check passes, the pull request joins the Ready queue. The coordinator does not start a staging merge or a gate at this point. See [The pull into Pending](#the-pull-into-pending). It does not wait for the worker, because the worker is usually already finished. The periodic scan counts a clean review with no post-check after it as a stall.
+A clean review is also an event. The latest automated review of the current head can be clean, with no open P1 or P2 threads. Then the automation of the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. The coordinator does not start a staging merge or a gate at this point. See [The pull into Staging](#the-pull-into-staging). It does not wait for the worker, because the worker is usually already finished. The periodic scan counts a clean review with no post-check after it as a stall.
 
 ## The gate into Human Review
 
-The coordinator runs this gate when it pulls a pull request into Pending, not when it later moves the card from Pending to Human Review. That later move is only a card move, and it happens when a Human Review slot is open. Human Review holds exactly two pull requests whenever two are ready, and never more than two. One of them can be a stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). A card enters Pending only when all these conditions are true on the current head. Check them in this sequence. Record the result before you move the card.
+The coordinator runs this gate when it pulls a pull request into Staging, not when it later moves the card from Staging to Human Review. That later move is only a card move, and it happens when a Human Review slot is open. Human Review holds exactly two pull requests whenever two prepared pull requests are available, and never more than two. One of them can be a stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). A card enters Staging only when all these conditions are true on the current head. Check them in this sequence. Record the result before you move the card.
 
-- The pull request merges cleanly onto the current stack: main, the Human Review pull requests, and the Pending pull requests ahead of it. Or it is prepared as the one speculative rebase when no pull request in the Ready queue fits that stack. If it is a stacked pull request, its body starts with the stacked banner. If the pull request conflicts with a Human Review pull request, do not put it in Pending. Prefer the next pull request in the Ready queue that does not conflict.
+- The pull request merges cleanly onto the current stack: main, the Human Review pull requests, and the Staging pull requests ahead of it. Or it is prepared as the one speculative rebase when no pull request in Ready fits that stack. If it is a stacked pull request, its body starts with the stacked banner. If the pull request conflicts with a Human Review pull request, do not put it in Staging. Prefer the next pull request in Ready that does not conflict.
 - If the pull request is stacked, its base is open in Human Review, or its base merged to main. A stacked pull request fails the gate when the human sent its base back or closed it. This is also true when the stacked pull request is already in Human Review.
 - The card is a pull request. Issue cards never go in Human Review.
 - The pull request is not a draft.
@@ -79,7 +79,7 @@ The coordinator runs this gate when it pulls a pull request into Pending, not wh
 - No P1 or P2 findings or threads are open.
 - The post-check of the coordinator passed on this head.
 - The Linux checks in GitHub Actions are green on this exact head.
-- The change is merged into the staging branch and deployed. Staging is verified to serve the correct commit. A merge into the staging branch must not remove lines of the change. A pull request does not enter Pending until this is true.
+- The change is merged into the staging branch and deployed. Staging is verified to serve the correct commit. A merge into the staging branch must not remove lines of the change. A pull request does not enter Staging until this is true.
 - The pull request description tells where and how to see the change.
 - Each change that a person can see, such as UI, rendered images, or generated video, has screenshots or frames in the pull request description. Existing screenshots count, also when they are from an older head. Do not take them again after a merge from main or from the staging branch. Generated media includes a side-by-side view with its reference, if there is a reference. If you are not sure whether a person can see a change, think that a person can see it.
 
@@ -96,9 +96,9 @@ A wait for a required check is not progress. A check is a stall when it did not 
 
 If a condition fails later, for example after a new push or a late finding, the card goes back to In Progress.
 
-When the automated review of the current head is clean, the coordinator immediately starts the post-check. If the post-check passes, the pull request joins the Ready queue. Do not start a staging merge or a gate until the pull step takes this pull request. Do not take the screenshots again. Screenshots that are already in the pull request count. The pull request cannot enter Pending until the Linux checks on that head are green.
+When the automated review of the current head is clean, the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. Do not start a staging merge or a gate until the pull step takes this pull request. Do not take the screenshots again. Screenshots that are already in the pull request count. The pull request cannot enter Staging until the Linux checks on that head are green.
 
-A webhook event does not run the gate for a draft pull request, or for a pull request that is in the Ready queue and has not been pulled. The hook makes those checks before it makes any API call. It also ignores repeated CI events for the same head. If a CI event is for the pull request that is currently in the pull step, the event can continue that step when the lock is free. If the lock is busy, the event reports `busy` and does not wait.
+A webhook event does not run the gate for a draft pull request, or for a pull request that is in Ready and has not been pulled. The hook makes those checks before it makes any API call. It also ignores repeated CI events for the same head. If a CI event is for the pull request that is currently in the pull step, the event can continue that step when the lock is free. If the lock is busy, the event reports `busy` and does not wait.
 
 ## Human review
 
@@ -119,75 +119,75 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
 
 #### Columns and limits
 
-1. Human Review holds exactly two pull requests whenever two are ready, and never more than two.
+1. Human Review holds exactly two pull requests whenever two prepared pull requests are available, and never more than two.
    - The human reviews one pull request. Then the human moves it to Done, when it is approved and merged, or back to In Progress, when it is rejected.
    - That move is the signal that only one pull request is left. The next pull request must enter in seconds, not minutes.
    - While the human reviews the remaining pull request, a new one goes in behind it.
-   - When Human Review holds exactly one pull request, and the first Pending pull request depends on it, that Pending pull request can go in as the one stacked pull request. It has a banner at the top of the body that names the Human Review pull request that it depends on. See [Stacked pull requests](workflow.md#stacked-pull-requests). If that base merges first, remove the banner. Then the pull request is a plain pull request.
-2. Pending is a buffer of 3 to 5 pull requests. Keep it small. It must be large enough that the human can review 4 or 5 items while the next pull request is prepared, even if about 3 pull requests in the Ready queue fail the gate in a row.
-   - "Pending" means "pending review". Each Pending pull request is fully prepared:
+   - When Human Review holds exactly one pull request, and the first Staging pull request depends on it, that Staging pull request can go in as the one stacked pull request. It has a banner at the top of the body that names the Human Review pull request that it depends on. See [Stacked pull requests](workflow.md#stacked-pull-requests). If that base merges first, remove the banner. Then the pull request is a plain pull request.
+2. Staging is a buffer of 3 to 5 pull requests. This column was formerly named Pending. Keep it small. It must be large enough that the human can review 4 or 5 items while the next pull request is prepared, even if about 3 pull requests in Ready fail the gate in a row. Only Staging and Human Review are merged into the staging branch and deployed to the staging environment, about 7 pull requests in total. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
+   - Each Staging pull request is fully prepared:
      - It is merged into the staging branch.
-     - It is deployed to staging, and staging is verified to serve it.
+     - It is deployed to the staging environment, and that environment is verified to serve it.
      - The Linux checks are green on the current head.
      - The pull request body has screenshots, when a person can see the change, and a section that tells where to see it.
      - All conditions of the gate pass.
-   - Each Pending pull request is pre-merged as a speculative stack. It sits on top of main, plus the Human Review pull requests that we expect the human to merge, plus the Pending pull requests ahead of it. Because of this, it has no merge conflicts to fix later.
-   - The pre-merge and the gate checks happen only for a pull request that is being pulled into Pending, and only one at a time.
-   - Moving the first Pending pull request to Human Review is only a card move, so it is almost instant.
-3. The Ready queue holds finished pull requests that wait to be pulled into Pending. Working names are "pre-pending", "Ready", and "Ready for merge". The exact name and the implementation, a board column or an internal sorted list, are open.
-   - A pull request in the Ready queue is finished. Its worker is done, the automated review is clean, and the post-check of the coordinator passed on the head commit.
-   - A pull request in the Ready queue is not merged into the staging branch, not deployed, and not gated.
-   - Pull requests in the Ready queue wait in this order:
+   - Each Staging pull request is pre-merged as a speculative stack. It sits on top of main, plus the Human Review pull requests that we expect the human to merge, plus the Staging pull requests ahead of it. Because of this, it has no merge conflicts to fix later.
+   - The pre-merge and the gate checks happen only for a pull request that is being pulled into Staging, and only one at a time.
+   - Moving the first Staging pull request to Human Review is only a card move, so it is almost instant.
+3. Ready is a board column between Needs Input and Staging. It holds finished pull requests that wait to be pulled into Staging. Ready is the finish line for coding agents. Agents work the backlog until their pull requests are in Ready.
+   - A pull request in Ready is finished. Its worker is done, the automated review is clean, and the post-check of the coordinator passed on the head commit.
+   - A pull request in Ready is not merged into the staging branch, not deployed, not gated, and not on the staging environment.
+   - Pull requests in Ready wait in this order:
      1. Pull requests with a milestone first, ordered by the milestone.
      2. Then the pull requests with the fewest conflicts with the current stack.
      3. Then the oldest pull requests.
 4. In Progress and Auto Review do not change. Workers build, and the automated reviewer reviews, in parallel. Only the merge, deploy, and gate step is serial.
 
-#### The pull into Pending
+#### The pull into Staging
 
-Only one process can merge into the staging branch, deploy staging again, run the gate, or promote a pull request from Pending at a time. This applies to every caller, including the event hook, the periodic scan, and helper agents.
+Only one process can merge into the staging branch, deploy staging again, run the gate, or promote a pull request from Staging at a time. This applies to every caller, including the event hook, the periodic scan, and helper agents.
 
 These operations share one lock. If a second operation starts while the lock is held, that second operation does not wait. It stops at once and reports `busy`. It tries again later, on the next event or the next periodic scan.
 
-The pull step starts when Pending has fewer pull requests than its target size, for example because one pull request just moved to Human Review. The single worker then takes the first pull request in the Ready queue and does these steps:
+The pull step starts when Staging has fewer pull requests than its target size, for example because one pull request just moved to Human Review. The single worker then takes the first pull request in Ready and does these steps:
 
 1. If necessary, merge main into the pull request. Its worker makes any code fixes.
-2. Merge the pull request into the staging branch, on top of the current stack: main, the Human Review pull requests, and the Pending pull requests ahead of it.
+2. Merge the pull request into the staging branch, on top of the current stack: main, the Human Review pull requests, and the Staging pull requests ahead of it.
 3. Deploy staging again.
 4. Verify that staging serves the correct commit, that the Linux checks are green, and that the pull request body is complete.
 5. Run the gate.
-   - If the gate passes, the pull request goes to Pending.
-   - If the gate fails, the pull request goes back to In Progress with the reason, and the worker tries the next pull request in the Ready queue.
+   - If the gate passes, the pull request goes to Staging.
+   - If the gate fails, the pull request goes back to In Progress with the reason, and the worker tries the next pull request in Ready.
 
 Expect one or two failures before a pull request fits. That is why the buffer exists.
 
-When Human Review drops to 1, because the human moved one out, move the first Pending pull request to Human Review at once. This promotion takes the shared lock. If the lock is busy, the promotion stops at once, reports `busy`, and tries again later. Then start the pull step to refill Pending. If Human Review has an open slot and Pending still has pull requests, fill Human Review first, up to two.
+When Human Review drops to 1, because the human moved one out, move the first Staging pull request to Human Review at once. This promotion takes the shared lock. If the lock is busy, the promotion stops at once, reports `busy`, and tries again later. Then start the pull step to refill Staging. If Human Review has an open slot and Staging still has pull requests, fill Human Review first, up to two.
 
-Do not merge, deploy, or gate any pull request other than the one that is being pulled into Pending. Pull requests in the Ready queue get no merges, gates, or checks after they join the queue.
+Do not merge, deploy, or gate any pull request other than the one that is being pulled into Staging. Pull requests in Ready get no merges, gates, or checks after they move to Ready.
 
 - Do not make speculative rebased copies of every pull request.
 - Do not merge the whole queue again after every merge to main.
-- Staging gets one pull request at a time, just before that pull request enters Pending.
+- The staging environment gets one pull request at a time, just before that pull request enters the Staging column.
 
-Conflicts: only one pull request is prepared at a time, so prepare it against current main plus the two Human Review pull requests and the Pending pull requests ahead of it.
+Conflicts: only one pull request is prepared at a time, so prepare it against current main plus the two Human Review pull requests and the Staging pull requests ahead of it.
 
-- If it conflicts with a Human Review pull request, prefer the next pull request in the Ready queue that does not.
-- Make a speculative rebase only if no pull request in the Ready queue fits, and make only one at a time. If you do that rebase, use a `<branch>-vN` tip. Install that tip as the head before the pull request enters Pending, and run the tests, the post-check, and the gate on that head. Never move the branch of a card that is already in Pending or in Human Review.
+- If it conflicts with a Human Review pull request, prefer the next pull request in Ready that does not.
+- Make a speculative rebase only if no pull request in Ready fits, and make only one at a time. If you do that rebase, use a `<branch>-vN` tip. Install that tip as the head before the pull request enters Staging, and run the tests, the post-check, and the gate on that head. Never move the branch of a card that is already in Staging or in Human Review.
 
-If the human rejects a Human Review pull request, each Pending pull request that included the rejected work is not valid. Move those cards out of Pending, and make them again from their plain branches without the rejected work, one at a time, under the lock. If the other Human Review pull request contains the rejected work, move it out of Human Review first, in the same way. Tell the human that you removed it, and why.
+If the human rejects a Human Review pull request, each Staging pull request that included the rejected work is not valid. Move those cards out of Staging, and make them again from their plain branches without the rejected work, one at a time, under the lock. If the other Human Review pull request contains the rejected work, move it out of Human Review first, in the same way. Tell the human that you removed it, and why.
 
-Events move the work, not timers. A clean automated review moves the pull request into the Ready queue, after the post-check passes. It does not start a merge, a deploy, or a gate. The pull step starts only when Pending is below its target size and the lock is free. The gate uses the mergeable state that the forge reports. Check each staging merge, so that it does not remove the changes of a pull request without a report.
+Events move the work, not timers. A clean automated review moves the pull request to Ready, after the post-check passes. It does not start a merge, a deploy, or a gate. The pull step starts only when Staging is below its target size and the lock is free. The gate uses the mergeable state that the forge reports. Check each staging merge, so that it does not remove the changes of a pull request without a report.
 
 The reviewer always knows the state. When Human Review becomes empty, the swarm manager immediately tells the reviewer. It gives the next pull request and the time when it will be ready.
 
-The swarm tools include a status command and a promote command. The status command reports whether Human Review holds two pull requests, when two are ready, and whether Pending holds 3 to 5 fully prepared pull requests. The promote command moves the first Pending pull request into Human Review when a slot is open, then starts the pull step to refill Pending. The promote command also takes the shared lock. If the lock is busy, it stops at once and reports `busy`.
+The swarm tools include a status command and a promote command. The status command reports whether Human Review holds two pull requests, when two prepared pull requests are available, and whether Staging holds 3 to 5 fully prepared pull requests. The promote command moves the first Staging pull request into Human Review when a slot is open, then starts the pull step to refill Staging. The promote command also takes the shared lock. If the lock is busy, it stops at once and reports `busy`.
 
 #### API budget
 
 The event hook must make these checks before it makes any API call:
 
 - Skip draft pull requests.
-- Skip pull requests that are in the Ready queue and have not been pulled.
+- Skip pull requests that are in Ready and have not been pulled.
 - Ignore repeated CI events for the same head.
 
 The hook uses the API quota of the bot app. It falls back to the human account only when the app quota fails.
