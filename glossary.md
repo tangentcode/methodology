@@ -1,6 +1,6 @@
 # Glossary
 
-**Active.** The column for open issue cards that are assigned to the swarm. Each one does not have the `work2` label, and each one has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns. A move of an issue to this column, with no comment, is sufficient approval to start its worker.
+**Active.** The column for open issue cards that are assigned to the swarm. Each one does not have the `work2` label, and each one has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns. To keep that equality true, a pull request of a `work2` issue does not go into a flow column, and an issue has only one pull request in a flow column at a time. A move of an issue to this column, with no comment, is sufficient approval to start its worker.
 
 **Automated reviewer.** A code review service. It reads a pull request and writes findings with priorities.
 
@@ -62,6 +62,6 @@
 
 **Triage.** The column for open issues that have suggested plans. They wait on the human to decide, in a comment or by a move of the issue to Active or to Backlog.
 
-**work2.** A label that keeps an issue in Inbox, even when the issue has a linked pull request. A `work2` issue does not go into Active, and it does not count in the Active total.
+**work2.** A label that keeps an issue in Inbox, even when the issue has a linked pull request. The pull request of a `work2` issue does not go into a flow column. A `work2` issue does not go into Active, and it does not count in the Active total.
 
 **Worker agent.** A coding agent in a terminal session. It owns one change.
