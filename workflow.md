@@ -14,12 +14,13 @@
 |---|---|---|---|
 | Triage | New work waiting for the owner bot to propose options and the human to decide | Human, coordinator, or tracker | Issues only |
 | Backlog | Issues that define scope and that no pull request has picked up yet | Owner bot, coordinator, or human | Issues only |
+| Active | An open issue that is assigned to the swarm and has open sub-issues or a linked open pull request | Coordinator | Issues only |
 | Needs Input | The owner bot has questions for the human on the issue | Owner bot | Issues only |
 | In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator | Pull requests only |
 | Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator | Pull requests only |
 | Pending | Otherwise ready, but blocked on another change or an outside decision | Coordinator | Pull requests only |
 | Human Review | Passed the gate. Waiting on the human | Coordinator, through the gate | Pull requests only |
-| Done | Merged to main | Human, or the board on merge | Pull requests |
+| Done | Merged to main | Human, or the board on merge | Pull requests only |
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
 
@@ -27,16 +28,21 @@ Moving a card to Auto Review also means marking the pull request ready. Moving i
 
 Every pull request card must have a Status. Set a new card to In Progress if the pull request is a draft or is still being pushed. Otherwise, set it to Auto Review and request a review. Never leave its Status blank.
 
-An issue with no pull request lives only in Triage, Backlog, or Needs Input. Issues never sit in Auto Review, Pending, or Human Review.
+When the human approves an issue, the coordinator starts a worker. The worker pushes a first commit on its branch. The coordinator then assigns the issue to the swarm and opens a draft pull request from that branch, with a closing link such as Fixes. Only then does the issue card move to Active, and only then does the worker continue. The issue never sits in Active without that link. A "Part of" mention is not a link.
 
-Once a pull request links the issue on the host (`Fixes #N`, or `Part of #N` when one issue spans several pull requests), remove the issue card. The pull request card carries the work from then on. The link must actually appear on the host, not only in free text. Many open issues with no pull request is a failure: an agreed issue should promptly get a pull request.
+Active holds only open issues that are assigned to the swarm and have open sub-issues or a linked open pull request. The pull request card keeps moving through In Progress, Auto Review, Pending, and Human Review. Do not move the issue card through those columns, and do not remove it from the board while a linked pull request is open, or while it still has open sub-issues.
+
+When every open pull request that links the issue has merged or closed, and it has no open sub-issues, the issue leaves Active. If a pull request used Fixes (or an equivalent closing phrase) and GitHub closed the issue, the issue card goes to Done. If the issue is still open, it returns to Triage or Needs Input, as fits.
+
+An issue with no pull request and no open sub-issues never goes in Human Review, Pending, or Active. If it is waiting on the human, put a question on it and leave it where it is.
 
 ```mermaid
 flowchart LR
     T[Triage] -->|owner bot has questions| NI[Needs Input]
     T -->|brief written| B[Backlog]
     NI -->|human answers| T
-    B -->|draft pull request opened, issue card removed| IP
+    B -->|assigned to the swarm, draft PR opened| AC[Active]
+    AC -.->|PR card starts here| IP[In Progress]
     IP -->|coordinator pre-check passes| AR[Auto Review]
     AR -->|P1 or P2 finding| IP
     AR -->|blocked on another change| P[Pending]
@@ -46,6 +52,8 @@ flowchart LR
     HR -->|late finding| IP
     HR -->|human merges to main| D[Done]
 ```
+
+The issue card stays in Active while its pull request is open. The pull request card moves through In Progress, Auto Review, Pending, and Human Review.
 
 ### Moving cards without losing a step
 
@@ -71,8 +79,8 @@ Parked items stay parked until the human says otherwise. Product choices belong 
 ## The loop
 
 1. An issue lands in Triage. The owner bot proposes options. The human decides in a comment.
-2. The owner bot writes a brief (or asks for clarification in Needs Input first). The coordinator starts a worker. The issue card stays in Backlog.
-3. The worker cuts a branch from main, opens a draft pull request early, and pushes code with tests. Once the draft pull request exists, the coordinator removes the issue card and puts the pull request card in In Progress.
+2. The owner bot writes a brief (or asks for clarification in Needs Input first). The coordinator starts a worker. The worker cuts a branch from main, pushes a first commit, and stops.
+3. The coordinator opens a draft pull request from that branch against main, with a closing link, assigns the issue to the swarm, and moves the issue card to Active. The pull request card moves to In Progress. The issue never sits in Active without a link. Then the worker pushes code with tests to the pull request.
 4. The coordinator runs its pre-review check (see [review.md](review.md)).
 5. The coordinator marks the pull request ready, moves the card to Auto Review, and requests an automated review.
 6. For each P1 or P2 finding, the coordinator converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule. The worker fixes and pushes. The coordinator verifies the fix, resolves the thread, and returns to step 5.

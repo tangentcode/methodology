@@ -26,6 +26,7 @@ Create one board for the repository with a single-select status field and these 
 | Triage | A new issue waits for options and the human's decision | Issues only |
 | Backlog | The issue defines scope and no pull request has picked it up yet | Issues only |
 | Needs Input | The owner bot posted questions on the issue | Issues only |
+| Active | The issue is assigned to the swarm and has open sub-issues or a linked open pull request | Issues only |
 | In Progress | A worker is writing code or fixing findings (pull request is a draft) | Pull requests only |
 | Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | Pull requests only |
 | Pending | The change is otherwise ready but waits on another change or a decision | Pull requests only |
@@ -37,7 +38,7 @@ Board settings:
 - [ ] Every pull request card has a Status: In Progress for drafts or ongoing pushes; otherwise Auto Review with a review requested.
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
-- [ ] When a pull request links an issue on the host (`Fixes #N`, or `Part of #N`), remove the issue card from the board. The link must show up on the host, not only in free text. The pull request card carries the work, so the board counts it once and Human Review holds only pull requests.
+- [ ] When a pull request is opened, give it a closing link (Fixes, or an equivalent). A "Part of" mention is not a link. Assign the issue to the swarm (the `swarm` label), then move the issue card to Active. Keep both cards. The pull request card carries the review loop. The issue card stays in Active while any linked pull request is open or any sub-issue is open. It leaves Active only when both are gone.
 - [ ] New issues land in Triage. Issues with no pull request never go in Auto Review, Pending, or Human Review.
 
 ## 3. Create labels
@@ -47,6 +48,7 @@ Keep labels few. These are enough to start:
 | Label | Use |
 |---|---|
 | `approved` | The human approved the issue. Workers start only on approved issues. |
+| `swarm` | Assigned to the swarm. Active holds only issues with this label, plus open sub-issues or a linked open pull request. |
 | `parked` | The human paused it. Leave it alone until he says otherwise. |
 | `blocked` | Waiting on another change or decision. Name the blocker in a comment. |
 | `ui` | Changes something a person can see (UI, rendered images or video), so it needs screenshots or frames from staging. |
@@ -126,18 +128,19 @@ Use a small, real issue for the first run, so problems with the setup show up ea
 1. **Human or tracker.** Puts the issue in Triage.
 2. **Owner bot.** Comments with options. **Human.** Decides in a comment (edits count). The coordinator forwards that comment to the owner bot.
 3. **Owner bot.** Writes the brief from the template, including every choice from the human's comment, and moves the card to Backlog (or to Needs Input with questions first).
-4. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The issue card stays in Backlog.
-5. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue. The coordinator then removes the issue card and puts the pull request card in In Progress.
-6. **Worker.** Writes code and tests, runs only the targeted test files locally through the shared two-slot throttle with one Vitest worker, pushes, and reports the head commit and pass counts.
-7. **Coordinator.** Runs the pre-check (checklist A below).
-8. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
-9. **Coordinator.** Reads the findings. For each P1 or P2, converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule.
-10. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
-11. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 8 until a round comes back clean or the cap is reached.
-12. **Coordinator.** Runs the post-check (checklist C).
-13. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
-14. **Coordinator.** Checks the gate (checklist D). If it passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
-15. **Human.** Reviews, then merges to main or sends it back with comments.
+4. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief.
+5. **Worker.** Cuts the branch from the latest main, makes a first commit, pushes the branch, and stops. The worker does not open the pull request.
+6. **Coordinator, then worker.** The coordinator opens a draft pull request from that branch against main, with a closing link, adds the `swarm` label, moves the issue card to Active, and moves the pull request card to In Progress. The issue never sits in Active without that link. A "Part of" mention is not a link. Then the coordinator tells the worker to continue. The worker writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
+7. **Worker.** Writes code and tests, runs only the targeted test files locally through the shared two-slot throttle with one Vitest worker, pushes, and reports the head commit and pass counts.
+8. **Coordinator.** Runs the pre-check (checklist A below).
+9. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
+10. **Coordinator.** Reads the findings. For each P1 or P2, converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule.
+11. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
+12. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 8 until a round comes back clean or the cap is reached.
+13. **Coordinator.** Runs the post-check (checklist C).
+14. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
+15. **Coordinator.** Checks the gate (checklist D). If it passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
+16. **Human.** Reviews, then merges to main or sends it back with comments.
 
 After the first issue, note anything in the setup that didn't work and fix it before starting more workers.
 

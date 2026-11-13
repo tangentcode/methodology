@@ -1,5 +1,7 @@
 # Glossary
 
+**Active.** The column for open issue cards that are assigned to the swarm and have open sub-issues or a linked open pull request.
+
 **Automated reviewer.** A code-review service that reads a pull request and posts prioritized findings.
 
 **Backlog.** The column for issues that no pull request has picked up yet. Issues define scope. Pull requests carry the work through the other columns.
@@ -37,6 +39,8 @@
 **Root-cause rule.** Fix the cause of a finding, list its neighboring cases, and test each one.
 
 **Round.** One automated review of the current head. Rounds have a cap.
+
+**Swarm assignment.** The `swarm` label on an issue. An issue in Active must carry it, and must also have open sub-issues or a linked open pull request.
 
 **Triage.** The first board column. New issues wait here for the owner bot to propose options and the human to decide.
 

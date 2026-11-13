@@ -4,7 +4,9 @@ flowchart TD
     C -->|needs clarification| NI[Needs Input]
     NI --> C
     C -->|brief written| D[Coordinator starts worker,<br/>issue stays in Backlog]
-    D --> E[Worker opens draft PR<br/>against main, links issue,<br/>code + tests;<br/>issue card leaves the board]
+    D --> D2[Worker pushes<br/>a first commit]
+    D2 --> D3[Coordinator opens draft PR<br/>with a closing link,<br/>issue card to Active]
+    D3 --> E[Worker pushes code and tests<br/>to the draft PR]
     E --> F{Coordinator<br/>pre-check}
     F -->|fails| E
     F -->|passes| G[Mark ready<br/>card to Auto Review]
