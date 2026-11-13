@@ -8,7 +8,7 @@ A brief is the written instruction of the owner bot to one worker agent for one 
 - **Where.** The files and modules that the change touches. Also any nearby code that the worker must not use again or change.
 - **First step.** What to read before the worker writes code, and which decision to explain in the pull request body.
 - **The issue.** The full text of the issue, copied into the brief. Then the brief is complete without other documents.
-- **The choices of the human.** Each choice from the Triage comment of the human, and from all later answers. Write them in the first time. Do not let a review round find them.
+- **The choices of the human.** Each choice from the Triage comment of the human, and from all later answers. If the human moved the issue to Active with no comment, write the default or recommended answer for each open question. Write them in the first time. Do not let a review round find them.
 - **Tests.** The cases that the worker must test.
 - **Acceptance.** How the human will check the result.
 - **The root-cause rule.** Always include it.
@@ -21,7 +21,7 @@ A brief is the written instruction of the owner bot to one worker agent for one 
 # Brief: <short title> (<issue reference>)
 
 Work only in your own checkout. Make one pull request that targets main.
-Issue: <issue reference>. The human owner approved it on <date>.
+Issue: <issue reference>. The human owner approved it on <date> (Triage comment, or a move to Active or to Backlog).
 Pull request title: an imperative phrase that completes "Merging this pull request will ...".
 
 ## Base

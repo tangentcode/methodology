@@ -22,7 +22,7 @@ See [principles.md](principles.md).
 
 ## Roles
 
-- **Human owner.** Sets priorities. Decides Triage issues in comments. Reviews finished changes. Merges to main and deploys.
+- **Human owner.** Sets priorities. Decides Triage issues in comments, or by a move of the issue to Active or to Backlog. Reviews finished changes. Merges to main and deploys.
 - **Owner bot.** Owns the product decisions for its area. Writes options on Triage issues, asks questions, and writes briefs.
 - **Coordinator bot.** Sends Triage comments to the owner bot. Starts and steers worker agents from briefs. Does its own checks. Moves cards in the pull request loop. Merges approved changes into staging. Reports to the human.
 - **Worker agents.** Coding agents in terminal sessions. Each worker owns one change on one branch.
@@ -33,7 +33,7 @@ See [roles.md](roles.md).
 
 ## The loop in one paragraph
 
-Work starts as an issue in Triage. The owner bot writes options. The human decides in a comment. The owner bot asks questions on the issue, or it writes a brief and moves the card to Backlog. The coordinator starts a worker agent. The worker makes the branch and pushes a first commit. The coordinator opens a draft pull request against main, with a closing link to the issue. It assigns the issue to the swarm and moves the issue card to Active. Then the worker continues and pushes tests with the code. The coordinator checks the change. Then the automated reviewer reviews it, for a maximum number of rounds. The worker fixes each finding at its root cause. When the change is clean, the coordinator checks it again, merges it into the staging branch, and deploys staging again. If the change passes the gate, the card moves to Human Review. The human reviews the change and merges it to main.
+Work starts as an issue in Triage. The owner bot writes options. The human decides in a comment, or by a move of the issue to Active or to Backlog. A move to Active, with no comment, is sufficient approval to start the worker. If that issue has open questions, the worker takes the default or recommended answer and states it in the pull request body. The owner bot asks questions on the issue, or it writes a brief and moves the card to Backlog. The coordinator starts a worker agent. The worker makes the branch and pushes a first commit. The coordinator opens a draft pull request against main, with a closing link to the issue. It assigns the issue to the swarm and moves the issue card to Active, or keeps it there. Then the worker continues and pushes tests with the code. The coordinator checks the change. Then the automated reviewer reviews it, for a maximum number of rounds. The worker fixes each finding at its root cause. When the change is clean, the coordinator checks it again, merges it into the staging branch, and deploys staging again. If the change passes the gate, the card moves to Human Review. The human reviews the change and merges it to main.
 
 See [workflow.md](workflow.md) for the board and the full loop. See [review.md](review.md) for review rounds.
 
