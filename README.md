@@ -47,6 +47,7 @@ For a new project, start with [adopting.md](adopting.md).
 | [roles.md](roles.md) | Who does what, and what each role must not do |
 | [workflow.md](workflow.md) | Triage, board columns, the loop, and the definitions of ready and done |
 | [review.md](review.md) | Review layers, the round limit, the root-cause rule, and the gate into Human Review |
+| [tooling.md](tooling.md) | The coordinator tools that run the loop: events, the tick, the gate commands, the lock, and the API budget |
 | [briefs.md](briefs.md) | The contents of a brief (the owner bot writes it), with a template |
 | [safety.md](safety.md) | Credentials, production, root-level operations, and requests from agents |
 | [working-agreements.md](working-agreements.md) | Daily agreements about messages, titles, writing style, and conduct |
