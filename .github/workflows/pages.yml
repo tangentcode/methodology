@@ -1,0 +1,52 @@
+# Rebuild and publish the GitHub Pages site whenever main changes, so a
+# merged pull request shows up on the site. Run it by hand from the Actions
+# tab (or `gh workflow run pages.yml`) to redeploy without a new merge.
+#
+# This only publishes once the repository's Pages source is set to
+# "GitHub Actions" (Settings > Pages > Source).
+name: Deploy Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time. A deploy already running finishes; a newer push
+# queues behind it instead of cancelling it halfway.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The changelog is built from main's full first-parent history.
+          fetch-depth: 0
+      - uses: actions/configure-pages@v5
+      - name: Fill the changelog from main's history
+        run: python3 scripts/changelog.py changelog.md HEAD
+      # The same builder (the github-pages gem) that the branch-based Pages
+      # build uses, so pages render the same way.
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./
+          destination: ./_site
+      - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

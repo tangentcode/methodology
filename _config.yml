@@ -37,8 +37,10 @@ nav:
   - { file: glossary.md, label: Glossary }
   - { file: suggested-conventions.md, label: Suggested conventions }
   - { file: team-conventions.md, label: Team conventions }
+  - { file: changelog.md, label: Changelog }
 exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
   - diagrams-src
+  - scripts

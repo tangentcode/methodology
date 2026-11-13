@@ -54,6 +54,7 @@ For a new project, start with [adopting.md](adopting.md).
 | [glossary.md](glossary.md) | Terms in these documents |
 | [suggested-conventions.md](suggested-conventions.md) | Optional conventions and agent prompts that a project can adopt, for example sparse comments |
 | [team-conventions.md](team-conventions.md) | The names and coding customs of this team. Edit this page when you adopt the method |
+| [changelog.md](changelog.md) | Every change to these documents, newest first, with a link to its pull request |
 
 ## How to adapt it
 
