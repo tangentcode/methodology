@@ -18,9 +18,9 @@ Use this style in all chats, issues, pull request descriptions, commit messages,
 
 ## Scope
 
-- One worker, one change, one branch, one pull request. A change covers a whole issue or a named part of one. Splitting an issue across several pull requests is fine.
+- One worker, one change, one branch, one pull request. A change covers a whole issue or a named part of one. Splitting an issue across several pull requests is fine. Each pull request links its issue with `Fixes` or `Part of`.
 - When a worker finds and demonstrates a real defect next to its change, it fixes it in the same change with a regression test. The coordinator doesn't ask the human whether to fix a demonstrated defect.
-- Unrelated ideas become new issues in Backlog, approved by the human before work starts.
+- Unrelated ideas become new issues in Triage. The human decides them there before a worker starts.
 - Items the human has parked stay parked until he says otherwise.
 
 ## Sessions and machines

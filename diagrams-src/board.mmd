@@ -1,5 +1,8 @@
 flowchart LR
-    B[Backlog] -->|draft PR opened,<br/>issue card removed| IP[In Progress<br/><i>PR is a draft</i>]
+    T[Triage] -->|owner bot has questions| NI[Needs Input]
+    NI -->|human answers| T
+    T -->|brief written| B[Backlog]
+    B -->|draft PR opened,<br/>issue card removed| IP[In Progress<br/><i>PR is a draft</i>]
     IP -->|coordinator pre-check passes<br/>PR marked ready| AR[Auto Review<br/><i>automated reviewer runs</i>]
     AR -->|P1 or P2 finding<br/>PR back to draft| IP
     AR -->|blocked on another change| P[Pending]

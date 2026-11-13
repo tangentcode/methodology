@@ -2,30 +2,41 @@
 
 ## Artifacts
 
-- **Issue.** States one goal, the approach, and acceptance criteria. The human approves it before work starts.
-- **Brief.** The coordinator's instructions to one worker for one change: a whole issue, or a named part of one. See [briefs.md](briefs.md).
+- **Issue.** States one goal, the approach, and acceptance criteria. Work starts as an issue in Triage. The human decides what to build in a comment on that issue.
+- **Brief.** The owner bot's instructions to one worker for one change: a whole issue, or a named part of one. See [briefs.md](briefs.md).
 - **Pull request.** One per worker's change, branched from main and targeting main. It starts as a draft. An issue usually becomes one pull request, but a large issue can be split into several, each with its own worker and branch and each naming the part of the issue it covers. A partial pull request references the issue without a closing keyword, for example `Part of #N`. Only the pull request that completes the issue's acceptance criteria uses a closing keyword such as `Fixes #N`, so merging a partial change doesn't close the issue early.
 - **Board.** One card per issue or pull request. The column says what happens next.
 - **Staging branch.** An integration branch that collects changes for testing on the staging environment. It is never merged into main.
 
 ## Board columns
 
-| Column | Meaning | Who moves the card in |
-|---|---|---|
-| Backlog | Issues that define scope and that no pull request has picked up yet | Coordinator or human |
-| In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator |
-| Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator |
-| Pending | Otherwise ready, but blocked on another change or an outside decision | Coordinator |
-| Human Review | Passed the gate. Waiting on the human. Pull requests only | Coordinator |
-| Done | Merged to main | Human, or the board on merge |
+| Column | Meaning | Who moves the card in | Holds |
+|---|---|---|---|
+| Triage | New work waiting for the owner bot to propose options and the human to decide | Human, coordinator, or tracker | Issues only |
+| Backlog | Issues that define scope and that no pull request has picked up yet | Owner bot, coordinator, or human | Issues only |
+| Needs Input | The owner bot has questions for the human on the issue | Owner bot | Issues only |
+| In Progress | A worker is writing or fixing code. The pull request is a draft | Coordinator | Pull requests only |
+| Auto Review | Ready for review. The pull request is marked ready and the automated reviewer is running | Coordinator | Pull requests only |
+| Pending | Otherwise ready, but blocked on another change or an outside decision | Coordinator | Pull requests only |
+| Human Review | Passed the gate. Waiting on the human | Coordinator, through the gate | Pull requests only |
+| Done | Merged to main | Human, or the board on merge | Pull requests |
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress means converting it to a draft.
 
-Issues define scope, and one issue may lead to several pull requests. An issue that no pull request has picked up yet lives in Backlog. Once a pull request picks it up, remove the issue card. The pull request cards carry the work from then on, so Human Review lists only pull requests and the human only ever merges or rejects pull requests. An issue card with no pull request in any column but Backlog is a stall, and so is an issue nobody has triaged into Backlog. Lots of open issues with no pull request is a stall too: start workers on them, or ask the human to park or close them. If an issue is waiting on the human, put the question on the issue and keep it in Backlog.
+### Issues and pull requests on the board
+
+Every pull request card must have a Status. Set a new card to In Progress if the pull request is a draft or is still being pushed. Otherwise, set it to Auto Review and request a review. Never leave its Status blank.
+
+An issue with no pull request lives only in Triage, Backlog, or Needs Input. Issues never sit in Auto Review, Pending, or Human Review.
+
+Once a pull request links the issue on the host (`Fixes #N`, or `Part of #N` when one issue spans several pull requests), remove the issue card. The pull request card carries the work from then on. The link must actually appear on the host, not only in free text. Many open issues with no pull request is a failure: an agreed issue should promptly get a pull request.
 
 ```mermaid
 flowchart LR
-    B[Backlog] -->|draft pull request opened, issue card removed| IP[In Progress]
+    T[Triage] -->|owner bot has questions| NI[Needs Input]
+    T -->|brief written| B[Backlog]
+    NI -->|human answers| T
+    B -->|draft pull request opened, issue card removed| IP
     IP -->|coordinator pre-check passes| AR[Auto Review]
     AR -->|P1 or P2 finding| IP
     AR -->|blocked on another change| P[Pending]
@@ -44,10 +55,23 @@ When the automation holds off a step because the worker is still busy, it record
 
 A push past the head the coordinator checked sends a Human Review card back to In Progress. The coordinator's post-check names the commit it checked, so a stale pass is easy to spot.
 
+## Triage
+
+New issues and gripes enter Triage. Each issue must include code context for the relevant component, explain why the problem happens, and give two to four numbered fix options with a recommendation. A symptom and expected behavior alone are not enough. The maintainer should be able to choose with one comment.
+
+Work starts as an issue in Triage. The owner bot comments on the issue with options. The human decides in a comment; that comment is the instruction for what to build, and edits to it count too. The coordinator forwards the human's comment to the owner bot.
+
+The owner bot then either:
+
+1. Moves the card to Needs Input and posts its questions on the issue, or
+2. Writes a brief and moves the card to Backlog. The coordinator launches a coding worker from that brief. The worker branches from main with the pull request base set to main.
+
+Parked items stay parked until the human says otherwise. Product choices belong to the owner bot; the coordinator does not invent them.
+
 ## The loop
 
-1. The human approves an issue.
-2. The coordinator writes a brief and starts a worker. The issue card stays in Backlog.
+1. An issue lands in Triage. The owner bot proposes options. The human decides in a comment.
+2. The owner bot writes a brief (or asks for clarification in Needs Input first). The coordinator starts a worker. The issue card stays in Backlog.
 3. The worker cuts a branch from main, opens a draft pull request early, and pushes code with tests. Once the draft pull request exists, the coordinator removes the issue card and puts the pull request card in In Progress.
 4. The coordinator runs its pre-review check (see [review.md](review.md)).
 5. The coordinator marks the pull request ready, moves the card to Auto Review, and requests an automated review.
@@ -69,7 +93,7 @@ Every pull request card gets a status in the same action that adds it to the boa
 
 An issue is ready for a worker when:
 
-- The human has approved it.
+- The human has decided what to build in a Triage comment (or otherwise approved the issue).
 - It states the goal, the approach, and what is out of scope.
 - It has acceptance criteria someone can check.
 - The human's stated choices are written into it.

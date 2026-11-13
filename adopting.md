@@ -14,26 +14,31 @@ Before setting anything up, confirm these with the human and write the answers i
 - [ ] Workers end every turn with one status line a scan can read: done and waiting for review, waiting on the human for a named thing, or continuing. A worker that is waiting on the human for one part says which other parts can go to review now.
 - [ ] The round cap (ten unless the human says otherwise).
 - [ ] Who the ops agent is for root-level changes.
+- [ ] Who the owner bot is for this board (product decisions, Triage, briefs).
 - [ ] Which test commands count as "the full suite" for each component.
 
 ## 2. Set up the board
 
 Create one board for the repository with a single-select status field and these options, in this order:
 
-| Column | Put a card here when | The pull request is |
+| Column | Put a card here when | Holds |
 |---|---|---|
-| Backlog | The issue defines scope and no pull request has picked it up yet | not yet open |
-| In Progress | A worker is writing code or fixing findings | a draft |
-| Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | ready |
-| Pending | The change is otherwise ready but waits on another change or a decision | ready or draft |
-| Human Review | The pull request passed the gate (see step 6). Pull requests only | ready |
-| Done | The human merged it to main | merged |
+| Triage | A new issue waits for options and the human's decision | Issues only |
+| Backlog | The issue defines scope and no pull request has picked it up yet | Issues only |
+| Needs Input | The owner bot posted questions on the issue | Issues only |
+| In Progress | A worker is writing code or fixing findings (pull request is a draft) | Pull requests only |
+| Auto Review | The coordinator's pre-check passed and the automated reviewer is reviewing | Pull requests only |
+| Pending | The change is otherwise ready but waits on another change or a decision | Pull requests only |
+| Human Review | The pull request passed the gate (see step 6) | Pull requests only |
+| Done | The human merged it to main | Pull requests |
 
 Board settings:
 
+- [ ] Every pull request card has a Status: In Progress for drafts or ongoing pushes; otherwise Auto Review with a review requested.
 - [ ] Add new issues and pull requests in the repository to the board automatically, if the tracker supports it.
 - [ ] Move a card to Done automatically when its pull request merges.
-- [ ] When a pull request links an issue, remove the issue card from the board. The pull request card carries the work, so the board counts it once and Human Review holds only pull requests.
+- [ ] When a pull request links an issue on the host (`Fixes #N`, or `Part of #N`), remove the issue card from the board. The link must show up on the host, not only in free text. The pull request card carries the work, so the board counts it once and Human Review holds only pull requests.
+- [ ] New issues land in Triage. Issues with no pull request never go in Auto Review, Pending, or Human Review.
 
 ## 3. Create labels
 
@@ -58,8 +63,16 @@ Add an issue template to the repository:
 ## Goal
 <one or two sentences: what changes for the user>
 
+## Code context and cause
+<relevant component, files or modules, and why the problem happens>
+
+## Fix options
+1. <option>
+2. <option>
+<two to four numbered options, with a recommendation the maintainer can choose in one comment>
+
 ## Approach
-<the design, closest to existing code; name the files or modules>
+<the design chosen by the maintainer>
 
 ## Choices the human owner made
 - <choice>
@@ -102,7 +115,7 @@ For each review finding: the root cause, the neighboring cases, and the tests.
 <current staging screenshots or frames for anything a person can see, with a side-by-side for generated media that has a reference, or "nothing visible changed">
 ```
 
-Copy the brief template from [briefs.md](briefs.md) into the coordinator's own notes. Briefs don't go in the repository.
+Copy the brief template from [briefs.md](briefs.md) into the owner bot's notes. Briefs don't go in the repository. The coordinator keeps a copy when it launches the worker.
 
 Add a short agent instructions file at the repository root with the root-cause rule, the branch rules, and the rule that workers don't merge, deploy, or resolve review threads. Open it as the first pull request (step 5), so the human approves the rules the same way as code.
 
@@ -110,20 +123,21 @@ Add a short agent instructions file at the repository root with the root-cause r
 
 Use a small, real issue for the first run, so problems with the setup show up early.
 
-1. **Human.** Approves the issue. The coordinator adds the `approved` label and puts the card in Backlog.
-2. **Coordinator.** Writes the brief from the template, including every choice the human stated.
-3. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The issue card stays in Backlog.
-4. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue. The coordinator then removes the issue card and puts the pull request card in In Progress.
-5. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
-6. **Coordinator.** Runs the pre-check (checklist A below).
-7. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
-8. **Coordinator.** Reads the findings. For each P1 or P2, converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule.
-9. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
-10. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 7 until a round comes back clean or the cap is reached.
-11. **Coordinator.** Runs the post-check (checklist C).
-12. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
-13. **Coordinator.** Checks the gate (checklist D). If it passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
-14. **Human.** Reviews, then merges to main or sends it back with comments.
+1. **Human or tracker.** Puts the issue in Triage.
+2. **Owner bot.** Comments with options. **Human.** Decides in a comment (edits count). The coordinator forwards that comment to the owner bot.
+3. **Owner bot.** Writes the brief from the template, including every choice from the human's comment, and moves the card to Backlog (or to Needs Input with questions first).
+4. **Coordinator.** Creates a checkout for the worker on the build machine, starts the worker in its own terminal session, and sends the brief. The issue card stays in Backlog.
+5. **Worker.** Cuts the branch from the latest main, makes a first commit, and opens a draft pull request against main that links the issue. The coordinator then removes the issue card and puts the pull request card in In Progress.
+6. **Worker.** Writes code and tests, runs the full suite, pushes, and reports the head commit and pass counts.
+7. **Coordinator.** Runs the pre-check (checklist A below).
+8. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of automated review.
+9. **Coordinator.** Reads the findings. For each P1 or P2, converts the pull request to a draft, moves the card to In Progress, and relays the finding to the worker with the root-cause rule.
+10. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
+11. **Coordinator.** Verifies each fix on the new head (checklist B), resolves the threads, and repeats from step 8 until a round comes back clean or the cap is reached.
+12. **Coordinator.** Runs the post-check (checklist C).
+13. **Coordinator.** Merges the change into the staging branch, redeploys staging, and checks that the commit staging serves contains the current head and that staging can run the change. If the change is visible, makes sure current screenshots or frames from staging are embedded in the pull request description.
+14. **Coordinator.** Checks the gate (checklist D). If it passes, moves the card to Human Review and tells the human in one message: what changed, the test counts, the staging result, and the link to review.
+15. **Human.** Reviews, then merges to main or sends it back with comments.
 
 After the first issue, note anything in the setup that didn't work and fix it before starting more workers.
 
@@ -133,7 +147,7 @@ Run these on the current head every time. A new push resets them.
 
 ### A. Pre-check, before the first automated review
 
-- [ ] The issue is approved and not parked.
+- [ ] The human has decided the issue (Triage comment or approval) and it is not parked.
 - [ ] The branch is cut from main and the pull request base is main.
 - [ ] The change does what the issue and brief asked, and nothing else.
 - [ ] Every choice in the brief is followed.
@@ -175,7 +189,7 @@ If any item fails later, move the card back to In Progress and convert the pull 
 
 ## 7. Running more than one worker
 
-- Start one worker per approved issue, each in its own checkout and session.
+- Start one worker per brief, each in its own checkout and session.
 - Check the build machine's load and memory before starting more.
 - Keep a list of active workers: issue, branch, session, last reported head.
 - When two changes touch the same files, start the second only after the first merges, or put the second in Pending.
