@@ -1,63 +1,65 @@
 # Glossary
 
-**Active.** The column for open issue cards that are assigned to the swarm and have open sub-issues or a linked open pull request.
+**Active.** The column for open issue cards that are assigned to the swarm. Each one has open sub-issues or a linked open pull request.
 
-**Automated reviewer.** A code-review service that reads a pull request and posts prioritized findings.
+**Automated reviewer.** A code review service. It reads a pull request and writes findings with priorities.
 
-**Backlog.** The column for issues that no pull request has picked up yet. Issues define scope. Pull requests carry the work through the other columns.
+**Backlog.** The column for issues that have an approved plan and that no pull request has started yet. Issues set the scope. Pull requests move the work through the other columns.
 
-**Board.** The project tracker with one card per issue or pull request, arranged in columns.
+**Board.** The project tracker. It has one card for each issue or pull request, in columns.
 
-**Brief.** The owner bot's written instructions to a worker for one change: a whole issue, or a named part of one.
+**Brief.** The written instructions of the owner bot to a worker for one change. A change is a full issue or a named part of one.
 
-**Coordinator bot.** The agent that runs the pull-request loop, forwards Triage comments to the owner bot, steers workers, checks changes, and moves cards.
+**Coordinator bot.** The agent that runs the pull request loop. It sends Triage comments to the owner bot, steers workers, checks changes, and moves cards.
 
-**Discuss.** The column for issues that need careful thought or a conversation. They are set aside so simple triage items flow first. The human comments on the issue, and the agent responds by rewriting the issue body to match those answers, repeating until the issue is ready for Backlog or Active. No worker starts on a Discuss item. The coordinator does not count it as waiting on the human. Agents do not move the card forward on their own.
+**Discuss.** The column for issues that need careful thought or a conversation. They wait here so that simple Triage items move first. The human writes comments on the issue. The agent then writes the issue body again to agree with the answers. This continues until the issue is ready for Backlog or Active. No worker starts on a Discuss item. The coordinator does not count it as waiting on the human. Agents do not move the card forward themselves.
 
 **Draft.** A pull request that is not ready for review. Changes in In Progress are drafts.
 
-**Finding.** A defect a reviewer reports. P1 must be fixed. P2 should be fixed before human review.
+**Finding.** A defect that a reviewer reports. You must fix a P1. You must fix a P2 before human review.
 
-**Gate.** The set of conditions a pull request must meet before its card moves to Human Review. Each condition is checked on the current head, by automation as well as by people.
+**Gate.** The conditions that a pull request must meet before its card moves to Human Review. Automation and people check each condition on the current head.
 
-**Head.** The latest commit on a pull request's branch. Checks apply to the current head only.
+**Head.** The latest commit on the branch of a pull request. Checks apply only to the current head.
 
 **Human owner.** The person who decides Triage issues, reviews finished work, merges to main, and deploys.
 
-**Issue title.** A short headline that describes the present state. A plain statement such as "X does Y" is a bug report: it happens now, and we do not want it. A wanted change uses "should".
+**Human Review.** The column for finished pull requests that wait on the human to test them and merge them to main. It holds exactly two pull requests. When it holds only one pull request and no independent pull request is ready, one stacked pull request on that one can go in.
 
-**Issue type.** A GitHub type on every issue: Feature, Bug, or Task.
+**Inbox.** The column for items that are out of the flow for now, and, after launch, for new tickets from customers.
+
+**Independent pull request.** A pull request that merges cleanly onto main, has no unmerged commits of another Human Review pull request, and merges cleanly together with each Human Review pull request. The human can merge or reject it with no effect on the others.
+
+**Issue title.** A short headline that tells the present state. A plain statement, such as "X does Y", is a bug report: it occurs now, and we do not want it. A wanted change uses "should".
+
+**Issue type.** A GitHub type on each issue: Feature, Bug, or Task.
 
 **Main.** The production branch. Only the human merges into it.
 
 **Needs Input.** The column for draft pull requests where a human must answer a question from the worker or the coordinator.
 
-**Owner bot.** The agent that owns product decisions for an area of the board: Triage options, questions on Triage issues, and briefs.
+**Neighboring cases.** Other examples of the same class of defect as a finding.
 
-**Neighboring cases.** Other instances of the same class of defect as a finding.
+**Ops agent.** The only agent that can make root-level changes on shared machines.
 
-**Ops agent.** The one agent allowed to make root-level changes on shared machines.
+**Owner bot.** The agent that owns the product decisions for an area of the board: Triage options, questions on Triage issues, and briefs.
 
-**Human Review.** The column for finished pull requests that wait on the human to test and merge to main. It holds exactly two pull requests. When it holds only one pull request and no independent pull request is ready, one stacked pull request built on that one may enter.
+**Pending.** The column for finished pull requests that wait. A pull request waits here when it depends on another unmerged pull request, or when no Human Review slot is open. It is a queue sorted by conflict count. One fully gated pull request is ready next.
 
-**Independent pull request.** A pull request that merges cleanly onto main, contains no unmerged commits of another Human Review pull request, and merges cleanly together with each Human Review pull request. The human can merge or reject it without an effect on the others.
+**Pull request title.** A short headline that completes the sentence "Merging this pull request will ...". It starts with a verb in the imperative.
 
-**Pending.** The column for a short, ordered buffer of finished pull requests that are ready to merge and that do not conflict with the current Human Review pull requests or with each other. The buffer is rebased ahead of time, kept small, and refilled after each Human Review decision.
+**Ready.** A pull request that is marked for review. When a card moves to Auto Review, its pull request becomes ready.
 
-**Stacked pull request.** A pull request whose head also contains the changes of a base pull request that is in Human Review. Its body starts with a banner that names the base. Human Review holds at most one, and only when the base is the only other pull request there. If the base is rejected, the coordinator resets it to its plain branch before the human can merge it.
+**Root-cause rule.** Fix the cause of a finding, write a list of its neighboring cases, and test each one.
 
-**Pull request title.** A short headline that completes the sentence "Merging this pull request will ..." and starts with an imperative verb.
+**Round.** One automated review of the current head. There is a maximum number of rounds.
 
-**Ready.** A pull request marked for review. Moving a card to Auto Review marks it ready.
+**Stacked pull request.** A pull request whose head also has the changes of a base pull request that is in Human Review. Its body starts with a banner that names the base. Human Review holds a maximum of one stacked pull request. If the human rejects the base, the coordinator resets the stacked pull request to its plain branch before the human can merge it.
 
-**Root-cause rule.** Fix the cause of a finding, list its neighboring cases, and test each one.
+**Staging.** A test environment that the staging branch feeds. The staging branch is an integration branch. It is never merged into main. The branch collects many changes. Thus the commit that staging serves is usually a merge that contains the head of a pull request, not the head itself.
 
-**Round.** One automated review of the current head. Rounds have a cap.
+**Swarm assignment.** The `swarm` label on an issue. An issue in Active must have this label. It must also have open sub-issues or a linked open pull request.
 
-**Swarm assignment.** The `swarm` label on an issue. An issue in Active must carry it, and must also have open sub-issues or a linked open pull request.
+**Triage.** The column for open issues that have suggested plans. They wait on the human to decide.
 
-**Triage.** The first board column. New issues wait here for the owner bot to propose options and the human to decide.
-
-**Staging.** A test environment fed by the staging branch, an integration branch that is never merged into main. Because the branch collects many changes, the commit staging serves is usually a merge that contains a pull request's head, not the head itself.
-
-**Worker agent.** A coding agent in a terminal session that owns one change.
+**Worker agent.** A coding agent in a terminal session. It owns one change.

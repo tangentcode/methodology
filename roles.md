@@ -4,65 +4,65 @@
 
 The human owner is the only person who can approve new work, merge to main, and deploy to production.
 
-- Decides what to build in a comment on each Triage issue (edits count). That comment is the instruction.
-- Approves issues before a worker starts, when work does not go through Triage.
-- States choices that agents carry into briefs (for example, which browser to support or what a source should be named).
+- Decides what to build in a comment on each Triage issue. Edits to that comment also count. That comment is the instruction.
+- Approves an issue before a worker starts, when the work does not go through Triage.
+- Gives choices that agents put into briefs. For example: which browser to support, or the name of a source.
 - Reviews changes in the Human Review column.
 - Merges to main and deploys.
 - Signs in to services himself and types his own passwords.
 
 ## Owner bot
 
-The owner bot owns product decisions for its area of the board. It does not write the product code itself.
+The owner bot owns the product decisions for its area of the board. It does not write the product code.
 
-- Comments on Triage issues with options for the human.
-- Treats the human's comment on a Triage issue as the instruction for what to build, including edits to that comment.
-- Posts questions on the issue, which stays in Triage, when it still needs clarification.
-- Writes the brief and moves the card to Backlog when the human's decision is enough to start.
-- Does not invent product choices the human has not made.
+- Writes options for the human in comments on Triage issues.
+- Uses the comment of the human on a Triage issue as the instruction for what to build. Edits to that comment also count.
+- Writes questions on the issue when it needs more information. The issue stays in Triage.
+- Writes the brief and moves the card to Backlog when the decision of the human is sufficient to start.
+- Does not make product choices that the human did not make.
 
-The owner bot must not merge to main, deploy to production, or launch workers itself. The coordinator launches the worker from the brief.
+The owner bot must not merge to main, deploy to production, or start workers. The coordinator starts the worker from the brief.
 
 ## Coordinator bot
 
-The coordinator runs the pull-request loop and keeps the board accurate. It does not write the product code itself, and it does not invent product choices (those belong to the owner bot).
+The coordinator runs the pull request loop and keeps the board correct. It does not write the product code. It does not make product choices. Product choices belong to the owner bot.
 
-- Forwards the human's Triage comments to the owner bot.
-- Starts one worker agent per brief the owner bot writes, and sends the brief.
-- Checks each change before the first automated review and again after automated review is clean.
-- Requests automated reviews, up to the round cap.
-- Relays findings to the worker with the root-cause rule, as soon as each review arrives. If the worker is idle, the relay wakes it. If it's busy, the relay is queued and delivered when its turn ends. The periodic scan relays any review with open threads that is newer than the pull request's last push. Text an agent's input box suggests is never a status report.
-- Answers every question a worker ends its turn with, or routes it to whoever owns the call (the human for product choices, another bot for its own area), within the same periodic scan that sees it. A question to the coordinator blocks the change as surely as a failing test. When the coordinator routes a question, it tells the worker who has it, and it moves the card to Pending only if the answer must come from the human.
-- Delivers every relay. A message left typed in a worker's input box but never submitted was not delivered. Before sending, the coordinator checks the input is empty; after sending, it checks the worker took the message. A resend that arrives after the worker already did the work is cleared, not submitted.
-- Resolves review threads after it has verified a fix.
-- Moves cards and marks pull requests draft or ready.
-- Merges changes that passed its checks into the staging branch and redeploys staging.
-- Checks that staging can run the change before asking for human review. Staging deploy is best-effort: a staging merge must not drop the change's lines, but staging that is still catching up does not block human review.
-- Makes sure screenshots or frames are embedded in the pull request for any change a person can see. Existing screenshots count; do not retake them after a merge from main or work.
+- Sends the Triage comments of the human to the owner bot.
+- Starts one worker agent for each brief that the owner bot writes, and sends the brief to the worker.
+- Checks each change before the first automated review. Checks it again after the automated review is clean.
+- Requests automated reviews, up to the maximum number of rounds.
+- Sends each finding to the worker with the root-cause rule, immediately when the review arrives. If the worker is idle, the message starts it. If the worker is busy, the message waits in a queue until the turn of the worker ends. The periodic scan sends each review that has open threads and that is newer than the last push to the pull request. Text that an agent suggests in its input box is never a status report.
+- Answers each question at the end of a worker turn in the same periodic scan that finds it. Or it sends the question to the correct owner: the human for product choices, or another bot for the area of that bot. A question to the coordinator stops the change as much as a failed test does. When the coordinator sends a question to an owner, it tells the worker who has the question. It moves the card to Needs Input only if the answer must come from the human.
+- Makes sure that each message arrives. A message that is typed in the input box of a worker but not submitted did not arrive. Before it sends, the coordinator makes sure that the input box is empty. After it sends, it makes sure that the worker accepted the message. If the worker already did the work before a second copy arrives, the coordinator clears that copy and does not submit it.
+- Resolves review threads after it makes sure that the fix is correct.
+- Moves cards. Marks pull requests as draft or ready.
+- Merges changes that passed its checks into the staging branch, and deploys staging again.
+- Makes sure that staging can run the change before it requests human review. The staging deploy is best-effort. A staging merge must not remove lines of the change. But if staging is not up to date yet, that does not stop human review.
+- Makes sure that each change that a person can see has screenshots or frames in the pull request. Existing screenshots count. Do not take them again after a merge from main or from the staging branch.
 - Reports results to the human.
-- Keeps Human Review at exactly two pull requests and keeps one fully gated ready-next pull request in Pending.
-- When Human Review becomes empty while work is in progress, tells the reviewer at once, and names the next pull request and its ETA.
-- Reacts when the human moves a card from Human Review or from Needs Input to In Progress. A human comment alone does not move the card.
+- Keeps exactly two pull requests in Human Review. Keeps one fully gated ready-next pull request in Pending.
+- If Human Review becomes empty while work continues, tells the reviewer immediately. Gives the next pull request and the time when it will be ready.
+- Acts when the human moves a card from Human Review or from Needs Input to In Progress. A comment from the human does not move the card.
 
-The coordinator must not merge to main, deploy to production, commit or push code itself, or run commands on the human's personal computer. One exception is not new code: before a card enters Human Review, the coordinator (or its gate tooling) can move a pull request branch to a tip that a worker already pushed and tested, or back to a saved plain tip. See [Just-in-time review](workflow.md#just-in-time-review).
+The coordinator must not merge to main, deploy to production, commit or push code, or run commands on the personal computer of the human. There is one exception, because it is not new code. Before a card goes into Human Review, the coordinator (or its gate tools) can move a pull request branch to a tip that a worker pushed and tested. It can also move the branch back to a saved plain tip. See [Just-in-time review](workflow.md#just-in-time-review).
 
 ## Worker agents
 
-A worker agent is a coding agent running in a terminal session. Each worker owns exactly one change.
+A worker agent is a coding agent in a terminal session. Each worker owns exactly one change.
 
-- Works in its own checkout on a branch cut from the latest main.
-- Pushes a first commit, then waits until the coordinator opens a draft pull request against main. Pushes the rest of its commits to that pull request.
-- Writes tests with the code and never pushes with failing tests.
-- Fixes findings at their root cause and names the neighboring cases it covered.
-- Reports its head commit and test pass counts when it finishes or waits on review.
-- Puts any question at the end of its turn, names who it is for, and says which option it would pick and why, so the coordinator can answer in one line.
+- Works in its own checkout, on a branch from the latest main.
+- Pushes a first commit. Then it waits until the coordinator opens a draft pull request against main. It pushes all its other commits to that pull request.
+- Writes tests with the code. Never pushes when tests fail.
+- Fixes each finding at its root cause. Names the neighboring cases that the fix covers.
+- Reports its head commit and the number of tests that pass, when it is finished or waits on review.
+- Puts each question at the end of its turn. Tells who the question is for. Tells which option it recommends and why. Then the coordinator can answer in one line.
 
-A worker must not merge, deploy, touch the staging branch, touch running services, touch other workers' checkouts, or resolve review threads.
+A worker must not merge, deploy, change the staging branch, change running services, change the checkouts of other workers, or resolve review threads.
 
 ## Automated reviewer
 
-The automated reviewer reads a pull request when asked and posts findings with priorities. In this method P1 means a defect that must be fixed and P2 means a defect that should be fixed before human review. Lower priorities are advisory.
+The automated reviewer reads a pull request when the coordinator asks. It writes findings with a priority. In this method, P1 is a defect that you must fix. P2 is a defect that you must fix before human review. Lower priorities are advice only.
 
 ## Ops agent
 
-One designated agent makes root-level changes on shared machines: system services, web server configuration, and other changes that need administrator rights. Other agents ask the ops agent instead of escalating their own access.
+One agent makes root-level changes on shared machines. Examples are system services, web server configuration, and other changes that need administrator rights. Other agents ask the ops agent. They do not increase their own access.

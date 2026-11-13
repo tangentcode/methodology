@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% if page.path == "README.md" %}{% assign page_title = site.title %}{% else %}{% assign page_title = page.title | append: " · " | append: site.title %}{% endif %}
+  {% if page.path == "README.md" %}{% assign page_title = site.title %}{% else %}{% assign page_title = page.title | append: " - " | append: site.title %}{% endif %}
   <title>{{ page_title }}</title>
   <meta name="description" content="{{ site.description }}">
   <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
@@ -52,10 +52,10 @@
   <footer class="pager">
     {% if idx > 0 %}{% assign pidx = idx | minus: 1 %}{% assign prev = site.nav[pidx] %}
       {% if prev.file == "README.md" %}{% assign ph = '/' | relative_url %}{% else %}{% assign ph = prev.file | replace: '.md', '.html' | prepend: '/' | relative_url %}{% endif %}
-      <a class="prev" href="{{ ph }}">← {{ prev.label }}</a>
+      <a class="prev" href="{{ ph }}">&larr; {{ prev.label }}</a>
     {% else %}<span></span>{% endif %}
     {% assign nidx = idx | plus: 1 %}{% assign next = site.nav[nidx] %}
-    {% if next %}<a class="next" href="{{ next.file | replace: '.md', '.html' | prepend: '/' | relative_url }}">{{ next.label }} →</a>{% endif %}
+    {% if next %}<a class="next" href="{{ next.file | replace: '.md', '.html' | prepend: '/' | relative_url }}">{{ next.label }} &rarr;</a>{% endif %}
   </footer>
 </body>
 </html>
