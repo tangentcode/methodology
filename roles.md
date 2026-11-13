@@ -4,7 +4,7 @@
 
 The human owner is the only person who can approve new work, merge to main, and deploy to production.
 
-- Decides what to build in a comment on each Triage issue. Edits to that comment also count. That comment is the instruction.
+- Decides what to build in a comment on each Triage issue, or by a move of the issue to Active or to Backlog. Edits to that comment also count. A comment is the instruction. A move to Active, with no comment, is sufficient approval to start the worker.
 - Approves an issue before a worker starts, when the work does not go through Triage.
 - Gives choices that agents put into briefs. For example: which browser to support, or the name of a source.
 - Reviews changes in the Human Review column.
@@ -16,10 +16,10 @@ The human owner is the only person who can approve new work, merge to main, and 
 The owner bot owns the product decisions for its area of the board. It does not write the product code.
 
 - Writes options for the human in comments on Triage issues.
-- Uses the comment of the human on a Triage issue as the instruction for what to build. Edits to that comment also count.
-- Writes questions on the issue when it needs more information. The issue stays in Triage.
-- Writes the brief and moves the card to Backlog when the decision of the human is sufficient to start.
-- Does not make product choices that the human did not make.
+- Uses the comment of the human on a Triage issue as the instruction for what to build. Edits to that comment also count. A move of the issue to Active, with no comment, is also an approval.
+- Writes questions on the issue when it needs more information. The issue stays in Triage, unless the human already moved it to Active.
+- Writes the brief and moves the card to Backlog when the decision of the human is sufficient to start, unless the human already moved the issue to Active.
+- Does not make product choices that the human did not make. If the human moved the issue to Active while questions are still open, the worker takes the default or recommended answer. It states that default in the pull request body. The card does not go to Needs Input for those questions.
 
 The owner bot must not merge to main, deploy to production, or start workers. The coordinator starts the worker from the brief.
 
@@ -28,7 +28,7 @@ The owner bot must not merge to main, deploy to production, or start workers. Th
 The coordinator runs the pull request loop and keeps the board correct. It does not write the product code. It does not make product choices. Product choices belong to the owner bot.
 
 - Sends the Triage comments of the human to the owner bot.
-- Starts one worker agent for each brief that the owner bot writes, and sends the brief to the worker.
+- Starts one worker agent for each brief that the owner bot writes, and sends the brief to the worker. Also starts a worker when the human moves an issue to Active.
 - Checks each change before the first automated review. Checks it again after the automated review is clean.
 - Requests automated reviews, up to the maximum number of rounds.
 - Sends each finding to the worker with the root-cause rule, immediately when the review arrives. If the worker is idle, the message starts it. If the worker is busy, the message waits in a queue until the turn of the worker ends. The periodic scan sends each review that has open threads and that is newer than the last push to the pull request. Text that an agent suggests in its input box is never a status report.

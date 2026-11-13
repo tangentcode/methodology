@@ -2,9 +2,9 @@
 
 ## Artifacts
 
-- **Issue.** Gives one goal, the approach, and the acceptance criteria. Work starts as an issue in Triage. The human decides what to build in a comment on that issue. The title tells the present state. Each issue has a type: Feature, Bug, or Task. See [working-agreements.md](working-agreements.md).
+- **Issue.** Gives one goal, the approach, and the acceptance criteria. Work starts as an issue in Triage. The human decides what to build in a comment on that issue, or by a move of the issue to Active or to Backlog. The title tells the present state. Each issue has a type: Feature, Bug, or Task. See [working-agreements.md](working-agreements.md).
 - **Brief.** The instructions of the owner bot to one worker for one change. A change is a full issue or a named part of one. See [briefs.md](briefs.md).
-- **Pull request.** One for each change of a worker. Its branch starts from main, and it targets main. It starts as a draft. An issue usually becomes one pull request. But you can divide a large issue into many pull requests. Each one has its own worker and branch, and each one names the part of the issue that it covers. A partial pull request refers to the issue without a closing keyword, for example `Part of #N`. Only the pull request that completes the acceptance criteria of the issue uses a closing keyword, such as `Fixes #N`. Thus a merge of a partial change does not close the issue too early. The title completes the sentence "Merging this pull request will ..." and starts with a verb in the imperative.
+- **Pull request.** One for each change of a worker. Its branch starts from main, and it targets main. It starts as a draft. An issue usually becomes one pull request. But you can divide a large issue into many pull requests. Each one has its own worker and branch, and each one names the part of the issue that it covers. Only one of those pull requests is in a flow column at a time. If a follow-up must run at the same time as the first change, for example to supply evidence, make the follow-up a separate issue. A partial pull request refers to the issue without a closing keyword, for example `Part of #N`. Only the pull request that completes the acceptance criteria of the issue uses a closing keyword, such as `Fixes #N`. Thus a merge of a partial change does not close the issue too early. The title completes the sentence "Merging this pull request will ..." and starts with a verb in the imperative.
 - **Board.** One card for each issue or pull request. The column tells what occurs next.
 - **Staging branch.** An integration branch that collects changes for tests on the staging environment. It is never merged into main.
 
@@ -15,17 +15,18 @@ A pull request has the same milestone as the issue that it fixes. Then a board w
 - When you open a pull request for an issue that has a milestone, set the same milestone on the pull request.
 - When an issue gets a milestone, or its milestone changes, while a pull request for it is open, set that milestone on the pull request.
 - If one pull request fixes issues with different milestones, use the milestone with the earliest deadline.
+- If one pull request fixes more than one issue, only one of those issues is in Active. The others stay in Backlog until the pull request merges.
 - The coordinator checks this on each board sweep. It fixes each pull request whose milestone is not the same as the milestone of its issue.
 
 ## Board columns
 
 | Column | Holds | Who moves the card in |
 |---|---|---|
-| Inbox | Items that are out of the flow for now. After launch, new tickets from customers. A sandboxed agent reviews each ticket, does the steps to see the problem (if there is a problem), and suggests what to do | All |
+| Inbox | Items that are out of the flow for now. After launch, new tickets from customers. A sandboxed agent reviews each ticket, does the steps to see the problem (if there is a problem), and suggests what to do. Issues with the `work2` label stay here, even when they have a linked pull request | All |
 | Discuss | Issues that need careful thought or a conversation. They wait here so that simple Triage items move first | Human |
 | Triage | Open issues only. Each one has clear suggested plans from an agent (the owner bot), as options on the issue. Questions for the human also go on the issue, and the issue stays in Triage. The issues wait on the human to decide whether or when to do the work, to select a plan, or to send the issue back for more plans | Coordinator |
 | Backlog | Open issues only. Each one has an approved plan, but it is not in the current sprint. Workers can take these lower-priority issues when they have time | Human or coordinator |
-| Active | Open issues only. Each one is assigned to the swarm, and has sub-issues or a linked open pull request | Coordinator |
+| Active | Open issues only. Each one is assigned to the swarm, does not have the `work2` label, and has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label | Coordinator |
 | In Progress | Draft pull requests for active issues. A worker works on each one now | Coordinator |
 | Auto Review | Pull requests that are marked ready. The worker is finished, and the automated, adversarial reviewer runs | Coordinator |
 | Needs Input | Draft pull requests where the worker needs more information. The latest comment is a question from the worker or the coordinator that a human must answer. Examples: a missing decision, configuration, credential, or service. A comment does not move the card out of this column. The human moves the card out | Coordinator (in), human (out) |
@@ -50,20 +51,25 @@ Discuss is a side column. It is not a step in the loop. It holds issues that nee
 
 Each pull request card must have a Status. Set a new card to In Progress if the pull request is a draft or still gets pushes. If not, set it to Auto Review and request a review. Never leave the Status empty.
 
-Issues and pull requests use different columns. Issues go in Inbox, Discuss, Triage, Backlog, and Active. Pull requests go in all the columns from In Progress to Parked. Do not remove an issue card when a pull request links it. The issue moves to Active and stays there while the pull request is open. When the human merges the pull request, close the issue, move it out of Active, and delete the branch. When the blocker of a Pending pull request merges, the coordinator updates the pull request and moves it to Human Review through the gate.
+Issues and pull requests use different columns. Issues go in Inbox, Discuss, Triage, Backlog, and Active. Pull requests go in all the columns from In Progress to Parked. Do not remove an issue card when a pull request links it. If the issue does not have the `work2` label, it moves to Active and stays there while that pull request is open in a flow column. Issues with the `work2` label stay in Inbox, even when they have a linked pull request. The pull request of a `work2` issue still moves through the flow columns in the usual way. It does not move the issue out of Inbox, and it does not count toward the Active total. When the human merges a pull request of an Active issue, close the issue, move it out of Active, and delete the branch. When the human merges a pull request of a `work2` issue, close the issue in Inbox and delete the branch. When the blocker of a Pending pull request merges, the coordinator updates the pull request and moves it to Human Review through the gate.
 
-When the human approves an issue, the coordinator starts a worker. The worker pushes a first commit on its branch. Then the coordinator assigns the issue to the swarm and opens a draft pull request from that branch, with a closing link such as `Fixes`. Only then does the issue card move to Active, and only then does the worker continue. The issue is never in Active without that link. A "Part of" mention is not a closing link.
+The human approves an issue in a Triage comment, or by a move of the issue to Active or to Backlog. A move to Active, with no comment, is sufficient approval to start the worker. A move to Backlog approves the plan, but does not start the worker yet.
 
-Active holds only open issues that are assigned to the swarm and that have open sub-issues or a linked open pull request. The pull request card moves through In Progress, Auto Review, Pending, and Human Review. Do not move the issue card through those columns. Do not remove it from the board while a linked pull request or a sub-issue is open.
+When the coordinator starts a worker, the worker pushes a first commit on its branch. Then the coordinator assigns the issue to the swarm and opens a draft pull request from that branch, with a closing link such as `Fixes`. Then the issue card stays in Active, or moves to Active, and the worker continues. After the pull request is open, the issue is never in Active without that link. A "Part of" mention is not a closing link.
 
-When all the linked pull requests merged or closed, and the issue has no open sub-issues, the issue goes out of Active. If a pull request used `Fixes` (or an equivalent closing phrase) and GitHub closed the issue, the issue card goes to Done. If the issue is still open, it goes back to Triage or Backlog, as necessary.
+If the issue has open questions when the human moves it to Active, the worker takes the default or recommended answer and builds it. It does not ask the human again for those questions. It states which default it took in the pull request body. The card does not go to Needs Input for those questions.
 
-An issue without a pull request and without open sub-issues never goes in Human Review, Pending, or Active. If it waits on the human, write a question on it and keep it in its column.
+Active holds only open issues that are assigned to the swarm, that do not have the `work2` label, and that have exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label. A pull request of a `work2` issue still moves through the flow columns, but it does not have an Active issue card and it does not count in that total. A pull request in a flow column belongs to exactly one Active issue. If one pull request fixes more than one issue, only one of those issues is in Active, and the others stay in Backlog until the pull request merges. An Active issue has only one pull request in a flow column at a time. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. The pull request card of an Active issue moves through the flow columns. Do not move the issue card through those columns. Do not remove the issue from the board while that linked pull request is open.
+
+When the issue no longer has exactly one open linked pull request in a flow column, it goes out of Active. If a pull request used `Fixes` (or an equivalent closing phrase) and GitHub closed the issue, the issue card goes to Done. If the issue is still open, it goes back to Triage or Backlog, as necessary.
+
+An issue without a pull request never goes in Human Review, Pending, or Auto Review. The only time it is in Active without a pull request is the short interval after the human moves it there and before the coordinator opens the draft pull request. If an issue waits on the human and is not in Active, write a question on it and keep it in its column.
 
 ```mermaid
 flowchart LR
-    T[Triage] -->|human decides, brief written| B[Backlog]
-    B -->|assigned to the swarm, draft PR opened| AC[Active]
+    T[Triage] -->|human decides in a comment, brief written| B[Backlog]
+    T -->|human moves the issue to Active| AC[Active]
+    B -->|assigned to the swarm, draft PR opened| AC
     AC -.->|PR card starts here| IP[In Progress]
     IP -->|worker asks a question| NI[Needs Input]
     NI -->|human moves the card to In Progress| IP
@@ -77,7 +83,7 @@ flowchart LR
     HR -->|human merges to main| D[Done]
 ```
 
-The issue card stays in Active while its pull request is open. The pull request card moves through In Progress, Auto Review, Pending, and Human Review.
+The issue card stays in Active while its pull request is open in a flow column. The pull request card moves through In Progress, Auto Review, Needs Input, Pending, and Human Review.
 
 ### Move cards without a lost step
 
@@ -91,20 +97,22 @@ A push after the head that the coordinator checked sends a Human Review card bac
 
 New issues and complaints go into Triage. Each issue must give the code context for the related component and tell why the problem occurs. It must give two to four numbered fix options with a recommendation. A symptom and the expected behavior are not sufficient. The maintainer must be able to select with one comment.
 
-Work starts as an issue in Triage. The owner bot writes options in a comment on the issue. The human decides in a comment. That comment is the instruction for what to build. Edits to that comment also count. The coordinator sends the comment of the human to the owner bot.
+Work starts as an issue in Triage. The owner bot writes options in a comment on the issue. The human decides in a comment, or by a move of the issue to Active or to Backlog. A comment is the instruction for what to build. Edits to that comment also count. The coordinator sends the comment of the human to the owner bot. A move to Active, with no comment, is sufficient approval to start the worker.
 
 Then the owner bot does one of these:
 
-1. It writes its questions on the issue and keeps the card in Triage.
-2. It writes a brief and moves the card to Backlog. The coordinator starts a coding worker from that brief. The branch of the worker starts from main, and the base of the pull request is main.
+1. It writes its questions on the issue and keeps the card in Triage, unless the human already moved the issue to Active.
+2. It writes a brief and moves the card to Backlog, unless the human already moved the issue to Active. The coordinator starts a coding worker from that brief. The branch of the worker starts from main, and the base of the pull request is main.
+
+If the human moves the issue to Active while questions are still open, the worker does not wait. It takes the default or recommended answer, builds that answer, and states the default in the pull request body. The card does not go to Needs Input for those questions.
 
 Parked items stay parked until the human says otherwise. Product choices belong to the owner bot. The coordinator does not make product choices.
 
 ## The loop
 
-1. An issue goes into Triage. The owner bot writes options. The human decides in a comment.
-2. The owner bot writes a brief, or it first asks questions on the issue in Triage. The coordinator starts a worker. The worker makes a branch from main, pushes a first commit, and stops.
-3. The coordinator opens a draft pull request from that branch against main, with a closing link. It assigns the issue to the swarm and moves the issue card to Active. The pull request card moves to In Progress. The issue is never in Active without a link. Then the worker pushes code with tests to the pull request.
+1. An issue goes into Triage. The owner bot writes options. The human decides in a comment, or by a move of the issue to Active or to Backlog.
+2. The owner bot writes a brief, or it first asks questions on the issue in Triage. If the human moved the issue to Active, the coordinator starts a worker even when questions are still open. In that case the worker takes the default or recommended answer. The worker makes a branch from main, pushes a first commit, and stops.
+3. The coordinator opens a draft pull request from that branch against main, with a closing link. It assigns the issue to the swarm and moves the issue card to Active, or keeps it there. The pull request card moves to In Progress. After the pull request is open, the issue is never in Active without a link. If the worker took a default answer, the pull request body states which default it took. Then the worker pushes code with tests to the pull request.
 4. The coordinator does its pre-review check (see [review.md](review.md)).
 5. The coordinator marks the pull request ready, moves the card to Auto Review, and requests an automated review.
 6. For each P1 or P2 finding, the coordinator changes the pull request to a draft, moves the card to In Progress, and sends the finding to the worker with the root-cause rule. The worker fixes the finding and pushes. The coordinator examines the fix, resolves the thread, and goes back to step 5.
@@ -132,7 +140,7 @@ Each pull request card gets a status in the same action that adds it to the boar
 
 An issue is ready for a worker when:
 
-- The human decided what to build in a Triage comment, or approved the issue in a different way.
+- The human decided what to build in a Triage comment, or moved the issue to Active or to Backlog.
 - It gives the goal, the approach, and what is out of scope.
 - It has acceptance criteria that a person can check.
 - It has the choices of the human in it.
@@ -196,7 +204,7 @@ If the human rejects A (closes it without a merge, or sends it back so that it g
 
 A card in In Progress must have a live worker that does the work. A shell window or a saved session is not a live worker.
 
-- When a worker finishes, parks, or stops, the same action moves its card. A finished draft goes through the pre-check, is marked ready, and moves to Auto Review. A card that waits on a decision of the human moves to Needs Input, with the open question in a comment. A card that waits on another change moves to Pending and names that change. An issue card that has no pull request yet goes back to Backlog, with the question in a comment.
+- When a worker finishes, parks, or stops, the same action moves its card. A finished draft goes through the pre-check, is marked ready, and moves to Auto Review. A card that waits on a decision of the human moves to Needs Input, with the open question in a comment. There is one exception. If the human already moved the issue to Active with those questions open, the worker takes the default or recommended answer. It states the default in the pull request body. The card does not go to Needs Input for those questions. A card that waits on another change moves to Pending and names that change. An issue card that has no pull request yet, and that the human did not move to Active, goes back to Backlog, with the question in a comment.
 - A worker that ends its turn with a question about the next step is not finished. The coordinator answers the question, or sends it to the correct owner, in the same scan. It does not keep the card in In Progress without a worker.
 - A resume that fails is a board event. The coordinator reads the result of the resume. If no worker started, the coordinator starts one, or moves the card out of In Progress.
 - Each scan compares In Progress cards with live workers. A card without a live worker, or with an idle worker and no new push, is a stall. The scan fixes it in the same run.
@@ -211,7 +219,7 @@ A change that waits on a person or on the environment does not go to Pending. Ex
 
 A block must point in one direction only. Sometimes a change cannot show its evidence itself. For example, it adds code that nothing on the screen uses yet. Then the screenshot must come from the follow-up change that uses the code. The follow-up must not wait for the first change to merge, because the first change cannot go into Human Review without that evidence. That is a circular wait, and the two changes do not move. Do this:
 
-- Start the follow-up immediately. Its branch starts from main, with the branch of the first change merged into it. Its pull request targets main and names the first change as its blocker.
+- Start the follow-up immediately, as a separate issue. Then each change has its own Active card and its own pull request in a flow column. The branch of the follow-up starts from main, with the branch of the first change merged into it. Its pull request targets main and names the first change as its blocker.
 - Put the staging evidence of the follow-up into the two pull request descriptions. Then the first change can pass the gate.
 - On each scan, the coordinator makes sure that the blocker of each Pending card can move forward without that card. If the blocker cannot, the coordinator immediately breaks the cycle in this way.
 

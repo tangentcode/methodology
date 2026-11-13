@@ -1,6 +1,7 @@
 flowchart LR
     T[Triage] -->|human decides,<br/>brief written| B[Backlog]
-    B -->|assigned to the swarm,<br/>draft PR opened| AC[Active<br/><i>issue card</i>]
+    T -->|human moves<br/>the issue to Active| AC[Active<br/><i>issue card</i>]
+    B -->|assigned to the swarm,<br/>draft PR opened| AC
     AC -.->|PR card starts here| IP[In Progress<br/><i>PR is a draft</i>]
     IP -->|question for a human| NI[Needs Input]
     NI -->|human moves the card| IP
