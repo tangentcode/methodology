@@ -8,6 +8,6 @@ flowchart LR
     AR -->|P1 or P2 finding<br/>PR back to draft| IP
     AR -->|blocked on another change| P[Pending]
     P -->|blocker merged, PR updated,<br/>gate passes| HR
-    AR -->|clean + post-check +<br/>deployed and verified on staging| HR[Human Review]
+    AR -->|clean + post-check +<br/>deployed and verified on staging,<br/>screenshots in PR| HR[Human Review]
     HR -->|human requests changes<br/>or late finding| IP
     HR -->|human merges to main| D[Done]
