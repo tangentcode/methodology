@@ -10,7 +10,7 @@ The tools run the loop and the gate in [workflow.md](workflow.md) and [review.md
 - **Pending** is the published column for finished, gated pull requests that wait for Human Review. Some boards rename this column to Staging. The option id does not change, so no card loses its status. Commands that say "Pending" in their names act on this column under either name. This page uses the published name, Pending. Tools match columns by option id, not by name.
 - **Human Review** holds exactly two pull requests.
 
-The just-in-time target for Pending is three to five pull requests. That is enough for the human to review several items while the next pull request is prepared.
+The just-in-time target for Pending is three to five prepared pull requests. That is enough for the human to review several items while the next pull request is prepared. A prepared pull request is gated, is not blocked on another change, and can go into Human Review. Finished work that still waits on a blocker also sits in Pending, as in [Blocked work](workflow.md#blocked-work). Those blocked cards do not count toward the target. They do not stop a promotion or a pull step.
 
 ## What starts the tools
 
@@ -30,15 +30,15 @@ A move of a project card is a signal. It can mean that Human Review dropped to o
 
 A timer runs one pass of the tools on a regular interval. The tick is a safety net for lost events. It also does work that events do not cover. It reports stalls. It starts held launches when memory is free. It refills Pending when the buffer is short. New launches must not take memory or API quota away from the pull request that is closest to Human Review.
 
-On each pass, the tick reports the board status. If Human Review holds fewer than two pull requests, it promotes from Pending. If Pending holds fewer than its target, it starts the pull step for one Ready pull request. If a pull request has a clean automated review but no bot pass on that head, the tick records the pass. It then adds the pull request to Ready, as a column move or as an update of the ordered list.
+On each pass, the tick reports the board status. If Human Review holds fewer than two pull requests, it promotes a prepared pull request from Pending. If the prepared buffer in Pending is below its target, it starts the pull step for one Ready pull request. If a pull request has a clean automated review but no bot pass on that head, the tick records the pass. It then adds the pull request to Ready, as a column move or as an update of the ordered list.
 
 The tick opens a draft pull request only when its worker can start, and it checks that the worker started. A draft with no live worker does not sit in In Progress.
 
 ## The pull step into Pending
 
-Pending is a buffer. The just-in-time target is three to five pull requests. Each of those pull requests is already merged into the integration branch and gated. Independent pull requests keep their own branches. The tools make a speculative stack only when no independent pull request fits, under the conditions in [Just-in-time review](workflow.md#just-in-time-review). They do only one speculative rebase at a time. A pull request that moves from Pending into Human Review must have no unmerged change other than its own. The only exception is the one permitted stacked pull request on a single Human Review base. Human Review and Pending together are the only pull requests that are merged into the integration branch. The deploy to the staging environment is best-effort.
+Pending holds the prepared buffer and, separately, finished pull requests that still wait on a blocker. The just-in-time target is three to five prepared pull requests. Each prepared pull request is already merged into the integration branch and gated. Independent pull requests keep their own branches. The tools make a speculative stack only when no independent pull request fits, under the conditions in [Just-in-time review](workflow.md#just-in-time-review). They do only one speculative rebase at a time. A pull request that moves from Pending into Human Review must have no unmerged change other than its own. The only exception is the one permitted stacked pull request on a single Human Review base. Human Review and the prepared pull requests in Pending together are the only pull requests that are merged into the integration branch. The deploy to the staging environment is best-effort.
 
-When Pending has fewer pull requests than its target, one worker takes the top Ready pull request and prepares it. Ready pull requests wait in this order: milestone first, then fewest conflicts, then oldest. This preparation is the pull step. Only one pull request is prepared at a time.
+When the prepared buffer in Pending is below its target, one worker takes the top Ready pull request and prepares it. Ready pull requests wait in this order: milestone first, then fewest conflicts, then oldest. This preparation is the pull step. Only one pull request is prepared at a time.
 
 1. Merge main into the pull request if that is needed. The coding agent of that pull request makes any code fixes.
 2. Merge the pull request into the integration branch.
@@ -46,7 +46,7 @@ When Pending has fewer pull requests than its target, one worker takes the top R
 4. Confirm that CI is green on this head, and that the pull request body is complete.
 5. Run the Human Review gate, including its best-effort staging rule. If the gate passes, the card goes to Pending. If the gate fails, the card goes back to In Progress with the reason, and the worker tries the next Ready pull request.
 
-When Human Review drops to one, the first Pending card moves to Human Review at once. Then the pull step refills Pending. The tools do not merge, deploy, or gate any pull request other than the one that is being pulled into Pending.
+When Human Review drops to one, the first prepared pull request in Pending moves to Human Review at once. Then the pull step refills the prepared buffer. The tools do not merge, deploy, or gate any pull request other than the one that is being pulled into Pending.
 
 ## The global lock
 
@@ -80,7 +80,7 @@ With no flag, it only checks and prints a table. `--apply N` takes the lock, che
 
 `pending-promote` is the promote command and the pull step. The column it reads is Pending, also when a board calls that column Staging.
 
-With no flag, or with a dry-run flag, it only shows the plan. `--apply` takes the lock and does the work. If Human Review has an open slot, it moves the first Pending card into Human Review, always through `hr-gate --apply`. If Pending is below its target, it runs the pull step for the next Ready pull request. If the human rejected a base pull request, it moves each stacked pull request back to In Progress. It also resets those branches.
+With no flag, or with a dry-run flag, it only shows the plan. `--apply` takes the lock and does the work. If Human Review has an open slot, it moves the first Pending card into Human Review, always through `hr-gate --apply`. If the prepared buffer in Pending is below its target, it runs the pull step for the next Ready pull request. If the human rejected a base pull request, it moves each stacked pull request back to In Progress. It also resets those branches.
 
 ### active-gate
 
@@ -88,7 +88,7 @@ With no flag, or with a dry-run flag, it only shows the plan. `--apply` takes th
 
 ### flow-status
 
-`flow-status` does not change the board. It prints a report of the flow rules. The report says whether Human Review holds two pull requests, whether Pending is inside its buffer, and whether a ready-next pull request exists. The report ends in `OK` or `VIOLATED`.
+`flow-status` does not change the board. It prints a report of the flow rules. The report says whether Human Review holds two pull requests, and whether the prepared buffer in Pending is inside its target. It also says whether a ready-next pull request exists. The report ends in `OK` or `VIOLATED`.
 
 ### ci-last-check
 
