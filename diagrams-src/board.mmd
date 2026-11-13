@@ -6,8 +6,8 @@ flowchart LR
     NI -->|human moves the card| IP
     IP -->|coordinator pre-check passes<br/>PR marked ready| AR[Auto Review<br/><i>automated reviewer runs</i>]
     AR -->|P1 or P2 finding<br/>PR back to draft| IP
-    AR -->|waits for a slot<br/>or another PR| P[Pending<br/><i>queue</i>]
-    P -->|slot opens,<br/>gate passes| HR
-    AR -->|clean + post-check +<br/>Linux checks green +<br/>screenshots in PR| HR[Human Review<br/><i>two slots</i>]
+    AR -->|clean + post-check| R[Ready queue<br/><i>not merged or gated</i>]
+    R -->|pulled, merge, deploy,<br/>gate passes| P[Pending<br/><i>buffer of 3 to 5</i>]
+    P -->|Human Review slot opens,<br/>card move| HR[Human Review<br/><i>exactly two</i>]
     HR -->|human moves the card<br/>or late finding| IP
     HR -->|human merges to main| D[Done]

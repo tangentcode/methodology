@@ -33,13 +33,13 @@ Make one board for the repository. Give it a single-select status field with the
 | In Progress | A worker works on the draft pull request now | draft pull request |
 | Auto Review | The worker is finished, and the automated reviewer reviews the change | ready pull request |
 | Needs Input | The latest comment is a question from a worker or the coordinator that a human must answer. A comment does not move the card out. The human moves it to In Progress when the question has an answer | draft pull request |
-| Human Review | The pull request passed the gate (see step 6). Exactly two pull requests. One stacked pull request can go in when Human Review holds only one pull request and no independent pull request is ready | ready pull request |
-| Pending | The change is ready, but it waits on another change or on a Human Review slot | ready pull request |
+| Human Review | The pull request was promoted from the front of Pending. Exactly two pull requests whenever two are ready, and never more than two | ready pull request |
+| Pending | A buffer of 3 to 5 fully prepared pull requests, each pre-merged, gated, and on staging. The first one goes into Human Review when a slot opens | ready pull request |
 | Done | The human merged it to main | merged pull request |
 | Canceled | The pull request is closed and not merged | closed pull request |
 | Parked | The draft has real work, but we decided not to merge it yet | draft pull request |
 
-See [workflow.md](workflow.md#board-columns) for the full meaning of each column.
+After Auto Review is clean and the post-check passes, the pull request joins the Ready queue. The Ready queue can be a board column or an internal sorted list. The exact form is open. See [workflow.md](workflow.md#board-columns) for the full meaning of each column.
 
 Board settings:
 
@@ -147,16 +147,16 @@ Use a small, real issue for the first run. Then problems with the setup show ear
 10. **Coordinator.** Reads the findings. For each P1 or P2, it changes the pull request to a draft, moves the card to In Progress, and sends the finding to the worker with the root-cause rule.
 11. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
 12. **Coordinator.** Makes sure of each fix on the new head (checklist B) and resolves the threads. Then it starts again from step 9 until a round is clean or the round limit is reached.
-13. **Coordinator.** Does the post-check (checklist C).
-14. **Coordinator.** Merges the change into the staging branch and deploys staging again. This is best-effort. Makes sure that staging can run the change. If a person can see the change, makes sure that the pull request description has screenshots or frames.
-15. **Coordinator.** Checks the gate (checklist D). Human Review holds exactly two pull requests. A pull request that is independent of each Human Review pull request goes to Human Review when a slot is open. Other pull requests go to Pending. When Human Review holds only one pull request and the next finished work depends on it, one stacked pull request can go in. It has the stacked banner at the top of its body (see [Stacked pull requests](workflow.md#stacked-pull-requests)). Before a pull request goes in with a vN tip as its head, the coordinator installs that tip and does steps 12 and 13 again on it. The coordinator never installs a vN tip that is built on a pull request that the human sent back. It keeps the plain branch if that branch is clean on main, or it asks the worker for a new vN branch without the rejected work. If the gate passes, the coordinator moves the card to Human Review. It tells the human in one message: what changed, the test counts, the staging result, and the link for the review.
+13. **Coordinator.** Does the post-check (checklist C). If the post-check passes, the pull request joins the Ready queue. Do not merge, deploy, or run the gate yet.
+14. **Coordinator.** When Pending has fewer than 3 to 5 fully prepared pull requests, starts the pull step for the first pull request in the Ready queue, under the shared lock. Merges the change into the staging branch, deploys staging again, and verifies that staging serves the correct commit. If a person can see the change, makes sure that the pull request description has screenshots or frames. If the lock is busy, stops at once, reports `busy`, and tries again later.
+15. **Coordinator.** Checks the gate (checklist D) only during that pull step. If the gate passes, the pull request goes to Pending. If the gate fails, the pull request goes back to In Progress with the reason, and the coordinator tries the next pull request in the Ready queue. When Human Review has an open slot, the coordinator moves the first Pending pull request to Human Review at once. That step is only a card move. Before a pull request enters Pending with a vN tip as its head, the coordinator installs that tip and does steps 12 to 14 again on it. The coordinator never installs a vN tip that is built on a pull request that the human sent back. It makes a speculative rebase only if no pull request in the Ready queue fits the current stack, and only one at a time. If the human sent a Human Review pull request back, it remakes each affected Pending pull request without the rejected work, one at a time. It tells the human in one message when a new card enters Human Review: what changed, the test counts, the staging result, and the link for the review.
 16. **Human.** Reviews. Then merges to main, or sends the change back with comments.
 
 After the first issue, record each part of the setup that did not work. Fix it before you start more workers.
 
 ## 6. Gate checklists
 
-Do these checks on the current head each time. A new push resets them.
+Do these checks on the current head each time. A new push resets them. Run the gate (checklist D) only when you pull a pull request into Pending, and only one at a time. If the shared lock is busy, the second operation stops at once, reports `busy`, and tries again later. Do not start a gate check on a draft pull request, or on a pull request that is still in the Ready queue. See [The pull into Pending](review.md#the-pull-into-pending).
 
 ### A. Pre-check, before the first automated review
 
@@ -182,20 +182,20 @@ Do these checks on the current head each time. A new push resets them.
 - [ ] All items in checklist A are still true.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] If the change touches timing, concurrency, or shared state, the related tests passed two times in sequence. Local test runs stay targeted and throttled.
-- [ ] The change does not wait on another unmerged change. If it waits, move the card to Pending and stop here. There is one exception. When Human Review holds exactly one pull request and no independent pull request is ready, one stacked pull request can continue to the gate. It has a banner at the top of the body that names the Human Review pull request that it depends on.
+- [ ] The change does not wait on another unmerged change that is not in Human Review, not in Pending, and not merged. If it waits on such a change, leave it out of the Pending buffer and stop here. If the blocker is already in Human Review or in Pending, the pull request can continue as a stack on that work.
 
 ### D. Gate into Human Review
 
-- [ ] The pull request is independent of each pull request in Human Review. It merges cleanly onto main, it has no unmerged commits of another Human Review pull request, and it merges cleanly together with each of them. Or it is the one permitted stacked pull request: when it goes in, Human Review holds only its base, and the body starts with the stacked banner. After it is in Human Review, it can stay while its base is in Human Review, also when independent pull requests go in next to it. If none of this is true, move the card to Pending and stop here.
-- [ ] If the pull request is stacked, its base is open in Human Review, or its base merged to main. If the human sent the base back or closed it, first reset the stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). Then stop here.
-- [ ] If a vN tip is the head, the coordinator checked that tip against the current stack. The tip has no commits from a pull request that the human rejected (sent back, or closed without a merge). This is also true for a Pending pull request whose vN tip is built on a pull request that is not in Human Review now: make that tip again first. Checklist C and the staging checks below ran on that head. If the vN tip is old, keep the plain branch when it is clean on main.
+- [ ] The pull request merges cleanly onto the current stack: main, the Human Review pull requests, and the Pending pull requests ahead of it. If it conflicts with a Human Review pull request, do not put it in Pending. Prefer the next pull request in the Ready queue that does not conflict. If it is a stacked pull request, the body starts with the stacked banner (see [Stacked pull requests](workflow.md#stacked-pull-requests)).
+- [ ] If the pull request is stacked, its base is open in Human Review or in Pending, or its base merged to main. If the human sent the base back or closed it, first reset the stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). Then stop here.
+- [ ] If a vN tip is the head, the coordinator checked that tip against the current stack and installed it before the card entered Pending. The tip has no commits from a pull request that the human rejected (sent back, or closed without a merge). Checklist C and the staging checks below ran on that head. Make a speculative rebase only if no pull request in the Ready queue fits, and only one at a time.
 - [ ] The pull request is not a draft.
 - [ ] The pull request can merge into main.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] Checklist C passed on this head.
 - [ ] The Linux checks in GitHub Actions are green on this exact head.
 - [ ] The card is a pull request, not an issue.
-- [ ] The staging deploy is best-effort. Merge the change into the staging branch and deploy staging again when you can. If you merge it, make sure that the staging merge did not remove lines of the change. Do not stop Human Review only because staging is not up to date.
+- [ ] The change is merged into the staging branch and deployed. Staging is verified to serve the correct commit. The staging merge did not remove lines of the change. A pull request does not enter Pending until this is true.
 - [ ] Staging can run the change, with the configuration, credentials, and services that it needs. If it cannot, do not use Pending. Change the pull request to a draft and move the card to Needs Input. Write a comment that names what is missing and who must supply it (the human, or the operator who owns the environment). When it is available, mark the pull request ready, check staging again, and do this checklist again. If the head changed, go back to In Progress.
 - [ ] The pull request description tells where and how to see the change.
 - [ ] Each change that a person can see, such as UI, rendered images, or video, has screenshots or frames in the pull request description. Existing screenshots count, also from an older head.

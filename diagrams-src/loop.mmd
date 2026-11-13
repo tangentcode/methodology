@@ -16,11 +16,12 @@ flowchart TD
     J -->|under the limit| G
     J -->|limit reached:<br/>coordinator examines,<br/>no more automated rounds| K
     H -->|clean| K{Coordinator<br/>post-check}
-    K --> L[Best-effort merge into staging,<br/>deploy staging,<br/>screenshots in the PR if visible]
-    L --> M{Gate into Human Review,<br/>Linux checks green}
-    M -->|passes, slot open| N[Human Review,<br/>two slots]
-    M -->|passes, no slot| P[Pending queue]
-    P -->|slot opens| N
+    K -->|fails| I
+    K -->|passes| RQ[Ready queue,<br/>no merge or gate yet]
+    RQ -->|Pending below target:<br/>pull one at a time| L[Merge into staging,<br/>deploy staging,<br/>verify served commit,<br/>screenshots in the PR if visible]
+    L --> M{Gate into Pending}
+    M -->|passes| P[Pending buffer,<br/>3 to 5]
+    P -->|Human Review slot opens,<br/>card move| N[Human Review,<br/>exactly two]
     M -->|fails| I
     N -->|human moves card to In Progress,<br/>or late finding| I
     N -->|human merges| O([Main])
