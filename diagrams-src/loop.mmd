@@ -3,8 +3,8 @@ flowchart TD
     B --> C{Human decides<br/>in a comment}
     C -->|needs clarification| NI[Needs Input]
     NI --> C
-    C -->|brief written| D[Coordinator starts worker<br/>card to In Progress]
-    D --> E[Worker opens draft PR<br/>against main, links issue]
+    C -->|brief written| D[Coordinator starts worker,<br/>issue stays in Backlog]
+    D --> E[Worker opens draft PR<br/>against main, links issue,<br/>code + tests;<br/>issue card leaves the board]
     E --> F{Coordinator<br/>pre-check}
     F -->|fails| E
     F -->|passes| G[Mark ready<br/>card to Auto Review]
@@ -14,7 +14,7 @@ flowchart TD
     J -->|under the cap| G
     J -->|cap reached:<br/>coordinator verifies,<br/>no more automated rounds| K
     H -->|clean| K{Coordinator<br/>post-check}
-    K --> L[Merge into staging branch,<br/>redeploy staging,<br/>screenshot if UI changed]
+    K --> L[Merge into staging branch,<br/>redeploy, verify staging serves<br/>a commit containing the head,<br/>screenshots in the PR if visible]
     L --> M{Gate into<br/>Human Review}
     M -->|passes| N[Human Review]
     M -->|fails| I

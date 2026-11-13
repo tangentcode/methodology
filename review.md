@@ -34,6 +34,8 @@ Automated review is capped at a fixed number of rounds (ten works well). After t
 
 A finding that arrives late, after a card has reached Human Review, still counts. The card returns to In Progress until it is fixed.
 
+Every review request has a deadline of 30 minutes. The coordinator records when it asked and which head it asked about. An acknowledgement, such as a reaction, doesn't count as a review. If no review of that head arrives in time, the coordinator asks once more. If the second request also passes its deadline, it marks the pull request as timed out, counts the round as used, says so in its next report to the human, and goes on to its post-check.
+
 ## The root-cause rule
 
 Every finding, from any reviewer, is handled the same way:
@@ -49,6 +51,10 @@ The coordinator includes this rule in every message that relays a finding. If a 
 ## Threads
 
 Workers do not resolve review threads. The coordinator resolves a thread after it has checked the fix on the current head. This keeps one party responsible for saying a finding is closed.
+
+## Acting on a clean review
+
+A clean review is an event too. When the latest automated review of the current head is clean and no P1 or P2 threads are open, the coordinator's automation starts the next step right away: the post-check, the staging merge, and the gate. It doesn't wait for the worker, which has usually finished already. The periodic scan treats a clean review with no post-check after it as a stall.
 
 ## The gate into human review
 
