@@ -1,6 +1,6 @@
 # A working methodology for a human owner and a team of agents
 
-This repository describes how one human owner works with a coordinator bot and a group of coding agents to ship changes to a software project. It is written as a generic method, in the spirit of Scrum or XP. It names principles, roles, artifacts, a workflow loop, and working agreements. It does not name any particular product, server, or service.
+This repository describes how one human owner works with a coordinator bot and a group of coding agents to ship changes to a software project. It is written as a generic method, in the spirit of Scrum or XP. It names principles, roles, artifacts, a workflow loop, and working agreements. The core documents do not name any particular product, server, or service. Team-specific naming and coding customs live in [team-conventions.md](team-conventions.md). Teams that adopt this method should edit that page.
 
 ## The problem it solves
 
@@ -22,8 +22,9 @@ See [principles.md](principles.md).
 
 ## Roles
 
-- **Human owner.** Sets priorities, approves new work, reviews finished changes, merges to main, and deploys.
-- **Coordinator bot.** Writes briefs, starts and steers worker agents, runs its own checks, moves cards, merges approved changes into staging, and reports to the human.
+- **Human owner.** Sets priorities, decides Triage issues in comments, reviews finished changes, merges to main, and deploys.
+- **Owner bot.** Owns product decisions for its area: proposes options on Triage issues, asks for clarification, and writes briefs.
+- **Coordinator bot.** Forwards Triage comments, starts and steers worker agents from briefs, runs its own checks, moves cards on the pull-request loop, merges approved changes into staging, and reports to the human.
 - **Worker agents.** Coding agents in terminal sessions. Each one owns one change on one branch.
 - **Automated reviewer.** A code-review service that reads each change and reports findings by priority.
 - **Ops agent.** The only agent that makes root-level changes on shared machines.
@@ -32,7 +33,7 @@ See [roles.md](roles.md).
 
 ## The loop in one paragraph
 
-The human approves an issue. The coordinator writes a brief and starts a worker agent. The worker opens a draft pull request against main early and pushes tests with the code. The coordinator checks the change, then the automated reviewer reviews it, for at most a fixed number of rounds. The worker fixes each finding at its root cause. When the change is clean, the coordinator checks it again, merges it into the staging branch, and redeploys staging. If the change passes the gate into human review, the card moves to Human Review. The human reviews it and merges it to main.
+Work starts as an issue in Triage. The owner bot proposes options. The human decides in a comment. The owner bot either asks questions on the issue in Triage or writes a brief and moves the card to Backlog. The coordinator starts a worker agent. The worker cuts the branch and pushes a first commit. The coordinator then opens a draft pull request against main with a closing link, assigns the issue to the swarm, and moves the issue card to Active. Only then does the worker continue, and it pushes tests with the code. The coordinator checks the change, then the automated reviewer reviews it, for at most a fixed number of rounds. The worker fixes each finding at its root cause. When the change is clean, the coordinator checks it again, merges it into the staging branch, and redeploys staging. If the change passes the gate into human review, the card moves to Human Review. The human reviews it and merges it to main.
 
 See [workflow.md](workflow.md) for the board and the full loop, and [review.md](review.md) for review rounds.
 
@@ -45,14 +46,22 @@ Starting a new project? Begin with [adopting.md](adopting.md).
 |---|---|
 | [principles.md](principles.md) | General principles, starting with optimizing for human attention |
 | [roles.md](roles.md) | Who does what, and what each role must not do |
-| [workflow.md](workflow.md) | Board columns, the loop, definitions of ready and done |
+| [workflow.md](workflow.md) | Triage, board columns, the loop, definitions of ready and done |
 | [review.md](review.md) | Review layers, round cap, the root-cause rule, the gate into human review |
-| [briefs.md](briefs.md) | What a brief contains, with a template |
+| [briefs.md](briefs.md) | What a brief contains (written by the owner bot), with a template |
 | [safety.md](safety.md) | Credentials, production, root-level operations, agent requests |
-| [working-agreements.md](working-agreements.md) | Day-to-day agreements about communication and conduct |
+| [working-agreements.md](working-agreements.md) | Day-to-day agreements about communication, titles, and conduct |
 | [adopting.md](adopting.md) | Setup guide for a new project: board, labels, templates, first issue, gate checklists |
 | [glossary.md](glossary.md) | Terms used in these documents |
+| [suggested-conventions.md](suggested-conventions.md) | Optional conventions and agent prompts a project can adopt, such as sparse comments |
+| [team-conventions.md](team-conventions.md) | This team's naming and coding customs; edit this page if you adopt the method |
 
 ## Adapting it
 
-Nothing here depends on a specific tool. You need a version-control host with pull requests, a board with columns, an automated reviewer that posts findings, a staging environment fed by an integration branch, and a way to send messages to agents in their sessions. Rename the columns and roles to fit your team, but keep the gate into human review and the rule that only the human merges and deploys.
+Nothing here depends on a specific tool. You need a version-control host with pull requests, a board with columns, an automated reviewer that posts findings, a staging environment fed by an integration branch, and a way to send messages to agents in their sessions. Rename the columns and roles to fit your team, but keep the gate into human review and the rule that only the human merges and deploys. Edit [team-conventions.md](team-conventions.md) so it records your team's customs, not the ones written for the original team.
+
+## Lessons
+
+### 2026-11-07: Keep full suites off the shared build box
+
+Moving full test suites onto a shared box without resource limits caused an out-of-memory outage and a reboot. The fix is memory and CPU caps for workers and tests, a two-slot throttle, targeted local tests, full Linux CI back in GitHub Actions, and parking fully pushed idle workers only under memory pressure. Saved sessions make them easy to resume. See [review.md](review.md) and [working-agreements.md](working-agreements.md).

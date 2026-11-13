@@ -35,6 +35,7 @@ nav:
   - { file: working-agreements.md, label: Working agreements }
   - { file: adopting.md, label: Adopting }
   - { file: glossary.md, label: Glossary }
+  - { file: team-conventions.md, label: Team conventions }
 exclude:
   - Gemfile
   - Gemfile.lock
