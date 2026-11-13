@@ -154,7 +154,7 @@ Run these on the current head every time. A new push resets them.
 - [ ] Everything in checklist A still holds.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] The tests pass twice in a row if the change touches timing, concurrency, or shared state.
-- [ ] The change is not blocked on another unmerged change. If it is, move the card to Pending and stop here.
+- [ ] The change is not blocked on another unmerged change. If it is, move the card to Pending and stop here. Exception: when Human Review holds exactly one pull request and no independent pull request is ready, one stacked pull request may continue to the gate, with a banner at the top of the body that names the Human Review pull request it depends on.
 
 ### D. Gate into Human Review
 
