@@ -1,6 +1,6 @@
 # Briefs
 
-A brief is the coordinator's written instruction to one worker agent for one issue. The worker should be able to start from the brief alone, without asking the coordinator for context.
+A brief is the coordinator's written instruction to one worker agent for one change: a whole issue, or a named part of one. The worker should be able to start from the brief alone, without asking the coordinator for context.
 
 ## What a brief contains
 
@@ -61,6 +61,7 @@ before you push. Never push with failing tests.
 - Don't resolve review threads.
 - Keep temporary files in your own working directory, not a shared temp directory.
 - <secret-handling rule, if the change touches credentials>
+- Write issues, pull request bodies, commit messages, and replies in ASD-STE100 style, in ASCII only (see working-agreements.md, Writing style).
 - Run the full suite for each component you touched and report pass counts.
 
 ## Reporting
