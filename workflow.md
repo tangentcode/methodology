@@ -8,6 +8,15 @@
 - **Board.** One card per issue or pull request. The column says what happens next.
 - **Staging branch.** An integration branch that collects changes for testing on the staging environment. It is never merged into main.
 
+## Milestones
+
+A pull request carries the same milestone as the issue it fixes, so that a board filtered by milestone shows the issues and the pull requests together.
+
+- When a pull request is opened for an issue that has a milestone, set the same milestone on the pull request.
+- When an issue gets a milestone, or its milestone changes, while a pull request for it is open, set that milestone on the pull request.
+- If one pull request fixes issues with different milestones, use the milestone of the earliest deadline.
+- The coordinator checks this on every board sweep and fixes any pull request whose milestone does not match its issue.
+
 ## Board columns
 
 | Column | Meaning | Who moves the card in |
