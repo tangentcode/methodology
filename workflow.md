@@ -51,6 +51,12 @@ flowchart LR
 11. The coordinator checks the full gate in [review.md](review.md). Only if it passes does the card move to Human Review.
 12. The human reviews. He merges to main, or sends the change back with comments, which returns it to step 6.
 
+### Pull requests that don't target main
+
+The human may approve a change that targets another long-lived branch, such as a deploy-tooling branch. It follows the same loop and skips only the steps that can't apply. For a change that can't go to staging, the gate's deploy conditions are replaced by the check its pull request names, such as the tooling's own test suite, run and recorded on the current head. "Mergeable against main" becomes "mergeable against its base". A skipped step never means the loop stops. After a clean automated review, the coordinator still runs its post-check and the gate, and moves the card to Human Review.
+
+Every pull request card gets a status in the same action that adds it to the board. The periodic scan picks up any open pull request whose card has no status, and any whose latest automated review of the current head is clean but has no coordinator post-check after it.
+
 ## Definition of ready
 
 An issue is ready for a worker when:
