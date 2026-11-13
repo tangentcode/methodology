@@ -26,6 +26,7 @@ defaults:
       layout: default
 nav:
   - { file: README.md, label: Home }
+  - { file: principles.md, label: Principles }
   - { file: roles.md, label: Roles }
   - { file: workflow.md, label: Workflow }
   - { file: review.md, label: Review }
@@ -34,6 +35,7 @@ nav:
   - { file: working-agreements.md, label: Working agreements }
   - { file: adopting.md, label: Adopting }
   - { file: glossary.md, label: Glossary }
+  - { file: team-conventions.md, label: Team conventions }
 exclude:
   - Gemfile
   - Gemfile.lock

@@ -17,7 +17,7 @@ The pre-check asks:
 
 - Does the change match the issue and brief, and nothing more?
 - Is the branch cut from main and the base set to main?
-- Do the tests exist, and do they pass when the coordinator runs them?
+- Do tests cover the change, and do the targeted local tests pass? Check any available current-head CI results too; drafts do not run full suites.
 - Did the worker report pass counts?
 
 The post-check repeats the pre-check on the current head and adds:
@@ -26,13 +26,26 @@ The post-check repeats the pre-check on the current head and adds:
 - Does the pull request body list the neighboring cases for each fix?
 - Is the pull request mergeable against main?
 
-The coordinator runs the tests twice when a change touches timing, concurrency, or shared state.
+The coordinator verifies two passing runs of the relevant tests when a change touches timing, concurrency, or shared state. Local reruns remain targeted and throttled; full suites run in Actions.
+
+## Testing and CI
+
+The maintainer set this policy on 2026-11-07. Earlier that day, PR CI was disabled to save Actions costs and full suites moved to the shared build box. Those suites exhausted memory and forced a reboot.
+
+- Full suites run in GitHub Actions on Linux for pushes to ready-for-review PRs and pushes to main. Skip drafts; marking a PR ready also starts validation. A newer push cancels the older run for that PR or branch.
+- Windows testing runs weekly only, not on PR pushes or manual dispatch.
+- Workers run only the targeted test files they changed locally. Use one Vitest worker: `--maxWorkers=1 --no-file-parallelism`. Broad validation belongs in Actions.
+- All local test and headless-browser runs use the shared slot throttle, which allows two runs at once across workers. Each run also stays inside the worker resource cap described in [working-agreements.md](working-agreements.md).
+- After staging (`work`) branch merges, the shared build box runs only quick staging smoke checks: verify the deployed commit, site authentication, and a remote smoke test. It never runs full suites.
+- The Human Review gate requires green Linux checks on the current PR head. An older head's results do not count.
 
 ## Round cap
 
 Automated review is capped at a fixed number of rounds (ten works well). After the cap, workers still fix every finding the coordinator or the human raises, but the coordinator verifies those fixes itself and requests no more automated reviews. The cap stops a change from cycling indefinitely on findings of diminishing value.
 
 A finding that arrives late, after a card has reached Human Review, still counts. The card returns to In Progress until it is fixed.
+
+Every review request has a deadline of 30 minutes. The coordinator records when it asked and which head it asked about. An acknowledgement, such as a reaction, doesn't count as a review. If no review of that head arrives in time, the coordinator asks once more. If the second request also passes its deadline, it marks the pull request as timed out, counts the round as used, says so in its next report to the human, and goes on to its post-check.
 
 ## The root-cause rule
 
@@ -50,10 +63,16 @@ The coordinator includes this rule in every message that relays a finding. If a 
 
 Workers do not resolve review threads. The coordinator resolves a thread after it has checked the fix on the current head. This keeps one party responsible for saying a finding is closed.
 
+## Acting on a clean review
+
+A clean review is an event too. When the latest automated review of the current head is clean and no P1 or P2 threads are open, the coordinator's automation starts the next step right away: the post-check, the staging merge, and the gate. It doesn't wait for the worker, which has usually finished already. The periodic scan treats a clean review with no post-check after it as a stall.
+
 ## The gate into human review
 
-A card moves to Human Review only when all of these hold on the current head. Check them in this order and record the result before moving the card:
+Human Review holds exactly two pull requests. One of them may be a stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). A card moves to Human Review only when all of these hold on the current head. Check them in this order and record the result before moving the card:
 
+- The pull request is independent of every pull request in Human Review. Or it is the one permitted stacked pull request, and its body starts with the stacked banner. To enter, its base must be the only pull request in Human Review. After it entered, it stays eligible while its base is in Human Review, even when independent pull requests enter next to it. If neither is true, the card goes to Pending instead.
+- If the pull request is stacked, its base is still open in Human Review, or it merged to main. A stacked pull request whose base was sent back or closed fails the gate, even if it is already in Human Review.
 - The card is a pull request. Issue cards never go in Human Review.
 - The pull request is not a draft.
 - It is mergeable against main. The gate trusts the forge's own mergeable state. If the forge reports conflicts with the pull request base, this check fails, even if a local merge-tree looks clean.
@@ -65,6 +84,15 @@ A card moves to Human Review only when all of these hold on the current head. Ch
 - Any change a person can see, such as UI, rendered images or generated video, has screenshots or frames embedded in the pull request description. Existing screenshots count, even if they were taken on an older head; do not retake them after a merge from main or work. Generated media includes a side-by-side with its reference when there is one. If there's any doubt about whether a change is visible, treat it as visible.
 
 Whatever automation moves cards has to check every condition on this list. A condition that's written down but not checked isn't part of the gate.
+
+### Checks that do not finish
+
+Waiting for a required check is not progress. A check that has not started or finished within its usual run time, plus a margin, is a stall:
+
+- The coordinator checks queued and running checks on every scan, not only failed ones. Note how long each one has waited.
+- When a required check is stuck, the coordinator starts a new run of the same check on the same head, by a manual run or by the event that starts the check. It records that the old run was stuck.
+- The gate reads only the newest run of each check on the current head. An older run that never finished must not block a newer run that passed. An older run that failed still counts until a newer run passes.
+- If a new run does not start either, the CI service is down. Tell the operator, and say which cards wait on it.
 
 If any condition fails later, for example after a new push or a late finding, the card goes back to In Progress.
 
