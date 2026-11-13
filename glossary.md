@@ -1,6 +1,6 @@
 # Glossary
 
-**Active.** The column for open issue cards that are assigned to the swarm. Each one does not have the `work2` label, and each one has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label. A pull request of a `work2` issue still moves through the flow columns, but it does not count in that total. A pull request in a flow column belongs to exactly one Active issue. If one pull request fixes more than one issue, only one of those issues is in Active. An Active issue has only one pull request in a flow column at a time. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. A move of an issue to this column, with no comment, is sufficient approval to start its worker.
+**Active.** The column for open issue cards that are assigned to the swarm. Each one does not have the `work2` label, and each one has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Ready, Staging, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label. A pull request of a `work2` issue still moves through the flow columns, but it does not count in that total. A pull request in a flow column belongs to exactly one Active issue. If one pull request fixes more than one issue, only one of those issues is in Active. An Active issue has only one pull request in a flow column at a time. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. A move of an issue to this column, with no comment, is sufficient approval to start its worker.
 
 **Automated reviewer.** A code review service. It reads a pull request and writes findings with priorities.
 
@@ -18,13 +18,14 @@
 
 **Finding.** A defect that a reviewer reports. You must fix a P1. You must fix a P2 before human review.
 
-**Gate.** The conditions that a pull request must meet before its card moves to Human Review. Automation and people check each condition on the current head. A gate check, a promotion from Pending, and a merge into the staging branch share one lock, so only one of them runs at a time. A second operation stops at once and reports `busy`. Gate operations skip draft pull requests. See [One gate or merge at a time](review.md#one-gate-or-merge-at-a-time).
+**Gate.** The conditions that a pull request must meet before it enters Staging. Automation and people check each condition on the current head, during the pull step, one pull request at a time. A later move from Staging to Human Review is only a card move. A gate check, a promotion from Staging, and a merge into the staging branch share one lock, so only one of them runs at a time. A second operation stops at once and reports `busy`. Gate operations skip draft pull requests and pull requests that are still in Ready. See [The pull into Staging](review.md#the-pull-into-staging).
+
 
 **Head.** The latest commit on the branch of a pull request. Checks apply only to the current head.
 
 **Human owner.** The person who decides Triage issues, reviews finished work, merges to main, and deploys.
 
-**Human Review.** The column for finished pull requests that wait on the human to test them and merge them to main. It holds exactly two pull requests. When it holds only one pull request and no independent pull request is ready, one stacked pull request on that one can go in.
+**Human Review.** The column for finished pull requests that wait on the human to test them and merge them to main. It holds exactly two pull requests whenever two prepared pull requests are available, and never more than two. The next card comes from the front of Staging, as a card move, in seconds after a slot opens. When it holds only one pull request, the first Staging pull request can go in as a stacked pull request if it depends on that one.
 
 **Inbox.** The column for items that are out of the flow for now, and, after launch, for new tickets from customers. Issues with the `work2` label stay here, even when they have a linked pull request.
 
@@ -44,11 +45,13 @@
 
 **Owner bot.** The agent that owns the product decisions for an area of the board: Triage options, questions on Triage issues, and briefs.
 
-**Pending.** The column for finished pull requests that wait. A pull request waits here when it depends on another unmerged pull request, or when no Human Review slot is open. It is a queue sorted by conflict count. One fully gated pull request is ready next.
+**Pending.** The former name of the Staging column. The board option id did not change when the column was renamed. Cards kept their status. Tools must match the option id, not the name. See [Staging](#staging).
 
 **Pull request title.** A short headline that completes the sentence "Merging this pull request will ...". It starts with a verb in the imperative.
 
-**Ready.** A pull request that is marked for review. When a card moves to Auto Review, its pull request becomes ready.
+**Ready.** The column for finished pull requests that wait to be pulled into Staging. It sits on the board between Needs Input and Staging. The worker is done, the automated review is clean, and the post-check of the coordinator passed on the head. The pull request is not merged into the staging branch, not deployed, and not gated. It is not on the staging environment. This is the finish line for coding agents. Agents work the backlog until their pull requests are in Ready. Pull requests wait here by milestone, then by fewest conflicts with the current stack, then by age. See [Just-in-time Human Review flow](review.md#just-in-time-human-review-flow).
+
+**Ready for review.** A pull request that is marked for review, not a draft. When a card moves to Auto Review, its pull request becomes ready for review.
 
 **Root-cause rule.** Fix the cause of a finding, write a list of its neighboring cases, and test each one.
 
@@ -56,7 +59,9 @@
 
 **Stacked pull request.** A pull request whose head also has the changes of a base pull request that is in Human Review. Its body starts with a banner that names the base. Human Review holds a maximum of one stacked pull request. If the human rejects the base, the coordinator resets the stacked pull request to its plain branch before the human can merge it.
 
-**Staging.** A test environment that the staging branch feeds. The staging branch is an integration branch. It is never merged into main. The branch collects many changes. Thus the commit that staging serves is usually a merge that contains the head of a pull request, not the head itself.
+**Staging.** The board column, formerly named Pending, for a buffer of 3 to 5 fully prepared pull requests. Each one is already merged into the staging branch, deployed, verified, gated, and pre-merged as a stack on main, the Human Review pull requests, and the Staging pull requests ahead of it. The first one goes into Human Review immediately when a slot opens. The pre-merge and the gate run only when a pull request is pulled into this column, one at a time. Only this column and Human Review are on the staging environment, about 7 pull requests in total.
+
+**Staging environment.** A test environment that the staging branch feeds. The staging branch is an integration branch. It is never merged into main. Only pull requests in the Staging column and in Human Review are merged into that branch and deployed here. Thus the commit that the staging environment serves is usually a merge that contains the head of a pull request, not the head itself.
 
 **Swarm assignment.** The `swarm` label on an issue. An issue in Active must have this label. It must also have exactly one open linked pull request in a flow column, and it must not have the `work2` label.
 

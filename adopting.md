@@ -29,17 +29,18 @@ Make one board for the repository. Give it a single-select status field with the
 | Discuss | The issue needs careful thought or a conversation. It waits here so that simple Triage items move first | issue |
 | Triage | An agent suggested plans, and the human must decide | issue |
 | Backlog | The plan is approved, but it is not in the current sprint | issue |
-| Active | The issue is assigned to the swarm, it does not have the `work2` label, and it has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Pending, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label | issue |
+| Active | The issue is assigned to the swarm, it does not have the `work2` label, and it has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Ready, Staging, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label | issue |
 | In Progress | A worker works on the draft pull request now | draft pull request |
 | Auto Review | The worker is finished, and the automated reviewer reviews the change | ready pull request |
 | Needs Input | The latest comment is a question from a worker or the coordinator that a human must answer. A comment does not move the card out. The human moves it to In Progress when the question has an answer | draft pull request |
-| Human Review | The pull request passed the gate (see step 6). Exactly two pull requests. One stacked pull request can go in when Human Review holds only one pull request and no independent pull request is ready | ready pull request |
-| Pending | The change is ready, but it waits on another change or on a Human Review slot | ready pull request |
+| Ready | The worker is done, the automated review is clean, and the post-check passed. The pull request is not on the staging environment. This is the finish line for coding agents | ready pull request |
+| Staging | A buffer of 3 to 5 fully prepared pull requests, each pre-merged, gated, and deployed to the staging environment. This column was formerly named Pending. The first one goes into Human Review when a slot opens | ready pull request |
+| Human Review | The pull request was promoted from the front of Staging. Exactly two pull requests whenever two prepared pull requests are available, and never more than two | ready pull request |
 | Done | The human merged it to main | merged pull request |
 | Canceled | The pull request is closed and not merged | closed pull request |
 | Parked | The draft has real work, but we decided not to merge it yet | draft pull request |
 
-See [workflow.md](workflow.md#board-columns) for the full meaning of each column.
+The Staging column was formerly named Pending. The board option id did not change, so no card lost its status. Tools must match the option id, not the name. See [workflow.md](workflow.md#board-columns) for the full meaning of each column.
 
 Board settings:
 
@@ -47,7 +48,8 @@ Board settings:
 - [ ] If the tracker can do it, add new issues and pull requests of the repository to the board automatically.
 - [ ] When a pull request merges, move its card to Done automatically.
 - [ ] When a pull request opens, give it a closing link (`Fixes`, or an equivalent). A "Part of" mention is not a closing link. Assign the issue to the swarm (the `swarm` label). Then move the issue card to Active, or keep it there if the human already moved it to Active. Keep the two cards, unless the issue has the `work2` label. The pull request card goes through the review loop. The issue card stays in Active while it has exactly one open linked pull request in a flow column. A pull request in a flow column belongs to exactly one Active issue. If one pull request fixes more than one issue, only one of those issues is in Active, and the others stay in Backlog until the pull request merges. Do not put a second pull request for the same issue into a flow column while the first is still there. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. Issues with the `work2` label stay in Inbox. Their pull requests still move through the review loop, but they do not count toward the Active total. The issue goes out of Active when it no longer has exactly one open linked pull request in a flow column.
-- [ ] New issues go to Inbox or Triage. An issue without a pull request never goes in Auto Review, Pending, or Human Review. The only time it is in Active without a pull request is the short interval after the human moves it there and before the coordinator opens the draft pull request.
+- [ ] New issues go to Inbox or Triage. An issue without a pull request never goes in Auto Review, Ready, Staging, or Human Review. The only time it is in Active without a pull request is the short interval after the human moves it there and before the coordinator opens the draft pull request.
+
 
 ## 3. Make labels
 
@@ -148,16 +150,17 @@ Use a small, real issue for the first run. Then problems with the setup show ear
 10. **Coordinator.** Reads the findings. For each P1 or P2, it changes the pull request to a draft, moves the card to In Progress, and sends the finding to the worker with the root-cause rule.
 11. **Worker.** Fixes the root cause, tests the neighboring cases, updates the pull request body, pushes, and reports.
 12. **Coordinator.** Makes sure of each fix on the new head (checklist B) and resolves the threads. Then it starts again from step 9 until a round is clean or the round limit is reached.
-13. **Coordinator.** Does the post-check (checklist C).
-14. **Coordinator.** Merges the change into the staging branch and deploys staging again. This is best-effort. Makes sure that staging can run the change. If a person can see the change, makes sure that the pull request description has screenshots or frames.
-15. **Coordinator.** Checks the gate (checklist D). Human Review holds exactly two pull requests. A pull request that is independent of each Human Review pull request goes to Human Review when a slot is open. Other pull requests go to Pending. When Human Review holds only one pull request and the next finished work depends on it, one stacked pull request can go in. It has the stacked banner at the top of its body (see [Stacked pull requests](workflow.md#stacked-pull-requests)). Before a pull request goes in with a vN tip as its head, the coordinator installs that tip and does steps 12 and 13 again on it. The coordinator never installs a vN tip that is built on a pull request that the human sent back. It keeps the plain branch if that branch is clean on main, or it asks the worker for a new vN branch without the rejected work. If the gate passes, the coordinator moves the card to Human Review. It tells the human in one message: what changed, the test counts, the staging result, and the link for the review.
+13. **Coordinator.** Does the post-check (checklist C). If the post-check passes, the pull request moves to Ready. Do not merge, deploy, or run the gate yet.
+14. **Coordinator.** When Staging has fewer than 3 to 5 fully prepared pull requests, starts the pull step for the first pull request in Ready, under the shared lock. Merges the change into the staging branch, deploys staging again, and verifies that staging serves the correct commit. If a person can see the change, makes sure that the pull request description has screenshots or frames. If the lock is busy, stops at once, reports `busy`, and tries again later.
+15. **Coordinator.** Checks the gate (checklist D) only during that pull step. If the gate passes, the pull request goes to Staging. If the gate fails, the pull request goes back to In Progress with the reason, and the coordinator tries the next pull request in Ready. When Human Review has an open slot, the coordinator moves the first Staging pull request to Human Review at once. That step is only a card move. Before a pull request enters Staging with a vN tip as its head, the coordinator installs that tip and does steps 12 to 14 again on it. The coordinator never installs a vN tip that is built on a pull request that the human sent back. It makes a speculative rebase only if no pull request in Ready fits the current stack, and only one at a time. If the human sent a Human Review pull request back, it remakes each affected Staging pull request without the rejected work, one at a time. It tells the human in one message when a new card enters Human Review: what changed, the test counts, the staging result, and the link for the review.
 16. **Human.** Reviews. Then merges to main, or sends the change back with comments.
 
 After the first issue, record each part of the setup that did not work. Fix it before you start more workers.
 
 ## 6. Gate checklists
 
-Do these checks on the current head each time. A new push resets them. Only one gate check, promotion from Pending, or merge into the staging branch runs at a time. If the shared lock is busy, the second operation stops at once, reports `busy`, and tries again later. Do not start a gate check on a draft pull request. See [One gate or merge at a time](review.md#one-gate-or-merge-at-a-time).
+Do these checks on the current head each time. A new push resets them. Run the gate (checklist D) only when you pull a pull request into Staging, and only one at a time. If the shared lock is busy, the second operation stops at once, reports `busy`, and tries again later. Do not start a gate check on a draft pull request, or on a pull request that is still in Ready. See [The pull into Staging](review.md#the-pull-into-staging).
+
 
 ### A. Pre-check, before the first automated review
 
@@ -183,21 +186,21 @@ Do these checks on the current head each time. A new push resets them. Only one 
 - [ ] All items in checklist A are still true.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] If the change touches timing, concurrency, or shared state, the related tests passed two times in sequence. Local test runs stay targeted and throttled.
-- [ ] The change does not wait on another unmerged change. If it waits, move the card to Pending and stop here. There is one exception. When Human Review holds exactly one pull request and no independent pull request is ready, one stacked pull request can continue to the gate. It has a banner at the top of the body that names the Human Review pull request that it depends on.
+- [ ] The change does not wait on another unmerged change that is not in Human Review, not in Staging, and not merged. If it waits on such a change, leave it out of the Staging column and stop here. If the blocker is already in Human Review or in Staging, the pull request can continue as a stack on that work.
 
 ### D. Gate into Human Review
 
-- [ ] The pull request is independent of each pull request in Human Review. It merges cleanly onto main, it has no unmerged commits of another Human Review pull request, and it merges cleanly together with each of them. Or it is the one permitted stacked pull request: when it goes in, Human Review holds only its base, and the body starts with the stacked banner. After it is in Human Review, it can stay while its base is in Human Review, also when independent pull requests go in next to it. If none of this is true, move the card to Pending and stop here.
-- [ ] If the pull request is stacked, its base is open in Human Review, or its base merged to main. If the human sent the base back or closed it, first reset the stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). Then stop here.
-- [ ] If a vN tip is the head, the coordinator checked that tip against the current stack. The tip has no commits from a pull request that the human rejected (sent back, or closed without a merge). This is also true for a Pending pull request whose vN tip is built on a pull request that is not in Human Review now: make that tip again first. Checklist C and the staging checks below ran on that head. If the vN tip is old, keep the plain branch when it is clean on main.
+- [ ] The pull request merges cleanly onto the current stack: main, the Human Review pull requests, and the Staging pull requests ahead of it. If it conflicts with a Human Review pull request, do not put it in Staging. Prefer the next pull request in Ready that does not conflict. If it is a stacked pull request, the body starts with the stacked banner (see [Stacked pull requests](workflow.md#stacked-pull-requests)).
+- [ ] If the pull request is stacked, its base is open in Human Review or in Staging, or its base merged to main. If the human sent the base back or closed it, first reset the stacked pull request (see [Stacked pull requests](workflow.md#stacked-pull-requests)). Then stop here.
+- [ ] If a vN tip is the head, the coordinator checked that tip against the current stack and installed it before the card entered Staging. The tip has no commits from a pull request that the human rejected (sent back, or closed without a merge). Checklist C and the staging checks below ran on that head. Make a speculative rebase only if no pull request in Ready fits, and only one at a time.
 - [ ] The pull request is not a draft.
 - [ ] The pull request can merge into main.
 - [ ] No P1 or P2 findings or threads are open.
 - [ ] Checklist C passed on this head.
 - [ ] The Linux checks in GitHub Actions are green on this exact head.
 - [ ] The card is a pull request, not an issue.
-- [ ] The staging deploy is best-effort. Merge the change into the staging branch and deploy staging again when you can. If you merge it, make sure that the staging merge did not remove lines of the change. Do not stop Human Review only because staging is not up to date.
-- [ ] Staging can run the change, with the configuration, credentials, and services that it needs. If it cannot, do not use Pending. Change the pull request to a draft and move the card to Needs Input. Write a comment that names what is missing and who must supply it (the human, or the operator who owns the environment). When it is available, mark the pull request ready, check staging again, and do this checklist again. If the head changed, go back to In Progress.
+- [ ] The change is merged into the staging branch and deployed. Staging is verified to serve the correct commit. The staging merge did not remove lines of the change. A pull request does not enter Staging until this is true.
+- [ ] Staging can run the change, with the configuration, credentials, and services that it needs. If it cannot, do not move the card to Staging. Change the pull request to a draft and move the card to Needs Input. Write a comment that names what is missing and who must supply it (the human, or the operator who owns the environment). When it is available, mark the pull request ready, check staging again, and do this checklist again. If the head changed, go back to In Progress.
 - [ ] The pull request description tells where and how to see the change.
 - [ ] Each change that a person can see, such as UI, rendered images, or video, has screenshots or frames in the pull request description. Existing screenshots count, also from an older head.
 
@@ -219,7 +222,7 @@ If an item fails later, move the card back to In Progress and change the pull re
 - Keep a registry of active and parked workers. For each worker, record the issue, branch, pull request, worktree, saved session, last pushed head, idle time, and the resume command.
 - There is no fixed maximum number of workers. When resources are low, report the memory use and limit, swap, available memory, CPU use, and load.
 - Only when memory is low, park workers that are clean, pushed all their work, and are idle at an empty prompt. Park the worker that is idle for the longest time first. When there are sufficient free resources, let workers continue. Resume saved sessions in their original worktrees, inside the limit. Resume them automatically when the pull request needs more work. See [working-agreements.md](working-agreements.md).
-- When two changes touch the same files, start the second change only after the first merges. Or put the second change in Pending.
+- When two changes touch the same files, start the second change only after the first merges. Or leave the second change in Ready until the first change is in Staging, is in Human Review, or has merged.
 - Start each worker in the automatic-review mode of its agent. In that mode, a reviewer model approves routine actions, not a person. Use this mode together with the standing allow list below. Select a mode that reviews each action. Never select a mode that skips checks. Mode names change. Thus look at the current documentation of each agent. When this page was written, the modes were:
   - **Claude Code:** auto mode, `--permission-mode auto`.
   - **Codex CLI:** auto-review, `--sandbox workspace-write --ask-for-approval on-request` with `approvals_reviewer = "auto_review"`.
