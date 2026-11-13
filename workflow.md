@@ -13,6 +13,7 @@
 | Column | Holds | Who moves the card in |
 |---|---|---|
 | Inbox | Anything kept out of the flow for now. After launch, new tickets from customers. A sandboxed agent reviews each ticket, reproduces the problem if there is one, and suggests what to do | Anyone |
+| Discuss | Issues that need careful thought or a conversation. Set aside so simple triage items flow first | Human |
 | Triage | Open issues only. Each has clear suggested plans from an agent (the owner bot), posted as options on the issue. Questions for the human also go on the issue, and the issue stays in Triage. They wait on the human to decide whether or when to do the work, to choose a plan, or to send the issue back for more planning | Coordinator |
 | Backlog | Open issues only. Each has an approved plan but is not in the current sprint. Workers can take these lower-priority issues when capacity is available | Human or coordinator |
 | Active | Open issues only. Each is assigned to the swarm and has sub-issues or a linked open pull request | Coordinator |
@@ -27,11 +28,13 @@
 
 Moving a card to Auto Review also means marking the pull request ready. Moving it back to In Progress or Needs Input means converting it to a draft.
 
+Discuss is a side column, not a step in the loop. It holds issues that need careful thought or a conversation. They are set aside so simple triage items flow first. The coordinator does not launch a worker for a Discuss item, and does not count it as waiting on the human. The human comments on the issue. The agent responds by rewriting the issue body to match those answers. This repeats until the issue is ready for Backlog or Active. Agents do not move the card forward on their own. On a board that also has Inbox and Triage, Discuss sits after Inbox and before Triage.
+
 ### Issues and pull requests on the board
 
 Every pull request card must have a Status. Set a new card to In Progress if the pull request is a draft or is still being pushed. Otherwise, set it to Auto Review and request a review. Never leave its Status blank.
 
-Issues and pull requests use different columns. Issues go in Inbox, Triage, Backlog and Active. Pull requests go in every column from In Progress to Parked. Do not remove an issue card when a pull request links it: the issue moves to Active and stays there while the pull request is open. When the human merges the pull request, close the issue, take it out of Active, and delete the branch. When the blocker of a Pending pull request merges, the coordinator updates the pull request and moves it on to Human Review through the gate.
+Issues and pull requests use different columns. Issues go in Inbox, Discuss, Triage, Backlog and Active. Pull requests go in every column from In Progress to Parked. Do not remove an issue card when a pull request links it: the issue moves to Active and stays there while the pull request is open. When the human merges the pull request, close the issue, take it out of Active, and delete the branch. When the blocker of a Pending pull request merges, the coordinator updates the pull request and moves it on to Human Review through the gate.
 
 When the human approves an issue, the coordinator starts a worker. The worker pushes a first commit on its branch. The coordinator then assigns the issue to the swarm and opens a draft pull request from that branch, with a closing link such as Fixes. Only then does the issue card move to Active, and only then does the worker continue. The issue never sits in Active without that link. A "Part of" mention is not a link.
 

@@ -24,6 +24,7 @@ Create one board for the repository with a single-select status field and these 
 | Column | Put a card here when | Card type |
 |---|---|---|
 | Inbox | The item is kept out of the flow for now, or is a new customer ticket | issue |
+| Discuss | The issue needs careful thought or a conversation. Set aside so simple triage items flow first | issue |
 | Triage | An agent has suggested plans and the human must decide | issue |
 | Backlog | The plan is approved but not in the current sprint | issue |
 | Active | The issue is assigned to the swarm and has sub-issues or a linked open pull request | issue |
