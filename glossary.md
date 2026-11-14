@@ -16,6 +16,8 @@
 
 **Draft.** A pull request that is not ready for review. Changes in In Progress are drafts.
 
+**Fast track.** A maintainer mark, the `fast-track` label, that moves one ticket to the front of every queue. Several tickets may carry the label at the same time, but only one of them runs through the fast track at a time. The next labeled ticket starts when the current one enters Human Review. Fast track changes the order of work. It does not change the quality bar. The ticket must pass every gate. It takes the first Staging slot, even when the pull requests behind it must be restacked. It does not stop a pull that is already running. It waits for the shared lock. It does not push a pull request out of Human Review. See [Fast track](review.md#fast-track).
+
 **Finding.** A defect that a reviewer reports. You must fix a P1. You must fix a P2 before human review.
 
 **Gate.** The conditions that a pull request must meet before it enters Staging. Automation and people check each condition on the current head, during the pull step, one pull request at a time. A later move from Staging to Human Review is only a card move. A gate check, a promotion from Staging, and a merge into the staging branch share one lock, so only one of them runs at a time. A second operation stops at once and reports `busy`. Gate operations skip draft pull requests and pull requests that are still in Ready. See [The pull into Staging](review.md#the-pull-into-staging).
@@ -49,7 +51,7 @@
 
 **Pull request title.** A short headline that completes the sentence "Merging this pull request will ...". It starts with a verb in the imperative.
 
-**Ready.** The column for finished pull requests that wait to be pulled into Staging. It sits on the board between Needs Input and Staging. The worker is done, the automated review is clean, and the post-check of the coordinator passed on the head. The pull request is not merged into the staging branch, not deployed, and not gated. It is not on the staging environment. This is the finish line for coding agents. Agents work the backlog until their pull requests are in Ready. Pull requests wait here by milestone, then by fewest conflicts with the current stack, then by age. See [Just-in-time Human Review flow](review.md#just-in-time-human-review-flow).
+**Ready.** The column for finished pull requests that wait to be pulled into Staging. It sits on the board between Needs Input and Staging. The worker is done, the automated review is clean, and the post-check of the coordinator passed on the head. The pull request is not merged into the staging branch, not deployed, and not gated. It is not on the staging environment. This is the finish line for coding agents. Agents work the backlog until their pull requests are in Ready. The active fast-track pull request waits first, when it is in Ready. Then pull requests wait by milestone, then by fewest conflicts with the current stack, then by age. See [Just-in-time Human Review flow](review.md#just-in-time-human-review-flow) and [Fast track](review.md#fast-track).
 
 **Ready for review.** A pull request that is marked for review, not a draft. When a card moves to Auto Review, its pull request becomes ready for review.
 

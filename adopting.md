@@ -67,6 +67,7 @@ Use few labels. These labels are sufficient to start:
 | `ui` | The change has an effect that a person can see (UI, rendered images, or video). It needs screenshots or frames. |
 | `needs-decision` | The coordinator asked the human a question and waits for the answer. |
 | `follow-up` | An issue from a review finding or a neighboring case that must be a separate change. |
+| `fast-track` | The maintainer moved this ticket to the front of the queues. Several tickets may carry this label, but only one runs through the fast track at a time. See [Fast track](review.md#fast-track). |
 
 Review priorities (P1, P2) come from the findings of the automated reviewer. Do not also make labels for them.
 
