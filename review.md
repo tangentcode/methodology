@@ -159,8 +159,8 @@ Within that, high-priority tickets and a fast-track pull request fill a slot fir
 - The maintainer adds the `fast-track` label to the issue. Its pull request inherits the label.
 - Only the maintainer adds or removes the label.
 - Several tickets may carry the label at the same time. Only one of them runs through the fast track at a time. That ticket is the active fast-track ticket.
-- The other labeled tickets wait. They start, one at a time, in the order in which they received the label. The next one becomes active when the current one enters Human Review.
-- The tools remove the label when the pull request merges or is canceled.
+- The other labeled tickets wait. They start, one at a time, in the order in which they received the label. The next one becomes active when the current one enters Human Review, when the current one is canceled before it reaches Human Review, or when the maintainer removes the `fast-track` label from the current one.
+- The tools remove the label when the pull request merges or is canceled. If that ticket was still the active one and it had not yet entered Human Review, the next labeled ticket becomes active.
 
 ##### What the active ticket gets
 

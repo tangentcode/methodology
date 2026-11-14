@@ -16,7 +16,7 @@
 
 **Draft.** A pull request that is not ready for review. Changes in In Progress are drafts.
 
-**Fast track.** A maintainer mark, the `fast-track` label, that moves one ticket to the front of every queue. Several tickets may carry the label at the same time, but only one of them runs through the fast track at a time. The next labeled ticket starts when the current one enters Human Review. Fast track changes the order of work. It does not change the quality bar. The ticket must pass every gate. It takes the first Staging slot, even when the pull requests behind it must be restacked. It does not stop a pull that is already running. It waits for the shared lock. It does not push a pull request out of Human Review. See [Fast track](review.md#fast-track).
+**Fast track.** A maintainer mark, the `fast-track` label, that moves one ticket to the front of every queue. Several tickets may carry the label at the same time, but only one of them runs through the fast track at a time. The next labeled ticket starts when the current one enters Human Review, or when the current one leaves the fast track before that, because it is canceled or the maintainer removes the label. Fast track changes the order of work. It does not change the quality bar. The ticket must pass every gate. It takes the first Staging slot, even when the pull requests behind it must be restacked. It does not stop a pull that is already running. It waits for the shared lock. It does not push a pull request out of Human Review. See [Fast track](review.md#fast-track).
 
 **Finding.** A defect that a reviewer reports. You must fix a P1. You must fix a P2 before human review.
 
