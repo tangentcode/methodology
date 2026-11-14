@@ -8,7 +8,7 @@ Coding agents write and fix code quickly. But they do not always know when a cha
 
 ## Principles
 
-1. Optimize for human attention. The attention of the human is the scarce resource. When the human starts work, each card that needs the human is in Human Review or Needs Input. The human approves finished changes, tries the software, and writes new issues.
+1. Optimize for human attention. The attention of the human is the scarce resource. When the human starts work, each card that needs the human is in Triage, Human Review, or Needs Input. The human reviews items that wait on a decision, approves finished changes, tries the software, and writes new issues.
 2. The human owner decides. Agents prepare work, check it, and integrate it on staging. Only the human merges to main and deploys to production.
 3. Fix the root cause. Each review finding is one example of a class. The fix covers the class, names the neighboring cases, and tests them.
 4. Review in layers. The coordinator checks a change before and after the automated reviewer. The human sees the change last.

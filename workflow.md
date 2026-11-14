@@ -24,7 +24,7 @@ A pull request has the same milestone as the issue that it fixes. Then a board w
 |---|---|---|
 | Inbox | Items that are out of the flow for now. After launch, new tickets from customers. A sandboxed agent reviews each ticket, does the steps to see the problem (if there is a problem), and suggests what to do. Issues with the `work2` label stay here, even when they have a linked pull request | All |
 | Discuss | Issues that need careful thought or a conversation. They wait here so that simple Triage items move first | Human |
-| Triage | Open issues only. Each one has clear suggested plans from an agent (the owner bot), as options on the issue. Questions for the human also go on the issue, and the issue stays in Triage. The issues wait on the human to decide whether or when to do the work, to select a plan, or to send the issue back for more plans | Coordinator |
+| Triage | Open issues only. Each one waits on the human to review or decide. Typical cases: suggested plans from an agent, or a proposal or new rule. Questions for the human also go on the issue, and the issue stays in Triage | Coordinator |
 | Backlog | Open issues only. Each one has an approved plan, but it is not in the current sprint. Workers can take these lower-priority issues when they have time | Human or coordinator |
 | Active | Open issues only. Each one is assigned to the swarm, does not have the `work2` label, and has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Ready, Staging, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label | Coordinator |
 | In Progress | Draft pull requests for active issues. A worker works on each one now | Coordinator |
@@ -38,6 +38,8 @@ A pull request has the same milestone as the issue that it fixes. Then a board w
 | Parked | Draft pull requests with real work that we decided not to merge into main or staging yet. This column is usually empty | Human or coordinator |
 
 The Staging column was formerly named Pending. The board option id did not change, so no card lost its status. Tools must match the option id, not the name.
+
+A board can start with a smaller set of columns than this table. It must still have a Triage column. Open issues that wait on the human to review or decide go in that column. This is true on every board, including the board that tracks this methodology. Finished pull requests that wait on the human stay in Human Review. Draft pull requests that wait on an answer stay in Needs Input.
 
 Only pull requests in Staging and in Human Review are merged into the staging branch and deployed to the staging environment. That is about 7 pull requests in total: exactly 2 in Human Review and 3 to 5 in Staging. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
 
@@ -70,7 +72,7 @@ Active holds only open issues that are assigned to the swarm, that do not have t
 
 When the issue no longer has exactly one open linked pull request in a flow column, it goes out of Active. If a pull request used `Fixes` (or an equivalent closing phrase) and GitHub closed the issue, the issue card goes to Done. If the issue is still open, it goes back to Triage or Backlog, as necessary.
 
-An issue without a pull request never goes in Auto Review, Ready, Staging, or Human Review. The only time it is in Active without a pull request is the short interval after the human moves it there and before the coordinator opens the draft pull request. If an issue waits on the human and is not in Active, write a question on it and keep it in its column.
+An issue without a pull request never goes in Auto Review, Ready, Staging, or Human Review. The only time it is in Active without a pull request is the short interval after the human moves it there and before the coordinator opens the draft pull request. If an issue waits on the human and is not in Active, write a question on it and put it in Triage. Do not move it into a pull-request column. An issue in Discuss stays in Discuss. Parked items stay parked. Issues with the `work2` label stay in Inbox.
 
 
 ```mermaid
@@ -103,6 +105,8 @@ Sometimes the automation does not do a step because the worker is busy. Then it 
 A push after the head that the coordinator checked sends a Human Review card back to In Progress. The post-check of the coordinator names the commit that it checked. Thus it is easy to see an old pass.
 
 ## Triage
+
+Every board has a Triage column, including the board that tracks this methodology. If an open issue is waiting on the human to review or decide, it goes in Triage. This includes new issues, complaints, proposals, and new rules that wait on a decision. Finished pull requests that wait on the human stay in Human Review. Draft pull requests that wait on an answer stay in Needs Input.
 
 New issues and complaints go into Triage. Each issue must give the code context for the related component and tell why the problem occurs. It must give two to four numbered fix options with a recommendation. A symptom and the expected behavior are not sufficient. The maintainer must be able to select with one comment.
 
@@ -222,7 +226,7 @@ The same reset applies to each Staging pull request that included the rejected w
 
 A card in In Progress must have a live worker that does the work. A shell window or a saved session is not a live worker.
 
-- When a worker finishes, parks, or stops, the same action moves its card. A finished draft goes through the pre-check, is marked ready, and moves to Auto Review. A card that waits on a decision of the human moves to Needs Input, with the open question in a comment. There is one exception. If the human already moved the issue to Active with those questions open, the worker takes the default or recommended answer. It states the default in the pull request body. The card does not go to Needs Input for those questions. A card that waits on another change does not enter the Staging column. It names that change, and it waits until the blocker is in Human Review, is in Staging, or has merged. An issue card that has no pull request yet, and that the human did not move to Active, goes back to Backlog, with the question in a comment.
+- When a worker finishes, parks, or stops, the same action moves its card. A finished draft goes through the pre-check, is marked ready, and moves to Auto Review. A card that waits on a decision of the human moves to Needs Input, with the open question in a comment. There is one exception. If the human already moved the issue to Active with those questions open, the worker takes the default or recommended answer. It states the default in the pull request body. The card does not go to Needs Input for those questions. A card that waits on another change does not enter the Staging column. It names that change, and it waits until the blocker is in Human Review, is in Staging, or has merged. An issue card that has no pull request yet, and that the human did not move to Active, goes back to Triage, with the question in a comment.
 
 - A worker that ends its turn with a question about the next step is not finished. The coordinator answers the question, or sends it to the correct owner, in the same scan. It does not keep the card in In Progress without a worker.
 - A resume that fails is a board event. The coordinator reads the result of the resume. If no worker started, the coordinator starts one, or moves the card out of In Progress.
