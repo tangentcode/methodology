@@ -140,10 +140,51 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
    - A pull request in Ready is finished. Its worker is done. The automated review of the current head is clean, or it is at the round limit or has timed out and the post-check of the coordinator has passed. No P1 or P2 findings are open.
    - A pull request in Ready is not merged into the staging branch, not deployed, not gated, and not on the staging environment.
    - Pull requests in Ready wait in this order:
-     1. Pull requests with a milestone first, ordered by the milestone.
-     2. Then the pull requests with the fewest conflicts with the current stack.
-     3. Then the oldest pull requests.
+     1. The one active fast-track pull request, if it is in Ready. See [Fast track](#fast-track).
+     2. Then pull requests with a milestone, ordered by the milestone.
+     3. Then the pull requests with the fewest conflicts with the current stack.
+     4. Then the oldest pull requests.
 4. In Progress and Auto Review do not change. Workers build, and the automated reviewer reviews, in parallel. Only the merge, deploy, and gate step is serial.
+
+#### Fast track
+
+This rule, from 2026-11-13, records the maintainer decision on the fast-track proposal.
+
+The highest priority is always to keep the flow full. Keep at least two pull requests in Human Review, when two prepared pull requests are available, and 3 to 5 in Staging, with more pull requests becoming Ready so that the slots refill as fast as possible.
+
+Within that, high-priority tickets and a fast-track pull request fill a slot first. It may jump the queue at every step: launch, automated review, the coordinator check, the Ready queue, the pull into Staging, and the move from Staging into Human Review. Fast tracks are rare.
+
+##### How to mark it
+
+- The maintainer adds the `fast-track` label to the issue. Its pull request inherits the label.
+- Only the maintainer adds or removes the label.
+- Several tickets may carry the label at the same time. Only one of them runs through the fast track at a time. That ticket is the active fast-track ticket.
+- The other labeled tickets wait. They start, one at a time, in the order in which they received the label. The next one becomes active when the current one enters Human Review, when the current one is canceled before it reaches Human Review, or when the maintainer removes the `fast-track` label from the current one.
+- The tools remove the label when the pull request merges or is canceled. If that ticket was still the active one and it had not yet entered Human Review, the next labeled ticket becomes active.
+
+##### What the active ticket gets
+
+1. **Launch.** Its coding agent starts at once, before any backlog launch.
+2. **Review.** The automated reviewer and the coordinator check take it first in their queues.
+3. **Ready to Staging.** It goes to the head of the Ready queue. The next pull into Staging takes it first. It goes to the first Staging slot, even when Staging already holds pull requests. The pull requests behind it are then restacked or merged again, one at a time, under the lock. A pull that is already running does not stop. The new pull waits for the shared lock, like every other operation.
+4. **Staging to Human Review.** It takes the next free Human Review slot, ahead of the other Staging pull requests. It does not push a pull request out of Human Review. Human Review stays at exactly two.
+
+##### What it may skip
+
+Nothing. It must pass every step:
+
+- The automated review
+- The coordinator check
+- CI
+- Merge into the integration branch and deploy to staging
+- Screenshots and the "where to see it" section in the pull request body
+- Every condition of the Human Review gate
+
+If it fails a gate, it goes back to In Progress with its label still in place. When it is Ready again, it stays first in line if it is still the active fast-track ticket.
+
+##### Visibility
+
+The status output shows the fast-track card clearly, including how long it has been on fast track.
 
 #### The pull into Staging
 
@@ -170,7 +211,7 @@ The pull step starts when Staging has fewer pull requests than its target size, 
 3. Deploy staging again.
 4. Verify that staging serves the correct commit, that the Linux checks are green, and that the pull request body is complete.
 5. Run the gate.
-   - If the gate passes, the pull request goes to Staging.
+   - If the gate passes, the pull request goes to Staging. If it is the active fast-track ticket, it goes to the first Staging slot, even when Staging already holds pull requests. Then restack each Staging pull request that is behind it, one at a time, under the lock. See [Fast track](#fast-track).
    - If the gate fails, restore the staging branch to the last admitted stack: the Human Review pull requests and the Staging pull requests only. Deploy that stack again. Then move the failed pull request back to In Progress with the reason, and try the next pull request in Ready. Do not leave a failed candidate on the staging branch, and do not merge the next candidate on top of it.
 
 Expect one or two failures before a pull request fits. That is why the buffer exists.

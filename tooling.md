@@ -40,13 +40,13 @@ The tick opens a draft pull request only when its worker can start, and it check
 
 Staging holds the prepared buffer and, separately, finished pull requests that still wait on a blocker. The just-in-time target is three to five prepared pull requests. Each prepared pull request is pre-merged as a stack on main, the Human Review pull requests, and the Staging pull requests ahead of it. It is already merged into the staging branch, deployed, verified, and gated. The tools make a speculative rebase only when no pull request in Ready fits that stack, and only one at a time. Human Review and Staging together are the only pull requests that are merged into the staging branch.
 
-When the prepared buffer in Staging is below its target, one worker takes the first Ready pull request and prepares it. Ready pull requests wait in this order: milestone first, then fewest conflicts with the current stack, then oldest. This preparation is the pull step. Only one Ready pull request is prepared at a time.
+When the prepared buffer in Staging is below its target, one worker takes the first Ready pull request and prepares it. Ready pull requests wait in this order: the one active fast-track pull request first, if it is in Ready, then milestone, then fewest conflicts with the current stack, then oldest. See [Fast track](review.md#fast-track). This preparation is the pull step. Only one Ready pull request is prepared at a time.
 
 1. Merge main into the pull request if that is needed. The coding agent of that pull request makes any code fixes.
 2. Merge the pull request into the staging branch, on top of the current stack: main, the Human Review pull requests, and the Staging pull requests ahead of it.
 3. Deploy the staging environment again, and verify the served commit. A pull request does not enter Staging until this is true. For a change that cannot go to the staging environment, the check that the pull request names replaces the deploy conditions. See [Pull requests that do not target main](workflow.md#pull-requests-that-do-not-target-main).
 4. Confirm that CI is green on this head, and that the pull request body is complete.
-5. Run the Human Review gate. If the gate passes, the card goes to Staging. If the gate fails because staging lacks configuration, credentials, or a required service, the tools change the pull request to a draft. They move the card to Needs Input. The comment names what is missing and who must supply it. For other gate failures, restore the staging branch to the last admitted stack and deploy that stack again. Then the card goes back to In Progress with the reason, and the worker tries the next Ready pull request.
+5. Run the Human Review gate. If the gate passes, the card goes to Staging. If it is the active fast-track ticket, it goes to the first Staging slot, even when Staging already holds pull requests. Then restack each Staging pull request that is behind it, one at a time, under the lock. If the gate fails because staging lacks configuration, credentials, or a required service, the tools change the pull request to a draft. They move the card to Needs Input. The comment names what is missing and who must supply it. For other gate failures, restore the staging branch to the last admitted stack and deploy that stack again. Then the card goes back to In Progress with the reason, and the worker tries the next Ready pull request.
 
 When Human Review drops to one, the first prepared pull request in Staging moves to Human Review at once, through `hr-gate --apply`. That step is a card move. Then the pull step refills the prepared buffer. The tools prepare only one Ready pull request at a time. They can still run the gate again on a pull request that is already in Staging, including when CI finishes, when main advances, or when they promote the card. If that later check fails, the card leaves Staging, as the gate in [review.md](review.md#the-gate-into-human-review) requires.
 
@@ -90,7 +90,7 @@ With no flag, or with a dry-run flag, it only shows the plan. `--apply` takes th
 
 ### flow-status
 
-`flow-status` does not change the board. It prints a report of the flow rules. The report says whether Human Review holds two pull requests, when two prepared pull requests are available, and whether the prepared buffer in Staging is inside its target of 3 to 5. The report ends in `OK` or `VIOLATED`.
+`flow-status` does not change the board. It prints a report of the flow rules. The report says whether Human Review holds two pull requests, when two prepared pull requests are available, and whether the prepared buffer in Staging is inside its target of 3 to 5. It also shows the active fast-track card, if there is one, and how long that card has been on fast track. The report ends in `OK` or `VIOLATED`.
 
 ### ci-last-check
 
