@@ -24,7 +24,7 @@ A pull request has the same milestone as the issue that it fixes. Then a board w
 |---|---|---|
 | Inbox | Items that are out of the flow for now. After launch, new tickets from customers. A sandboxed agent reviews each ticket, does the steps to see the problem (if there is a problem), and suggests what to do. Issues with the `work2` label stay here, even when they have a linked pull request | All |
 | Discuss | Issues that need careful thought or a conversation. They wait here so that simple Triage items move first | Human |
-| Triage | Open issues only. Each one has clear suggested plans from an agent (the owner bot), as options on the issue. Questions for the human also go on the issue, and the issue stays in Triage. The issues wait on the human to decide whether or when to do the work, to select a plan, or to send the issue back for more plans | Coordinator |
+| Triage | Open issues only. Each one waits on the human to review or decide. Typical cases: suggested plans from an agent, or a proposal or new rule. Questions for the human also go on the issue, and the issue stays in Triage | Coordinator |
 | Backlog | Open issues only. Each one has an approved plan, but it is not in the current sprint. Workers can take these lower-priority issues when they have time | Human or coordinator |
 | Active | Open issues only. Each one is assigned to the swarm, does not have the `work2` label, and has exactly one open linked pull request in a flow column (In Progress, Auto Review, Needs Input, Ready, Staging, or Human Review). The number of cards in Active equals the number of pull requests in those flow columns that belong to issues without the `work2` label | Coordinator |
 | In Progress | Draft pull requests for active issues. A worker works on each one now | Coordinator |
@@ -38,6 +38,8 @@ A pull request has the same milestone as the issue that it fixes. Then a board w
 | Parked | Draft pull requests with real work that we decided not to merge into main or staging yet. This column is usually empty | Human or coordinator |
 
 The Staging column was formerly named Pending. The board option id did not change, so no card lost its status. Tools must match the option id, not the name.
+
+A board can start with a smaller set of columns than this table. It must still have a Triage column. Every item that waits on the human to review or decide goes in that column. This is true on every board, including the board that tracks this methodology.
 
 Only pull requests in Staging and in Human Review are merged into the staging branch and deployed to the staging environment. That is about 7 pull requests in total: exactly 2 in Human Review and 3 to 5 in Staging. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
 
@@ -103,6 +105,8 @@ Sometimes the automation does not do a step because the worker is busy. Then it 
 A push after the head that the coordinator checked sends a Human Review card back to In Progress. The post-check of the coordinator names the commit that it checked. Thus it is easy to see an old pass.
 
 ## Triage
+
+Every board has a Triage column, including the board that tracks this methodology. If an item is open for the human to review, it goes in Triage. This includes new issues, complaints, proposals, and new rules that wait on a decision.
 
 New issues and complaints go into Triage. Each issue must give the code context for the related component and tell why the problem occurs. It must give two to four numbered fix options with a recommendation. A symptom and the expected behavior are not sufficient. The maintainer must be able to select with one comment.
 
