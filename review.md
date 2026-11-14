@@ -99,7 +99,7 @@ If a condition fails later, for example after a new push or a late finding, the 
 
 When the automated review of the current head is clean, the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. Do not start a staging merge or a gate until the pull step takes this pull request. Do not take the screenshots again. Screenshots that are already in the pull request count. The pull request cannot enter Staging until the Linux checks on that head are green.
 
-A webhook event does not run the gate for a draft pull request, or for a pull request that is in Ready and has not been pulled. The hook makes those checks before it makes any API call. It also ignores repeated CI events for the same head. If a CI event is for the pull request that is currently in the pull step, or for a pull request already in Staging, the event can continue that step or run the gate again when the lock is free. If the lock is busy, the event reports `busy` and does not wait.
+A webhook event does not run the gate for a draft pull request, or for a pull request that is in Ready and has not been pulled. The hook makes those checks before it makes any API call. It also ignores repeated CI events for the same head. If a CI event is for the pull request that is currently in the pull step, or for a pull request already in Staging, the event can continue that step or run the gate again. If the lock is busy, the event queues a rerun. The process that holds the lock drains that rerun before it exits.
 
 
 ## Human review
@@ -198,25 +198,37 @@ These operations share one lock:
 - A promotion of a pull request from Staging into Human Review.
 - A merge of a change into the staging branch.
 
-If a second operation starts while the lock is held, that second operation does not wait. It stops at once and reports `busy`. It tries again later, on the next event or the next periodic scan.
+The lock file is `~/.cache/swarm-serial.lock`. A caller that finds the lock busy queues a rerun. The process that holds the lock drains every queued rerun before it exits.
 
 Gate operations skip draft pull requests and pull requests that are still in Ready and have not been pulled. Do not start a gate check or a promotion from Staging on a draft. Leave the card where it is.
 
 This lock does not stop the human from a merge to main, or from a review of the cards in Human Review.
 
-The pull step starts when Staging has fewer pull requests than its target size, for example because one pull request just moved to Human Review. The single worker then takes the first pull request in Ready and does these steps:
+##### The just-in-time cascade
+
+This rule, from 2026-11-14 6:32 PM ET, updates the refill steps and the lock.
+
+One event that frees a slot, such as a pull request merged or rejected from Human Review, runs through the whole chain in one serial pass. The process holds the shared lock for the whole cascade. The same cascade runs on any event that frees a slot. The command is `~/bin/swarm-advance --cascade`.
+
+In that one run:
+
+1. Promote the next Staging pull request to Human Review.
+2. While Staging has fewer than 5 pull requests and Ready is not empty, pull the next Ready pull request into Staging. Take pull requests in the Ready order above: the active fast-track first, then milestone, then fewest conflicts, then oldest. Each pull does the work merge, which refuses on a conflict or on conflict markers. Then it deploys staging again, confirms the served `.deploy-sha`, and runs `hr-gate --apply`. If the work merge refuses, try the next pull request in Ready.
+3. If Ready has fewer than 6 pull requests, the tools tell the swarm manager to start the next coding agent, and to keep about 2 agents working.
+
+The pull step starts during that cascade, when Staging has fewer than 5 pull requests and Ready is not empty. The single worker then takes the first pull request in Ready and does these steps:
 
 1. If necessary, merge main into the pull request. Its worker makes any code fixes.
-2. Merge the pull request into the staging branch, on top of the current stack: main, the Human Review pull requests, and the Staging pull requests ahead of it.
+2. Merge the pull request into the staging branch, on top of the current stack: main, the Human Review pull requests, and the Staging pull requests ahead of it. Refuse this merge on a conflict or on conflict markers. If it refuses, try the next pull request in Ready.
 3. Deploy staging again.
-4. Verify that staging serves the correct commit, that the Linux checks are green, and that the pull request body is complete.
-5. Run the gate.
+4. Verify that staging serves the correct commit. Confirm the served `.deploy-sha`. Also verify that the Linux checks are green and that the pull request body is complete.
+5. Run the gate with `hr-gate --apply`.
    - If the gate passes, the pull request goes to Staging. If it is the active fast-track ticket, it goes to the first Staging slot, even when Staging already holds pull requests. Then restack each Staging pull request that is behind it, one at a time, under the lock. See [Fast track](#fast-track).
    - If the gate fails, restore the staging branch to the last admitted stack: the Human Review pull requests and the Staging pull requests only. Deploy that stack again. Then move the failed pull request back to In Progress with the reason, and try the next pull request in Ready. Do not leave a failed candidate on the staging branch, and do not merge the next candidate on top of it.
 
 Expect one or two failures before a pull request fits. That is why the buffer exists.
 
-When Human Review drops to 1, because the human moved one out, move the first Staging pull request to Human Review at once. This promotion takes the shared lock. If the lock is busy, the promotion stops at once, reports `busy`, and tries again later. Then start the pull step to refill Staging. If Human Review has an open slot and Staging still has pull requests, fill Human Review first, up to two.
+When Human Review drops to 1, because the human moved one out, run the just-in-time cascade under the shared lock. First move the first Staging pull request to Human Review. Then, while Staging has fewer than 5 pull requests and Ready is not empty, pull the next Ready pull request into Staging. If Ready then has fewer than 6 pull requests, tell the swarm manager to start the next coding agent, and to keep about 2 agents working. If the lock is busy, queue a rerun. The process that holds the lock drains that rerun before it exits. If Human Review has an open slot and Staging still has pull requests, fill Human Review first, up to two.
 
 Do not merge, deploy, or gate a pull request that is still in Ready, except the follow-up evidence case in [Blocked work](workflow.md#blocked-work). Prepare only one Ready pull request at a time. The tools can still run the gate again on a pull request that is already in Staging, for example when CI finishes, when main advances, or when they promote the card. If that later check fails, the card leaves Staging.
 
@@ -231,11 +243,11 @@ Conflicts: only one pull request is prepared at a time, so prepare it against cu
 
 If the human rejects a Human Review pull request, each Staging pull request that included the rejected work is not valid. Move those cards out of Staging, and make them again from their plain branches without the rejected work, one at a time, under the lock. If the other Human Review pull request contains the rejected work, move it out of Human Review first, in the same way. Tell the human that you removed it, and why.
 
-Events move the work, not timers. A clean automated review moves the pull request to Ready, after the post-check passes. It does not start a merge, a deploy, or a gate. The pull step starts only when Staging is below its target size and the lock is free. The gate uses the mergeable state that the forge reports. Check each staging merge, so that it does not remove the changes of a pull request without a report.
+Events move the work, not timers. A clean automated review moves the pull request to Ready, after the post-check passes. It does not start a merge, a deploy, or a gate. An event that frees a slot starts the just-in-time cascade. If the lock is busy, the event queues a rerun. The process that holds the lock drains that rerun before it exits. The gate uses the mergeable state that the forge reports. Check each staging merge, so that it does not remove the changes of a pull request without a report.
 
 The reviewer always knows the state. When Human Review becomes empty, the swarm manager immediately tells the reviewer. It gives the next pull request and the time when it will be ready.
 
-The swarm tools include a status command and a promote command. The status command reports whether Human Review holds two pull requests, when two prepared pull requests are available, and whether Staging holds 3 to 5 fully prepared pull requests. The promote command moves the first Staging pull request into Human Review when a slot is open, then starts the pull step to refill Staging. The promote command also takes the shared lock. If the lock is busy, it stops at once and reports `busy`.
+The swarm tools include a status command and a cascade command, `~/bin/swarm-advance --cascade`. The status command reports whether Human Review holds two pull requests, when two prepared pull requests are available, and whether Staging holds 3 to 5 fully prepared pull requests. The cascade command takes the shared lock and runs the whole just-in-time cascade: it promotes the first Staging pull request into Human Review when a slot is open, refills Staging up to 5, and signals for the next coding agent when Ready has fewer than 6 pull requests. If the lock is busy, the command queues a rerun. The process that holds the lock drains that rerun before it exits.
 
 #### API budget
 
@@ -249,4 +261,4 @@ The hook uses the API quota of the bot app. It falls back to the human account o
 
 #### Work in progress
 
-New workers must not take memory or API quota away from the pull request that is closest to Human Review.
+New workers must not take memory or API quota away from the pull request that is closest to Human Review. When a cascade finds that Ready has fewer than 6 pull requests, the tools tell the swarm manager to start the next coding agent, and to keep about 2 agents working.

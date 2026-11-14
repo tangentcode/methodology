@@ -20,7 +20,7 @@
 
 **Finding.** A defect that a reviewer reports. You must fix a P1. You must fix a P2 before human review.
 
-**Gate.** The conditions that a pull request must meet before it enters Staging. Automation and people check each condition on the current head, during the pull step, one pull request at a time. A later move from Staging to Human Review is only a card move. A gate check, a promotion from Staging, and a merge into the staging branch share one lock, so only one of them runs at a time. A second operation stops at once and reports `busy`. Gate operations skip draft pull requests and pull requests that are still in Ready. See [The pull into Staging](review.md#the-pull-into-staging).
+**Gate.** The conditions that a pull request must meet before it enters Staging. Automation and people check each condition on the current head, during the pull step, one pull request at a time. A later move from Staging to Human Review is only a card move. A gate check, a promotion from Staging, and a merge into the staging branch share one lock, `~/.cache/swarm-serial.lock`, so only one of them runs at a time. The just-in-time cascade holds that lock for the whole run. A second caller queues a rerun, and the process that holds the lock drains every queued rerun before it exits. Gate operations skip draft pull requests and pull requests that are still in Ready. See [The just-in-time cascade](review.md#the-just-in-time-cascade).
 
 
 **Head.** The latest commit on the branch of a pull request. Checks apply only to the current head.

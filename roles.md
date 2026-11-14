@@ -38,7 +38,7 @@ The coordinator runs the pull request loop and keeps the board correct. It does 
 - Moves cards. Marks pull requests as draft or ready.
 - Merges a change into the staging branch, and deploys staging again, only when it pulls that pull request into Staging. It does this for one pull request at a time.
 - Makes sure that staging serves the correct commit before the pull request enters Staging. A staging merge must not remove lines of the change. For a change that cannot go to staging, the check that its pull request names replaces the deploy conditions.
-- Runs only one gate check, Staging promotion, or staging merge at a time. These operations share one lock. If the lock is busy, the second operation stops at once and reports `busy`. It tries again later. Gate operations skip draft pull requests and pull requests that are still in Ready. See [The pull into Staging](review.md#the-pull-into-staging).
+- Runs only one gate check, Staging promotion, or staging merge at a time. These operations share one lock, `~/.cache/swarm-serial.lock`. The just-in-time cascade holds that lock for the whole run. If the lock is busy, the second caller queues a rerun. The process that holds the lock drains every queued rerun before it exits. Gate operations skip draft pull requests and pull requests that are still in Ready. See [The just-in-time cascade](review.md#the-just-in-time-cascade).
 
 - Makes sure that each change that a person can see has screenshots or frames in the pull request. Existing screenshots count. Do not take them again after a merge from main or from the staging branch.
 - Reports results to the human.
