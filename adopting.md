@@ -42,7 +42,7 @@ Make one board for the repository. Give it a single-select status field with the
 
 The Staging column was formerly named Pending. The board option id did not change, so no card lost its status. Tools must match the option id, not the name. See [workflow.md](workflow.md#board-columns) for the full meaning of each column.
 
-Every board has a Triage column, including the board that tracks this methodology. If an item is open for the human to review, it goes in Triage. A board can start with a smaller set of columns than the table above, but it must still have that Triage column.
+Every board has a Triage column, including the board that tracks this methodology. Open issues that wait on the human to review or decide go in Triage. A board can start with a smaller set of columns than the table above, but it must still have that Triage column. Finished pull requests that wait on the human stay in Human Review. Draft pull requests that wait on an answer stay in Needs Input.
 
 Board settings:
 

@@ -65,7 +65,7 @@
 
 **Swarm assignment.** The `swarm` label on an issue. An issue in Active must have this label. It must also have exactly one open linked pull request in a flow column, and it must not have the `work2` label.
 
-**Triage.** The column for items that wait on the human to review or decide. This includes open issues that have suggested plans, and proposals or new rules that wait on a decision. The human decides in a comment, or by a move of the issue to Active or to Backlog. Every board has this column, including the board that tracks this methodology.
+**Triage.** The column for open issues that wait on the human to review or decide. This includes issues that have suggested plans, and proposals or new rules that wait on a decision. The human decides in a comment, or by a move of the issue to Active or to Backlog. Every board has this column, including the board that tracks this methodology. Finished pull requests that wait on the human stay in Human Review. Draft pull requests that wait on an answer stay in Needs Input.
 
 **work2.** A label that keeps an issue in Inbox, even when the issue has a linked pull request. The pull request of a `work2` issue still moves through the flow columns in the usual way, but it does not move the issue out of Inbox and it does not count in the Active total.
 

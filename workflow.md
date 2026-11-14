@@ -39,7 +39,7 @@ A pull request has the same milestone as the issue that it fixes. Then a board w
 
 The Staging column was formerly named Pending. The board option id did not change, so no card lost its status. Tools must match the option id, not the name.
 
-A board can start with a smaller set of columns than this table. It must still have a Triage column. Every item that waits on the human to review or decide goes in that column. This is true on every board, including the board that tracks this methodology.
+A board can start with a smaller set of columns than this table. It must still have a Triage column. Open issues that wait on the human to review or decide go in that column. This is true on every board, including the board that tracks this methodology. Finished pull requests that wait on the human stay in Human Review. Draft pull requests that wait on an answer stay in Needs Input.
 
 Only pull requests in Staging and in Human Review are merged into the staging branch and deployed to the staging environment. That is about 7 pull requests in total: exactly 2 in Human Review and 3 to 5 in Staging. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
 
@@ -106,7 +106,7 @@ A push after the head that the coordinator checked sends a Human Review card bac
 
 ## Triage
 
-Every board has a Triage column, including the board that tracks this methodology. If an item is open for the human to review, it goes in Triage. This includes new issues, complaints, proposals, and new rules that wait on a decision.
+Every board has a Triage column, including the board that tracks this methodology. If an open issue is waiting on the human to review or decide, it goes in Triage. This includes new issues, complaints, proposals, and new rules that wait on a decision. Finished pull requests that wait on the human stay in Human Review. Draft pull requests that wait on an answer stay in Needs Input.
 
 New issues and complaints go into Triage. Each issue must give the code context for the related component and tell why the problem occurs. It must give two to four numbered fix options with a recommendation. A symptom and the expected behavior are not sufficient. The maintainer must be able to select with one comment.
 
