@@ -80,6 +80,9 @@ Add an issue template to the repository:
 ## Goal
 <one or two sentences: what changes for the user>
 
+## Mockup
+<A picture or sketch of how the change should look or work, whenever that is possible. Usual form: a PNG of the wanted UI (or today versus wanted), or a mermaid diagram or text sketch, with alt text, and a short caption that starts "Mockup, not staging." If a mockup is not possible, say why. See [Triage](workflow.md#triage).>
+
 ## Code context and cause
 <the related component, files, or modules, and why the problem occurs>
 
