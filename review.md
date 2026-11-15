@@ -136,7 +136,7 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
    - A Staging pull request is merged into the staging branch when it is pulled, not as part of a bulk speculative stack.
    - The work merge, the redeploy, and the gate happen only at pull time, and only one pull at a time.
    - Moving the first Staging pull request to Human Review is only a card move, so it is almost instant.
-3. Ready is a board column between Needs Input and Staging. It holds finished pull requests that wait to be pulled into Staging. Ready is the finish line for coding agents. Agents work the backlog until their pull requests are in Ready.
+3. Ready is a board column between Needs Input and Staging. It is the buffer of finished pull requests. Finished work piles up here, because a merge is easier than a first implementation. Ready is also the finish line for a first-implementation coding agent. Agents work Active issues and the backlog until their pull requests are in Ready. See [Coding agent slots](#coding-agent-slots).
    - A pull request in Ready is finished. Its worker is done. The automated review of the current head is clean, or it is at the round limit or has timed out and the post-check of the coordinator has passed. No P1 or P2 findings are open.
    - A pull request in Ready is not merged into the staging branch, not deployed, not gated, and not on the staging environment.
    - Pull requests in Ready wait in this order:
@@ -150,7 +150,7 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
 
 This rule, from 2026-11-13, records the maintainer decision on the fast-track proposal.
 
-The highest priority is always to keep the flow full. Keep at least two pull requests in Human Review, when two prepared pull requests are available, and keep Staging at or above its floor, with more pull requests becoming Ready so that the slots refill as fast as possible.
+The highest priority is always to keep the flow full. Keep at least two pull requests in Human Review, when two prepared pull requests are available, and keep Staging at or above its floor, with finished pull requests piling up in Ready. Speed does not matter while the attention of the human is the constraint. Steady flow does.
 
 Within that, high-priority tickets and a fast-track pull request fill a slot first. It may jump the queue at every step: launch, automated review, the coordinator check, the Ready queue, the pull into Staging, and the move from Staging into Human Review. Fast tracks are rare.
 
@@ -215,7 +215,7 @@ In that one run:
 1. When a Human Review slot opens, promote the first Staging pull request to Human Review.
 2. While Staging is below the floor (default 2) and a clean Ready pull request is available, pull the next clean Ready pull request into Staging. Clean means it merges, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request. The tools cache that conflict map per head SHA. Take pull requests in the Ready order above: the active fast-track first, then milestone, then fewest conflicts, then oldest. The pull does the work merge, which refuses on a conflict or on conflict markers. Then it deploys staging again, confirms the served `.deploy-sha`, and runs `hr-gate --apply`. Those expensive steps happen only at pull time. If the work merge refuses, try the next clean pull request in Ready.
 3. Any other Ready pull request that already merges cleanly in that same way may also enter Staging. There is no fixed cap. Never rebase or rework a pull request just to fill Staging.
-4. If Ready has fewer than 6 pull requests, the tools tell the swarm manager to start the next coding agent, and to keep about 2 agents working.
+4. The next new-work coding agent starts whenever fewer than 3 new-work agents are running and an Active issue has no pull request yet. It does not start only when Ready is short. See [Coding agent slots](#coding-agent-slots).
 
 The pull step starts during that cascade, when Staging is below the floor and a clean Ready pull request is available. The single worker then takes the next clean pull request in Ready and does these steps:
 
@@ -229,7 +229,7 @@ The pull step starts during that cascade, when Staging is below the floor and a 
 
 Do not pre-merge Ready pull requests in bulk. Every merge to main made those speculative branches conflict. We will compare a floor of 1 with a floor of 2 by how long pull requests take from Ready to Human Review.
 
-When Human Review drops to 1, because the human moved one out, run the just-in-time cascade under the shared lock. First move the first Staging pull request to Human Review. Then, while Staging is below the floor and a clean Ready pull request is available, pull the next clean Ready pull request into Staging. Any other Ready pull request that already merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request may also enter Staging. Never rebase or rework a pull request just to fill Staging. If Ready then has fewer than 6 pull requests, tell the swarm manager to start the next coding agent, and to keep about 2 agents working. If the lock is busy, queue a rerun. The process that holds the lock drains that rerun before it exits. If Human Review has an open slot and Staging still has pull requests, fill Human Review first, up to two.
+When Human Review drops to 1, because the human moved one out, run the just-in-time cascade under the shared lock. First move the first Staging pull request to Human Review. Then, while Staging is below the floor and a clean Ready pull request is available, pull the next clean Ready pull request into Staging. Any other Ready pull request that already merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request may also enter Staging. Never rebase or rework a pull request just to fill Staging. Start the next new-work coding agent if fewer than 3 new-work agents are running and an Active issue has no pull request yet. If the lock is busy, queue a rerun. The process that holds the lock drains that rerun before it exits. If Human Review has an open slot and Staging still has pull requests, fill Human Review first, up to two.
 
 Do not merge, deploy, or gate a pull request that is still in Ready, except the follow-up evidence case in [Blocked work](workflow.md#blocked-work). Prepare only one Ready pull request at a time. The tools can still run the gate again on a pull request that is already in Staging, for example when CI finishes, when main advances, or when they promote the card. If that later check fails, the card leaves Staging.
 
@@ -249,7 +249,7 @@ Events move the work, not timers. A clean automated review moves the pull reques
 
 The reviewer always knows the state. When Human Review becomes empty, the swarm manager immediately tells the reviewer. It gives the next pull request and the time when it will be ready.
 
-The swarm tools include a status command and a cascade command, `~/bin/swarm-advance --cascade`. The status command reports whether Human Review holds two pull requests, when two prepared pull requests are available, and whether Staging is at or above its floor (default 2). The cascade command takes the shared lock and runs the whole just-in-time cascade: it promotes the first Staging pull request into Human Review when a slot is open, pulls the next clean Ready pull request while Staging is below the floor, may also pull other Ready pull requests that already merge cleanly, and signals for the next coding agent when Ready has fewer than 6 pull requests. If the lock is busy, the command queues a rerun. The process that holds the lock drains that rerun before it exits.
+The swarm tools include a status command and a cascade command, `~/bin/swarm-advance --cascade`. The status command reports whether Human Review holds two pull requests, when two prepared pull requests are available, and whether Staging is at or above its floor (default 2). The cascade command takes the shared lock and runs the whole just-in-time cascade: it promotes the first Staging pull request into Human Review when a slot is open, pulls the next clean Ready pull request while Staging is below the floor, may also pull other Ready pull requests that already merge cleanly, and starts the next new-work coding agent when fewer than 3 new-work agents are running and an Active issue has no pull request yet. If the lock is busy, the command queues a rerun. The process that holds the lock drains that rerun before it exits.
 
 #### API budget
 
@@ -261,6 +261,22 @@ The event hook must make these checks before it makes any API call:
 
 The hook uses the API quota of the bot app. It falls back to the human account only when the app quota fails.
 
+#### Coding agent slots
+
+This rule, from 2026-11-14 8:43 PM ET, sets how coding agents start and stop.
+
+Of the usual 5 to 8 running coding agents, 3 to 4 always do first implementations of Active issues, on independent branches. Do not stop those agents to free a slot. Finished pull requests pile up in Ready. Ready is the buffer, because a merge is easier than a first implementation.
+
+The other 2 to 3 slots are reserved for revival of agents that must rework a change.
+
+When a pull request reaches Ready, its coding agent process exits. Its terminal session, its branch, and its worktree stay, so a reserved slot can start the agent again with feedback. Then the next Active issue starts, in a new-work slot.
+
+Staging pulls from Ready just in time. If the maintainer marks a pull request urgent, that pull request becomes the next Staging pull.
+
+The next new-work coding agent starts whenever fewer than 3 new-work agents are running and an Active issue has no pull request yet. It does not start only when Ready is short.
+
+Do not take a revival slot for new work. Do not stop a first-implementation agent to free a slot.
+
 #### Work in progress
 
-New workers must not take memory or API quota away from the pull request that is closest to Human Review. When a cascade finds that Ready has fewer than 6 pull requests, the tools tell the swarm manager to start the next coding agent, and to keep about 2 agents working.
+Keep 3 to 4 first-implementation agents running. Use the reserved slots for rework. New-work launches follow [Coding agent slots](#coding-agent-slots).
