@@ -42,7 +42,7 @@ The coordinator runs the pull request loop and keeps the board correct. It does 
 
 - Makes sure that each change that a person can see has screenshots or frames in the pull request. Existing screenshots count. Do not take them again after a merge from main or from the staging branch.
 - Reports results to the human.
-- Treats Ready as the finish line for coding agents. Agents work the backlog until their pull requests are in Ready.
+- Treats Ready as the buffer of finished pull requests. Keeps 3 to 4 first-implementation agents running on independent branches, and reserves 2 to 3 slots for revival and rework. See [Coding agent slots](review.md#coding-agent-slots).
 - Keeps exactly two pull requests in Human Review whenever two prepared pull requests are available. Staging has no fixed cap. Any Ready pull request that merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request may enter Staging. When Staging drops below a floor (default 2), pulls the next clean Ready pull request. The expensive steps happen only at pull time. Never rebase or rework a pull request just to fill Staging. Only Staging and Human Review are merged into the staging branch and deployed to the staging environment. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order.
 - If Human Review becomes empty while work continues, tells the reviewer immediately. Gives the next pull request and the time when it will be ready.
 - Acts when the human moves a card from Human Review or from Needs Input to In Progress. A comment from the human does not move the card.
