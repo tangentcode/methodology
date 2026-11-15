@@ -126,16 +126,16 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
    - That move is the signal that only one pull request is left. The next pull request must enter in seconds, not minutes.
    - While the human reviews the remaining pull request, a new one goes in behind it.
    - When Human Review holds exactly one pull request, and the first Staging pull request depends on it, that Staging pull request can go in as the one stacked pull request. It has a banner at the top of the body that names the Human Review pull request that it depends on. See [Stacked pull requests](workflow.md#stacked-pull-requests). If that base merges first, remove the banner. Then the pull request is a plain pull request.
-2. Staging always holds one fully ready pull request, when a Ready pull request is available. This column was formerly named Pending. Pre-merging Ready pull requests in bulk caused a slowdown: every merge to main made the speculative branches conflict. So do not pre-merge Ready pull requests in bulk. Extra Ready pull requests may also sit in Staging, but only when they are already known to merge cleanly against main, the staging branch (`work`), and every Human Review and Staging pull request. Never rebase or rework a pull request just to fill Staging. Blocked pull requests can also sit in Staging, but they do not count as the one required fully ready pull request, and they do not stop a promotion or a pull step. Only Staging and Human Review are merged into the staging branch and deployed to the staging environment. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
+2. Staging has no fixed cap. The goal is flow. This column was formerly named Pending. Any Ready pull request that merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request may enter Staging. The tools cache a conflict map per head SHA. When Staging drops below a floor, the cascade pulls the next clean Ready pull request. The default floor is 2. We will compare a floor of 1 with a floor of 2 by how long pull requests take from Ready to Human Review. The expensive steps (the work merge, the redeploy, and the gate) happen only at pull time. Never rebase or rework a pull request just to fill Staging. Do not pre-merge Ready pull requests in bulk: that made every merge to main conflict with the speculative branches. Blocked pull requests can also sit in Staging, but they do not count toward the floor, and they do not stop a promotion or a pull step. Only Staging and Human Review are merged into the staging branch and deployed to the staging environment. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
    - Each Staging pull request is fully prepared:
      - It is merged into the staging branch.
      - It is deployed to the staging environment, and that environment is verified to serve it.
      - The Linux checks are green on the current head.
      - The pull request body has screenshots, when a person can see the change, and a section that tells where to see it.
      - All conditions of the gate pass.
-   - The required Staging pull request is merged into the staging branch when it is pulled, not as part of a bulk speculative stack.
-   - The work merge and the gate checks happen only for a pull request that is being pulled into Staging, and only one at a time.
-   - Moving the Staging pull request to Human Review is only a card move, so it is almost instant.
+   - A Staging pull request is merged into the staging branch when it is pulled, not as part of a bulk speculative stack.
+   - The work merge, the redeploy, and the gate happen only at pull time, and only one pull at a time.
+   - Moving the first Staging pull request to Human Review is only a card move, so it is almost instant.
 3. Ready is a board column between Needs Input and Staging. It holds finished pull requests that wait to be pulled into Staging. Ready is the finish line for coding agents. Agents work the backlog until their pull requests are in Ready.
    - A pull request in Ready is finished. Its worker is done. The automated review of the current head is clean, or it is at the round limit or has timed out and the post-check of the coordinator has passed. No P1 or P2 findings are open.
    - A pull request in Ready is not merged into the staging branch, not deployed, not gated, and not on the staging environment.
@@ -150,7 +150,7 @@ This rule, from 2026-11-13, replaces the 2026-11-12 two-slot and ready-next rule
 
 This rule, from 2026-11-13, records the maintainer decision on the fast-track proposal.
 
-The highest priority is always to keep the flow full. Keep at least two pull requests in Human Review, when two prepared pull requests are available, and one fully ready pull request in Staging, with more pull requests becoming Ready so that the slots refill as fast as possible.
+The highest priority is always to keep the flow full. Keep at least two pull requests in Human Review, when two prepared pull requests are available, and keep Staging at or above its floor, with more pull requests becoming Ready so that the slots refill as fast as possible.
 
 Within that, high-priority tickets and a fast-track pull request fill a slot first. It may jump the queue at every step: launch, automated review, the coordinator check, the Ready queue, the pull into Staging, and the move from Staging into Human Review. Fast tracks are rare.
 
@@ -166,7 +166,7 @@ Within that, high-priority tickets and a fast-track pull request fill a slot fir
 
 1. **Launch.** Its coding agent starts at once, before any backlog launch.
 2. **Review.** The automated reviewer and the coordinator check take it first in their queues.
-3. **Ready to Staging.** It goes to the head of the Ready queue. When Staging is empty, the next required pull takes it first. It may enter Staging as an extra pull request only if it already merges cleanly against main, the staging branch (`work`), and every Human Review and Staging pull request. Do not restack existing Staging pull requests just to put it first. A pull that is already running does not stop. The new pull waits for the shared lock, like every other operation.
+3. **Ready to Staging.** It goes to the head of the Ready queue. The next pull into Staging takes it first when Staging is below the floor. It may enter Staging when it merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request. Do not restack existing Staging pull requests just to put it first. A pull that is already running does not stop. The new pull waits for the shared lock, like every other operation.
 4. **Staging to Human Review.** It takes the next free Human Review slot, ahead of the other Staging pull requests. It does not push a pull request out of Human Review. Human Review stays at exactly two.
 
 ##### What it may skip
@@ -206,18 +206,18 @@ This lock does not stop the human from a merge to main, or from a review of the 
 
 ##### The just-in-time cascade
 
-This rule, from 2026-11-14 6:32 PM ET, was updated at 6:44 PM ET on the same day. Staging always holds one fully ready pull request. Do not pre-merge Ready pull requests in bulk.
+This rule, from 2026-11-14 6:32 PM ET, was updated at 6:44 PM ET and again at 7:16 PM ET on the same day. Staging has no fixed cap. The goal is flow.
 
 One event that frees a slot, such as a pull request merged or rejected from Human Review, runs through the whole chain in one serial pass. The process holds the shared lock for the whole cascade. The same cascade runs on any event that frees a slot. The command is `~/bin/swarm-advance --cascade`.
 
 In that one run:
 
-1. When a Human Review slot opens, promote the Staging pull request to Human Review.
-2. If Staging is empty, pull one Ready pull request into Staging. Take pull requests in the Ready order above: the active fast-track first, then milestone, then fewest conflicts, then oldest. That pull does the work merge, which refuses on a conflict or on conflict markers. Then it deploys staging again, confirms the served `.deploy-sha`, and runs `hr-gate --apply`. If the work merge refuses, try the next pull request in Ready.
-3. Extra Ready pull requests may also go into Staging automatically, but only ones already known to merge cleanly against main, the staging branch (`work`), and every Human Review and Staging pull request. Never rebase or rework a pull request just to fill Staging.
+1. When a Human Review slot opens, promote the first Staging pull request to Human Review.
+2. While Staging is below the floor (default 2) and a clean Ready pull request is available, pull the next clean Ready pull request into Staging. Clean means it merges, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request. The tools cache that conflict map per head SHA. Take pull requests in the Ready order above: the active fast-track first, then milestone, then fewest conflicts, then oldest. The pull does the work merge, which refuses on a conflict or on conflict markers. Then it deploys staging again, confirms the served `.deploy-sha`, and runs `hr-gate --apply`. Those expensive steps happen only at pull time. If the work merge refuses, try the next clean pull request in Ready.
+3. Any other Ready pull request that already merges cleanly in that same way may also enter Staging. There is no fixed cap. Never rebase or rework a pull request just to fill Staging.
 4. If Ready has fewer than 6 pull requests, the tools tell the swarm manager to start the next coding agent, and to keep about 2 agents working.
 
-The required pull step starts during that cascade, when Staging is empty and Ready is not empty. The single worker then takes the first pull request in Ready and does these steps:
+The pull step starts during that cascade, when Staging is below the floor and a clean Ready pull request is available. The single worker then takes the next clean pull request in Ready and does these steps:
 
 1. If necessary, merge main into the pull request. Its worker makes any code fixes.
 2. Merge the pull request into the staging branch, on top of the current stack: main, the Human Review pull requests, and the Staging pull requests ahead of it. Refuse this merge on a conflict or on conflict markers. If it refuses, try the next pull request in Ready.
@@ -227,21 +227,21 @@ The required pull step starts during that cascade, when Staging is empty and Rea
    - If the gate passes, the pull request goes to Staging.
    - If the gate fails, restore the staging branch to the last admitted stack: the Human Review pull requests and the Staging pull requests only. Deploy that stack again. Then move the failed pull request back to In Progress with the reason, and try the next pull request in Ready. Do not leave a failed candidate on the staging branch, and do not merge the next candidate on top of it.
 
-Do not pre-merge Ready pull requests in bulk. Every merge to main made those speculative branches conflict.
+Do not pre-merge Ready pull requests in bulk. Every merge to main made those speculative branches conflict. We will compare a floor of 1 with a floor of 2 by how long pull requests take from Ready to Human Review.
 
-When Human Review drops to 1, because the human moved one out, run the just-in-time cascade under the shared lock. First move the Staging pull request to Human Review. Then, if Staging is empty, pull one Ready pull request into Staging. Extra Ready pull requests may also go into Staging, but only ones already known to merge cleanly against main, the staging branch (`work`), and every Human Review and Staging pull request. Never rebase or rework a pull request just to fill Staging. If Ready then has fewer than 6 pull requests, tell the swarm manager to start the next coding agent, and to keep about 2 agents working. If the lock is busy, queue a rerun. The process that holds the lock drains that rerun before it exits. If Human Review has an open slot and Staging still has pull requests, fill Human Review first, up to two.
+When Human Review drops to 1, because the human moved one out, run the just-in-time cascade under the shared lock. First move the first Staging pull request to Human Review. Then, while Staging is below the floor and a clean Ready pull request is available, pull the next clean Ready pull request into Staging. Any other Ready pull request that already merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request may also enter Staging. Never rebase or rework a pull request just to fill Staging. If Ready then has fewer than 6 pull requests, tell the swarm manager to start the next coding agent, and to keep about 2 agents working. If the lock is busy, queue a rerun. The process that holds the lock drains that rerun before it exits. If Human Review has an open slot and Staging still has pull requests, fill Human Review first, up to two.
 
 Do not merge, deploy, or gate a pull request that is still in Ready, except the follow-up evidence case in [Blocked work](workflow.md#blocked-work). Prepare only one Ready pull request at a time. The tools can still run the gate again on a pull request that is already in Staging, for example when CI finishes, when main advances, or when they promote the card. If that later check fails, the card leaves Staging.
 
 - Do not pre-merge Ready pull requests in bulk, and do not make speculative rebased copies of every pull request.
 - Do not merge the whole queue again after every merge to main.
 - Never rebase or rework a pull request just to fill Staging.
-- The staging environment gets one required pull request at a time, just before that pull request enters the Staging column, when Staging is empty.
+- The expensive steps (the work merge, the redeploy, and the gate) happen only at pull time, when a clean Ready pull request enters Staging.
 
-Conflicts: only one required pull request is prepared at a time, so prepare it against current main plus the two Human Review pull requests and any Staging pull requests already there.
+Conflicts: only one pull request is prepared at a time. Check it with `git merge-tree` against current main, the staging branch (`work`), and every Human Review and Staging pull request. Cache that conflict map per head SHA.
 
-- If it conflicts with a Human Review pull request, prefer the next pull request in Ready that does not.
-- Never rebase or rework a pull request just to fill Staging. If no Ready pull request merges cleanly, leave Staging empty until one does, rather than making a speculative `<branch>-vN` tip only to fill the column. Never move the branch of a card that is already in Staging or in Human Review.
+- If it conflicts, prefer the next clean pull request in Ready.
+- Never rebase or rework a pull request just to fill Staging. If no Ready pull request merges cleanly, leave Staging below the floor until one does, rather than making a speculative `<branch>-vN` tip only to fill the column. Never move the branch of a card that is already in Staging or in Human Review.
 
 If the human rejects a Human Review pull request, each Staging pull request that included the rejected work is not valid. Move those cards out of Staging, and make them again from their plain branches without the rejected work, one at a time, under the lock. If the other Human Review pull request contains the rejected work, move it out of Human Review first, in the same way. Tell the human that you removed it, and why.
 
@@ -249,7 +249,7 @@ Events move the work, not timers. A clean automated review moves the pull reques
 
 The reviewer always knows the state. When Human Review becomes empty, the swarm manager immediately tells the reviewer. It gives the next pull request and the time when it will be ready.
 
-The swarm tools include a status command and a cascade command, `~/bin/swarm-advance --cascade`. The status command reports whether Human Review holds two pull requests, when two prepared pull requests are available, and whether Staging holds one fully ready pull request. The cascade command takes the shared lock and runs the whole just-in-time cascade: it promotes the Staging pull request into Human Review when a slot is open, pulls one Ready pull request if Staging is empty, may add extra Ready pull requests that already merge cleanly, and signals for the next coding agent when Ready has fewer than 6 pull requests. If the lock is busy, the command queues a rerun. The process that holds the lock drains that rerun before it exits.
+The swarm tools include a status command and a cascade command, `~/bin/swarm-advance --cascade`. The status command reports whether Human Review holds two pull requests, when two prepared pull requests are available, and whether Staging is at or above its floor (default 2). The cascade command takes the shared lock and runs the whole just-in-time cascade: it promotes the first Staging pull request into Human Review when a slot is open, pulls the next clean Ready pull request while Staging is below the floor, may also pull other Ready pull requests that already merge cleanly, and signals for the next coding agent when Ready has fewer than 6 pull requests. If the lock is busy, the command queues a rerun. The process that holds the lock drains that rerun before it exits.
 
 #### API budget
 
