@@ -135,7 +135,7 @@ For each review finding: the root cause, the neighboring cases, and the tests.
 <screenshots or frames for each item that a person can see, with a side-by-side view for generated media that has a reference, or "nothing visible changed">
 ```
 
-Title rules: an issue title tells the present state. A wanted change uses "should" (example: "Save As should work for every file that can be saved"). A plain statement, such as "X does Y", is a bug report. Each issue has a GitHub issue type: Feature, Bug, or Task. A pull request title completes the sentence "Merging this pull request will ..." and starts with a verb in the imperative (example: "Make the Save As command work for every file that can be saved"). See [working-agreements.md](working-agreements.md).
+Title rules: a feature request title says what the thing should do (example: "PTW mouse back button should undo the last annotation while dictating"). A plain present-tense title (example: "... undoes ...") is a bug report. Do not write a feature request as a present-tense statement. Each issue has a GitHub issue type: Feature, Bug, or Task. The pull request that implements a feature is titled as an imperative (example: "Make the back button undo the last annotation while dictating"). It completes the sentence "Merging this pull request will ...". See [working-agreements.md](working-agreements.md#issue-and-pull-request-titles).
 
 Copy the brief template from [briefs.md](briefs.md) into the notes of the owner bot. Briefs do not go in the repository. The coordinator keeps a copy when it starts the worker.
 
