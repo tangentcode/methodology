@@ -86,7 +86,7 @@ With no flag, or with a dry-run flag, it only shows the plan. `--apply` takes th
 
 ### active-gate
 
-`active-gate` checks the Active column. Each card there must be an open issue that is assigned to the swarm, that does not have the `work2` label, and that has exactly one open linked pull request in a flow column. In demote mode it moves failing cards, for example a closed issue to Done, or a `work2` issue back to Inbox. In promote mode it adds missing swarm issues that do have a pull request and that do not have the `work2` label.
+`active-gate` checks the Active column. Each card there must be an open issue that is assigned on the Project 4 card or as the assignee, that does not have the `work2` label, and that has exactly one open linked pull request in a flow column. It does not require a `swarm` label. In demote mode it moves failing cards, for example a closed issue to Done, or a `work2` issue back to Inbox. In promote mode it adds missing swarm issues that do have a pull request and that do not have the `work2` label.
 
 ### flow-status
 

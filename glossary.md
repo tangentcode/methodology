@@ -65,7 +65,7 @@
 
 **Staging environment.** A test environment that the staging branch feeds. The staging branch is an integration branch. It is never merged into main. Only pull requests in the Staging column and in Human Review are merged into that branch and deployed here. Thus the commit that the staging environment serves is usually a merge that contains the head of a pull request, not the head itself.
 
-**Swarm assignment.** The `swarm` label on an issue. An issue in Active must have this label. It must also have exactly one open linked pull request in a flow column, and it must not have the `work2` label.
+**Swarm assignment.** An issue is assigned to the swarm when it is on the Project 4 card or has the swarm assignee. The `swarm` label is retired. Do not add it. An issue in Active must be assigned in this way. It must also have exactly one open linked pull request in a flow column, and it must not have the `work2` label.
 
 **Triage.** The column for open issues that wait on the human to review or decide. This includes issues that have suggested plans, and proposals or new rules that wait on a decision. The human decides in a comment, or by a move of the issue to Active or to Backlog. Every board has this column, including the board that tracks this methodology. Finished pull requests that wait on the human stay in Human Review. Draft pull requests that wait on an answer stay in Needs Input.
 

@@ -49,25 +49,26 @@ Board settings:
 - [ ] Each pull request card has a Status. Use In Progress for drafts and for pull requests that still get pushes. Use Auto Review, with a review request, for all others.
 - [ ] If the tracker can do it, add new issues and pull requests of the repository to the board automatically.
 - [ ] When a pull request merges, move its card to Done automatically.
-- [ ] When a pull request opens, give it a closing link (`Fixes`, or an equivalent). A "Part of" mention is not a closing link. Assign the issue to the swarm (the `swarm` label). Then move the issue card to Active, or keep it there if the human already moved it to Active. Keep the two cards, unless the issue has the `work2` label. The pull request card goes through the review loop. The issue card stays in Active while it has exactly one open linked pull request in a flow column. A pull request in a flow column belongs to exactly one Active issue. If one pull request fixes more than one issue, only one of those issues is in Active, and the others stay in Backlog until the pull request merges. Do not put a second pull request for the same issue into a flow column while the first is still there. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. Issues with the `work2` label stay in Inbox. Their pull requests still move through the review loop, but they do not count toward the Active total. The issue goes out of Active when it no longer has exactly one open linked pull request in a flow column.
+- [ ] When a pull request opens, give it a closing link (`Fixes`, or an equivalent). A "Part of" mention is not a closing link. Assign the issue on the Project 4 card or as the assignee (not with a `swarm` label). Copy the labels and the milestone of the issue onto the pull request. Then move the issue card to Active, or keep it there if the human already moved it to Active. Keep the two cards, unless the issue has the `work2` label. The pull request card goes through the review loop. The issue card stays in Active while it has exactly one open linked pull request in a flow column. A pull request in a flow column belongs to exactly one Active issue. If one pull request fixes more than one issue, only one of those issues is in Active, and the others stay in Backlog until the pull request merges. Do not put a second pull request for the same issue into a flow column while the first is still there. If a follow-up must run at the same time as the first change, make the follow-up a separate issue. Issues with the `work2` label stay in Inbox. Their pull requests still move through the review loop, but they do not count toward the Active total. The issue goes out of Active when it no longer has exactly one open linked pull request in a flow column.
 - [ ] New issues go to Inbox or Triage. An issue without a pull request never goes in Auto Review, Ready, Staging, or Human Review. The only time it is in Active without a pull request is the short interval after the human moves it there and before the coordinator opens the draft pull request.
 
 
 ## 3. Make labels
 
-Use few labels. These labels are sufficient to start:
+Use few labels. The maintainer expects only the `fast-track` label. The `MinBot-passed` and `swarm` labels are retired. Bots must not invent labels. They may copy an inherited label, such as `fast-track`, from an issue onto its pull request. They must not add `MinBot-passed` or `swarm`. Swarm assignment comes from the Project 4 card or the assignee. The gate checks a MinBot pass comment on the exact head, not a label.
+
+These labels are still in use:
 
 | Label | Use |
 |---|---|
 | `approved` | The human approved the issue. Workers start only on approved issues. A move to Active also counts as approval. |
-| `swarm` | The issue is assigned to the swarm. Active holds only issues with this label that do not have the `work2` label and that have exactly one open linked pull request in a flow column. |
 | `work2` | The issue stays in Inbox, even when it has a linked pull request. That pull request still moves through the flow columns, but it does not count toward the Active total. |
 | `parked` | The human stopped the work for now. Do not touch it until he says otherwise. |
 | `blocked` | The item waits on another change or a decision. Name the blocker in a comment. |
 | `ui` | The change has an effect that a person can see (UI, rendered images, or video). It needs screenshots or frames. |
 | `needs-decision` | The coordinator asked the human a question and waits for the answer. |
 | `follow-up` | An issue from a review finding or a neighboring case that must be a separate change. |
-| `fast-track` | The maintainer moved this ticket to the front of the queues. Several tickets may carry this label, but only one runs through the fast track at a time. See [Fast track](review.md#fast-track). |
+| `fast-track` | The maintainer moved this ticket to the front of the queues. Several tickets may carry this label, but only one runs through the fast track at a time. See [Fast track](review.md#fast-track). A pull request inherits this label from the issue that it fixes. |
 
 Review priorities (P1, P2) come from the findings of the automated reviewer. Do not also make labels for them.
 
@@ -146,7 +147,7 @@ Use a small, real issue for the first run. Then problems with the setup show ear
 3. **Owner bot.** Writes the brief from the template, with each choice from the comment of the human, or with the default or recommended answers if the human moved the issue to Active with no comment. Moves the card to Backlog, unless the human already moved it to Active. Or it writes questions on the issue and keeps the issue in Triage, unless the human already moved it to Active.
 4. **Coordinator.** Makes a checkout for the worker on the build machine. Starts the worker in its own terminal session and sends the brief. If the human moved the issue to Active, start the worker even when questions are still open.
 5. **Worker.** Makes the branch from the latest main, makes a first commit, pushes the branch, and stops. The worker does not open the pull request. If it takes a default or recommended answer, it will state that default in the pull request body.
-6. **Coordinator.** Opens a draft pull request from that branch against main, with a closing link. Adds the `swarm` label. Moves the issue card to Active, or keeps it there, and moves the pull request card to In Progress. After the pull request is open, the issue is never in Active without that link. A "Part of" mention is not a closing link. Then the coordinator tells the worker to continue.
+6. **Coordinator.** Opens a draft pull request from that branch against main, with a closing link. Assigns the issue on the Project 4 card or as the assignee. Copies the labels and the milestone of the issue onto the pull request. Does not add a `swarm` label. Moves the issue card to Active, or keeps it there, and moves the pull request card to In Progress. After the pull request is open, the issue is never in Active without that link. A "Part of" mention is not a closing link. Then the coordinator tells the worker to continue.
 7. **Worker.** Writes code and tests. Runs locally only the targeted test files, through the shared two-slot throttle, with one test worker process. Pushes, and reports the head commit and the number of tests that pass.
 8. **Coordinator.** Does the pre-check (checklist A below).
 9. **Coordinator.** Marks the pull request ready, moves the card to Auto Review, and requests round 1 of the automated review.
