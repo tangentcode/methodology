@@ -137,6 +137,8 @@ For each review finding: the root cause, the neighboring cases, and the tests.
 
 Title rules: a feature request title says what the thing should do (example: "PTW mouse back button should undo the last annotation while dictating"). A plain present-tense title (example: "... undoes ...") is a bug report. Do not write a feature request as a present-tense statement. Each issue has a GitHub issue type: Feature, Bug, or Task. The pull request that implements a feature is titled as an imperative (example: "Make the back button undo the last annotation while dictating"). It completes the sentence "Merging this pull request will ...". See [working-agreements.md](working-agreements.md#issue-and-pull-request-titles).
 
+A title must read as a plain sentence. Keep the articles. Quote each literal word that the title discusses. A reader must be able to parse the title without reading the body.
+
 Copy the brief template from [briefs.md](briefs.md) into the notes of the owner bot. Briefs do not go in the repository. The coordinator keeps a copy when it starts the worker.
 
 Add a short agent instructions file at the root of the repository. Put these rules in it: the root-cause rule, the branch rules, and the rule that workers do not merge, deploy, or resolve review threads. Open this file as the first pull request (step 5). Then the human approves the rules in the same way as code.

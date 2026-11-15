@@ -33,7 +33,7 @@
 
 **Independent pull request.** A pull request that merges cleanly onto main, has no unmerged commits of another Human Review pull request, and merges cleanly together with each Human Review pull request. The human can merge or reject it with no effect on the others.
 
-**Issue title.** A short headline for an issue. A feature request title says what the thing should do, and uses "should". A plain present-tense title, such as "X does Y", is a bug report: it occurs now, and we do not want it.
+**Issue title.** A short headline for an issue. A feature request title says what the thing should do, and uses "should". A plain present-tense title, such as "X does Y", is a bug report: it occurs now, and we do not want it. A title must read as a plain sentence. Keep the articles. Quote each literal word that the title discusses. A reader must be able to parse the title without reading the body.
 
 **Issue type.** A GitHub type on each issue: Feature, Bug, or Task.
 

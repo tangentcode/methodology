@@ -29,6 +29,19 @@ Do not write a feature request as a present-tense statement. That reads as a bug
 
 The pull request that implements a feature is titled as an imperative. It completes the sentence "Merging this pull request will ...". Example: "Make the back button undo the last annotation while dictating".
 
+A title must read as a plain sentence. Keep the articles ("a", "an", "the"). When the title talks about a literal word, put that word in quotation marks. Example: a feature-request title uses the word "should".
+
+Do not drop words to make a headline. Do not stack words that can be a noun or a verb, such as list, move, title, issue, feature, gate, sweep, stage, review, mark, check, track, cut, record, or save. A reader must be able to parse the title without reading the body.
+
+Examples:
+
+- Hard to parse: "List search should use one shared filter component". Clear: "Search boxes on list pages should use one shared filter component".
+- Hard to parse: "ptw: mark a move right or wrong (! / ?) with check/X icon and coin/buzzer sound". Clear: "ptw: the board should let the user mark a move as right or wrong, with a check or X icon and a coin or buzzer sound".
+- Hard to parse: "Track bottom/side panel open state in URL hash ($D:...)". Clear: "The URL hash should remember whether the bottom and side panels are open".
+- Hard to parse: "Move media storage to Cloudflare R2 with browser caching". Clear: "Media files should be stored on Cloudflare R2 and cached in the browser".
+
+Keep titles short, but not at the cost of a clear parse.
+
 Team-specific title prefixes are in [team-conventions.md](team-conventions.md).
 
 ## Scope
