@@ -39,6 +39,8 @@
 
 **Main.** The production branch. Only the human merges into it.
 
+**Mockup.** A picture or sketch in a Triage issue that shows how the change should look or work. Whoever writes the issue adds it, whenever that is possible. The usual form is a heading, a PNG or a mermaid or text sketch, and a short caption that starts "Mockup, not staging." See [Triage](workflow.md#triage).
+
 **Needs Input.** The column for draft pull requests where a human must answer a question from the worker or the coordinator.
 
 **Neighboring cases.** Other examples of the same class of defect as a finding.
