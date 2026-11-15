@@ -8,15 +8,19 @@
 - **Board.** One card for each issue or pull request. The column tells what occurs next.
 - **Staging branch.** An integration branch that collects changes for tests on the staging environment. It is never merged into main.
 
-## Milestones
+## Milestones and labels
 
-A pull request has the same milestone as the issue that it fixes. Then a board with a milestone filter shows the issues and the pull requests together.
+A pull request inherits the labels and the milestone of every issue that it fixes. Then a board filter can show the issues and the pull requests together, and the maintainer can find the pull request on the board.
 
-- When you open a pull request for an issue that has a milestone, set the same milestone on the pull request.
-- When an issue gets a milestone, or its milestone changes, while a pull request for it is open, set that milestone on the pull request.
+This rule is from 2026-11-14, 7:21 PM ET, with a label decision at 7:22-7:23 PM ET.
+
+- When you open a pull request for an issue, copy the milestone and the labels of that issue onto the pull request.
+- When an issue gets a milestone or a label, or those change, while a pull request for it is open, copy the new milestone and labels onto the pull request.
 - If one pull request fixes issues with different milestones, use the milestone with the earliest deadline.
-- If one pull request fixes more than one issue, only one of those issues is in Active. The others stay in Backlog until the pull request merges.
-- The coordinator checks this on each board sweep. It fixes each pull request whose milestone is not the same as the milestone of its issue.
+- If one pull request fixes more than one issue, it receives every inherited label from each of those issues. Only one of those issues is in Active. The others stay in Backlog until the pull request merges.
+- The swarm tools copy the labels and the milestone when the pull request opens, and again when the issue or the pull request is edited. A sweep backfills existing pull requests that are missing them.
+
+The maintainer expects only the `fast-track` label. The `MinBot-passed` and `swarm` labels are retired. Bots must not invent labels. They may copy an inherited label, such as `fast-track`, from an issue onto its pull request. They must not add `MinBot-passed` or `swarm`. Swarm assignment comes from the Project 4 card or the assignee, not from a label. The gate checks a MinBot pass comment on the exact head, not a `MinBot-passed` label. See [The gate into Human Review](review.md#the-gate-into-human-review).
 
 ## Board columns
 
@@ -63,7 +67,7 @@ Issues and pull requests use different columns. Issues go in Inbox, Discuss, Tri
 
 The human approves an issue in a Triage comment, or by a move of the issue to Active or to Backlog. A move to Active, with no comment, is sufficient approval to start the worker. A move to Backlog approves the plan, but does not start the worker yet.
 
-When the coordinator starts a worker, the worker pushes a first commit on its branch. Then the coordinator assigns the issue to the swarm and opens a draft pull request from that branch, with a closing link such as `Fixes`. Then the issue card stays in Active, or moves to Active, and the worker continues. After the pull request is open, the issue is never in Active without that link. A "Part of" mention is not a closing link.
+When the coordinator starts a worker, the worker pushes a first commit on its branch. Then the coordinator assigns the issue on the Project 4 card or as the assignee, and opens a draft pull request from that branch, with a closing link such as `Fixes`. It copies the labels and the milestone of the issue onto the pull request. It does not add a `swarm` label. Then the issue card stays in Active, or moves to Active, and the worker continues. After the pull request is open, the issue is never in Active without that link. A "Part of" mention is not a closing link.
 
 
 If the issue has open questions when the human moves it to Active, the worker takes the default or recommended answer and builds it. It does not ask the human again for those questions. It states which default it took in the pull request body. The card does not go to Needs Input for those questions.
@@ -125,7 +129,7 @@ Parked items stay parked until the human says otherwise. Product choices belong 
 
 1. An issue goes into Triage. The owner bot writes options. The human decides in a comment, or by a move of the issue to Active or to Backlog.
 2. The owner bot writes a brief, or it first asks questions on the issue in Triage. If the human moved the issue to Active, the coordinator starts a worker even when questions are still open. In that case the worker takes the default or recommended answer. The worker makes a branch from main, pushes a first commit, and stops.
-3. The coordinator opens a draft pull request from that branch against main, with a closing link. It assigns the issue to the swarm and moves the issue card to Active, or keeps it there. The pull request card moves to In Progress. After the pull request is open, the issue is never in Active without a link. If the worker took a default answer, the pull request body states which default it took. Then the worker pushes code with tests to the pull request.
+3. The coordinator opens a draft pull request from that branch against main, with a closing link. It assigns the issue on the Project 4 card or as the assignee, copies the labels and the milestone of the issue onto the pull request, and moves the issue card to Active, or keeps it there. The pull request card moves to In Progress. After the pull request is open, the issue is never in Active without a link. If the worker took a default answer, the pull request body states which default it took. Then the worker pushes code with tests to the pull request.
 4. The coordinator does its pre-review check (see [review.md](review.md)).
 5. The coordinator marks the pull request ready, moves the card to Auto Review, and requests an automated review.
 6. For each P1 or P2 finding, the coordinator changes the pull request to a draft, moves the card to In Progress, and sends the finding to the worker with the root-cause rule. The worker fixes the finding and pushes. The coordinator examines the fix, resolves the thread, and goes back to step 5.

@@ -79,6 +79,7 @@ The coordinator runs this gate when it pulls a pull request into Staging, not wh
 - The pull request can merge into main. The gate uses the mergeable state that the forge reports. If the forge reports conflicts with the base of the pull request, this check fails. This is also true when a local merge-tree test shows no conflicts.
 - No P1 or P2 findings or threads are open.
 - The post-check of the coordinator passed on this head.
+- A MinBot pass comment is present on this exact head. The gate does not use a `MinBot-passed` label. That label is retired.
 - The Linux checks in GitHub Actions are green on this exact head.
 - The change is merged into the staging branch and deployed. Staging is verified to serve the correct commit. A merge into the staging branch must not remove lines of the change. A pull request does not enter Staging until this is true.
 - The pull request description tells where and how to see the change.
@@ -156,8 +157,8 @@ Within that, high-priority tickets and a fast-track pull request fill a slot fir
 
 ##### How to mark it
 
-- The maintainer adds the `fast-track` label to the issue. Its pull request inherits the label.
-- Only the maintainer adds or removes the label.
+- The maintainer adds the `fast-track` label to the issue. The pull request inherits the label, as in [Milestones and labels](workflow.md#milestones-and-labels). The tools copy it when the pull request opens, and again when the issue is edited. A sweep backfills existing pull requests that are missing it.
+- Only the maintainer adds or removes the label. Bots must not invent labels. They may copy this inherited label. They must not add a `MinBot-passed` or `swarm` label.
 - Several tickets may carry the label at the same time. Only one of them runs through the fast track at a time. That ticket is the active fast-track ticket.
 - The other labeled tickets wait. They start, one at a time, in the order in which they received the label. The next one becomes active when the current one enters Human Review, when the current one is canceled before it reaches Human Review, or when the maintainer removes the `fast-track` label from the current one.
 - The tools remove the label when the pull request merges or is canceled. If that ticket was still the active one and it had not yet entered Human Review, the next labeled ticket becomes active.
