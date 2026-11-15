@@ -22,7 +22,7 @@ A brief is the written instruction of the owner bot to one worker agent for one 
 
 Work only in your own checkout. Make one pull request that targets main.
 Issue: <issue reference>. The human owner approved it on <date> (Triage comment, or a move to Active or to Backlog).
-Pull request title: an imperative phrase that completes "Merging this pull request will ...".
+Pull request title: an imperative phrase that completes "Merging this pull request will ...". For a feature, the title says what to make, for example "Make the back button undo the last annotation while dictating".
 
 ## Base
 Use branch `<branch>`. Start it from the latest main. Set the pull request base to main.

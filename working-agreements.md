@@ -18,13 +18,16 @@ Use this style in all chats, issues, pull request descriptions, commit messages,
 
 ## Issue and pull request titles
 
-An issue title tells the present state. Never write an issue title as a wish.
+A feature request title says what the thing should do. Example: "PTW mouse back button should undo the last annotation while dictating".
 
-- A plain statement, such as "X does Y", is a bug report. It means that this occurs now, and we do not want it.
+A plain present-tense title is a bug report: a complaint about current behavior. Example: "PTW mouse back button undoes the last annotation while dictating" means that this occurs now, and we do not want it.
+
+Do not write a feature request as a present-tense statement. That reads as a bug report.
+
 - A wanted change uses "should". Example: "Save As should work for every file that can be saved". Do not write "Save As works for every file that can be saved".
 - Each issue has a GitHub issue type: Feature, Bug, or Task. Use Bug when the title tells about a present behavior that we do not want. Use Feature when the title tells about a wanted change. Use Task for a specific piece of work that is not a user feature and not a bug.
 
-A pull request title completes the sentence "Merging this pull request will ...". It starts with a verb in the imperative. Example: "Make the Save As command work for every file that can be saved".
+The pull request that implements a feature is titled as an imperative. It completes the sentence "Merging this pull request will ...". Example: "Make the back button undo the last annotation while dictating".
 
 Team-specific title prefixes are in [team-conventions.md](team-conventions.md).
 
