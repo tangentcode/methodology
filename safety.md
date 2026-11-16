@@ -13,6 +13,10 @@
 - To restart, configure, or change data on a production service, you need a clear decision from the human for that action. A general approval of the work is not sufficient.
 - Staging changes follow the standard workflow. They do not need more approval.
 
+## Verification and screenshots
+
+Workers that do verification or screenshots must use a throwaway user or a scratch root. They must never write, change, or delete files in the real staging tree of the human.
+
 ## Root-level operations
 
 The designated ops agent does all changes to system services, web server configuration, and other administrator-level changes. Other agents send it the exact change. They do not get elevated access for themselves. The ops agent makes a backup before it changes a production service.

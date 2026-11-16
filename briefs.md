@@ -12,7 +12,7 @@ A brief is the written instruction of the owner bot to one worker agent for one 
 - **Tests.** The cases that the worker must test.
 - **Acceptance.** How the human will check the result.
 - **The root-cause rule.** Always include it.
-- **Rules.** What the worker must not do.
+- **Rules.** What the worker must not do. Always include this rule: workers that do verification or screenshots must use a throwaway user or a scratch root, and must never write, change, or delete files in the real staging tree of the human.
 - **Reports.** What to report, and when.
 
 ## Template
@@ -64,6 +64,7 @@ tests for them before you push. Never push when tests fail.
 - Do not merge or deploy. Do not change the staging branch or running services.
 - Do not resolve review threads.
 - Keep temporary files in your own working directory, not in a shared temporary directory.
+- Workers that do verification or screenshots must use a throwaway user or a scratch root. They must never write, change, or delete files in the real staging tree of the human.
 - <rule for secrets, if the change touches credentials>
 - Write issues, pull request bodies, commit messages, and replies in ASD-STE100 style, in ASCII only (see working-agreements.md, Writing style).
 - Run only the targeted tests for the files that you changed. Report the number of tests that pass.
