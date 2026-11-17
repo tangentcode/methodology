@@ -7,6 +7,7 @@
 - **Pull request.** One for each change of a worker. Its branch starts from main, and it targets main. It starts as a draft. An issue usually becomes one pull request. But you can divide a large issue into many pull requests. Each one has its own worker and branch, and each one names the part of the issue that it covers. Only one of those pull requests is in a flow column at a time. If a follow-up must run at the same time as the first change, for example to supply evidence, make the follow-up a separate issue. A partial pull request refers to the issue without a closing keyword, for example `Part of #N`. Only the pull request that completes the acceptance criteria of the issue uses a closing keyword, such as `Fixes #N`. Thus a merge of a partial change does not close the issue too early. The title completes the sentence "Merging this pull request will ..." and starts with a verb in the imperative.
 - **Board.** One card for each issue or pull request. The column tells what occurs next.
 - **Staging branch.** An integration branch that collects changes for tests on the staging environment. It is never merged into main.
+- **Incident report.** An issue on the board of the methodology that records one failure of the swarm: what happened, why, the fix, and the prevention. See [Incident reports](#incident-reports).
 
 ## Milestones and labels
 
@@ -272,6 +273,53 @@ The same rules apply to a fault on a preview site. Then the change cannot pass t
 - A scan that finds a worker blocked on staging, with no message to the operator yet, counts it as a stall.
 
 A staging fault also blocks all other changes that need screenshots on staging, and a preview fault blocks all other changes that wait for that preview site. Thus the coordinator reports the fault one time, names each change that waits on it, and continues all of them when the fault is fixed.
+
+## Incident reports
+
+This rule is from the human, 2026-11-15, 7:08 PM ET.
+
+Each failure of the swarm gets an incident report. The report is an issue on the board that tracks this methodology, not on the board of the product. A fix makes the failure stop. The report makes sure that the team learns why it occurred and how to prevent it.
+
+### What is a failure
+
+A failure is any event where the swarm did not do what this method says, or where the human had to act to make the work move again. Examples:
+
+- A finding of the periodic sanity check, for example a card in the wrong column or two agents in one worktree.
+- An agent that is hung or stuck. For example, a menu blocks it, its screen is frozen, a test process hangs, or it asks a question in its pane.
+- A violation of a board rule. For example, a Done card whose head is not on main, or an issue card in a flow column with no pull request.
+- An automation stall. For example, a missed handoff, Staging that does not refill, an empty Human Review while Staging holds pull requests, or an outage of the automated reviewer.
+- A safety failure. For example, an agent that deleted or changed real data. See [safety.md](safety.md#incidents).
+
+A normal review finding is not a failure. It is the loop that works. A stall that a scan finds and fixes in the same run is still a failure, and it gets a report.
+
+### Who opens the report
+
+- Automation opens the report when it finds the failure. The pane watcher and the periodic sanity check open the issue themselves. They fill in what happened and what they did. They mark the other sections as pending.
+- When a person or an agent finds a failure that automation did not report, the coordinator opens the report.
+- Open one report for each failure. If a failure occurs again with the same cause, add a comment to the open report. Do not open a second report. Automation uses a key for each failure and a limit for each hour, so a failure that repeats does not fill the board.
+
+### Who diagnoses
+
+The coordinator bot diagnoses each failure. It reads the logs, the events, the code, and the transcripts of the agents. It finds the root cause, with the file and the line when the cause is in code. Then it writes the Why section. The coordinator also writes the Fix section when the fix is done, and suggests the Prevention.
+
+The coordinator does not make product choices in the Prevention section. If a prevention needs a decision from the human, write it as a question for the human, and move the card to Triage. A prevention that needs a change to the tools becomes its own issue. Name it in the Prevention section.
+
+### The contents of a report
+
+Each report has these four sections, in this sequence. Use the template in [adopting.md](adopting.md#4-add-the-templates).
+
+1. **What happened.** The facts, with the times. Give the cards, the pull requests, the agents, and the log lines that show the failure.
+2. **Why.** The root cause and each contributing cause. Name the code, the file, and the line when you can. Tell what you examined and found not true. If the cause is not known, say so.
+3. **Fix.** What was done, by whom, and at what time. Tell how you made sure that it worked. If a part of the fix is still open, say which part.
+4. **Prevention.** How to stop the same class of failure. Name each follow-up issue. Write each choice for the human as a question.
+
+The title has the form `Incident <date> <time> ET: <what happened>`. Example: `Incident 2026-11-15 7:10 PM ET: Staging did not refill after a Human Review merge`. The first line of the body tells who opened the report and who diagnosed it, with the time.
+
+### The card of a report
+
+- The report goes on the board that tracks this methodology, in Backlog.
+- When the Prevention section has a question for the human, the card goes to Triage, as for each issue that waits on the human.
+- When the fix is done and each prevention is a named issue or a decision of the human, the coordinator closes the report.
 
 ## Deploy automation target
 

@@ -135,6 +135,28 @@ For each review finding: the root cause, the neighboring cases, and the tests.
 <screenshots or frames from the preview site of the real app (never an isolated component page) for each item that a person can see, with a side-by-side view for generated media that has a reference, or "nothing visible changed">
 ```
 
+Add an incident report template to the repository of the board that tracks this method. Each failure of the swarm gets one report. See [Incident reports](workflow.md#incident-reports). The title has the form `Incident <date> <time> ET: <what happened>`.
+
+```markdown
+Incident report. Opened by <automation or agent>, <date> <time> ET. Diagnosed by <coordinator>, <date> <time> ET. Related: <issues and pull requests>.
+
+## What happened
+<the facts, with the times: the cards, pull requests, agents, and log lines that show the failure>
+
+## Why
+1. <the root cause, with the code, file, and line when you can>
+2. <each contributing cause>
+<what you examined and found not true; or "Not known" and what is still to examine>
+
+## Fix
+- <time>: <what was done, by whom, and how you made sure that it worked>
+- Still open: <the part of the fix that is not done, or "nothing">
+
+## Prevention
+- <how to stop the same class of failure, with the follow-up issue that does it>
+- <each choice for the human, as a question>
+```
+
 Title rules: a feature request title says what the thing should do (example: "PTW mouse back button should undo the last annotation while dictating"). A plain present-tense title (example: "... undoes ...") is a bug report. Do not write a feature request as a present-tense statement. Each issue has a GitHub issue type: Feature, Bug, or Task. The pull request that implements a feature is titled as an imperative (example: "Make the back button undo the last annotation while dictating"). It completes the sentence "Merging this pull request will ...". See [working-agreements.md](working-agreements.md#issue-and-pull-request-titles).
 
 A title must read as a plain sentence. Keep the articles. Quote each literal word that the title discusses. A reader must be able to parse the title without reading the body.
