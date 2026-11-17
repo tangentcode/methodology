@@ -46,7 +46,7 @@ For a new project, start with [adopting.md](adopting.md).
 |---|---|
 | [principles.md](principles.md) | General principles. The first is to optimize for human attention |
 | [roles.md](roles.md) | Who does what, and what each role must not do |
-| [workflow.md](workflow.md) | Triage, board columns, the loop, and the definitions of ready and done |
+| [workflow.md](workflow.md) | Triage, board columns, the loop, the definitions of ready and done, and incident reports |
 | [review.md](review.md) | Review layers, the round limit, the root-cause rule, and the gate into Human Review |
 | [tooling.md](tooling.md) | The coordinator tools that run the loop: events, the tick, the gate commands, the lock, and the API budget |
 | [briefs.md](briefs.md) | The contents of a brief (the owner bot writes it), with a template |

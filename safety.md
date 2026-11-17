@@ -17,6 +17,10 @@
 
 Workers that do verification or screenshots must use a throwaway user or a scratch root. They must never write, change, or delete files in the real staging tree of the human. The preview check uses a test account on the preview site. The preview site never writes to the staging database.
 
+## Incidents
+
+A safety failure is an incident. Examples: an agent deleted or changed real data, used the wrong account, or did an action that needs the approval of the human without it. Stop the action first. Then restore the data from a backup, if you can. Then write an incident report, as for each other failure. See [Incident reports](workflow.md#incident-reports). Give the exact request or command that did the damage, and the data that was lost or restored.
+
 ## Root-level operations
 
 The designated ops agent does all changes to system services, web server configuration, and other administrator-level changes. Other agents send it the exact change. They do not get elevated access for themselves. The ops agent makes a backup before it changes a production service.

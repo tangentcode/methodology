@@ -36,3 +36,12 @@ When a worker rebases a change onto a stack, the speculative branch has the name
 ## Comments
 
 Our team uses the sparse-comments convention in [suggested-conventions.md](suggested-conventions.md#sparse-comments-and-a-file-summary). Each file starts with a summary of one or two lines.
+
+## Incident reports
+
+The general rule is in [workflow.md](workflow.md#incident-reports). Our team uses these names:
+
+- Reports are issues in `tangentcode/methodology`, on the methodology board (Project 6). Use the template in `.github/ISSUE_TEMPLATE/incident.md`.
+- swarmbot diagnoses each failure.
+- The pane watcher and the watchdog (`swarm-watch`, tangentswarm #40) open reports automatically. The hourly sanity check (tangentswarm #43) will also open one report for each finding.
+- Examples of the shape: methodology #82, #83, #84, and #87.
