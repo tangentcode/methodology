@@ -101,6 +101,21 @@ flowchart LR
 The issue card stays in Active while its pull request is open in a flow column. The pull request card moves through In Progress, Auto Review, Needs Input, Ready, Staging, and Human Review.
 
 
+### The issue and its pull request are in the same repo
+
+An issue and the pull request that fixes it must be in the same repo. A closing link across repos, such as `Fixes owner/repo#N`, does not close the issue in the way that the swarm expects. Example: tangentswarm #107 stayed open in Active after methodology #111 merged.
+
+If the work of an issue belongs in a different repo:
+
+- Close the first issue with a link to a new issue in the correct repo.
+- Launch the pull request from that new issue.
+- GitHub can transfer an issue to a different repo in the same organization. If the transfer keeps the Project card, a transfer is permitted instead of a close and a new issue.
+
+The swarm enforces this rule in two places:
+
+- The launcher of the methodology board (Project 6) refuses to launch a worker if the pull request would be in a different repo from its issue. It tells why.
+- Backstop: when a pull request merges and closes an issue of a different repo on the same board, the swarm closes that issue and moves its card to Done.
+
 ### Move cards without a lost step
 
 To go into Auto Review is one action: move the card, mark the pull request ready, request an automated review of the current head, and record the head that you sent for review. A card in Auto Review without a review request or a review on its current head is a stall. A change that is at the round limit does not go back to Auto Review. The coordinator examines the new head itself (step 7 of the loop) and starts its post-check.
