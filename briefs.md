@@ -2,6 +2,10 @@
 
 A brief is the written instruction of the owner bot to one worker agent for one change. A change is a full issue or a named part of one. The coordinator starts the worker and sends the brief. The worker must be able to start from the brief only, without a request for more context.
 
+## One concern for each pull request
+
+A brief asks for one concern. If an issue holds a batch of unrelated changes, split it into separate issues before the worker starts. A large pull request gets its findings over many review rounds (see [Recurring finding classes](review.md#recurring-finding-classes)).
+
 ## The contents of a brief
 
 - **Base.** The branch name. The branch starts from the latest main, and the pull request targets main. The worker makes and pushes a first commit, and then stops. The coordinator opens the draft pull request, with a closing link to the issue, before the worker continues.
@@ -9,9 +13,10 @@ A brief is the written instruction of the owner bot to one worker agent for one 
 - **First step.** What to read before the worker writes code, and which decision to explain in the pull request body.
 - **The issue.** The full text of the issue, copied into the brief. Then the brief is complete without other documents.
 - **The choices of the human.** Each choice from the Triage comment of the human, and from all later answers. If the human moved the issue to Active with no comment, write the default or recommended answer for each open question. Write them in the first time. Do not let a review round find them.
-- **Tests.** The cases that the worker must test.
+- **Tests.** The cases that the worker must test. If the change touches save code or handoff code, include an edit made while a save is pending, and a side effect that fails.
 - **Acceptance.** How the human will check the result.
 - **The root-cause rule.** Always include it.
+- **The self-review checklist.** Always include it. It names the recurring finding classes (see [Recurring finding classes](review.md#recurring-finding-classes)).
 - **Rules.** What the worker must not do. Always include this rule: workers that do verification or screenshots must use a throwaway user or a scratch root, and must never write, change, or delete files in the real staging tree of the human.
 - **Reports.** What to report, and when.
 
@@ -50,6 +55,9 @@ that is nearest to the existing code. Explain the choice in the pull request bod
 ## Tests
 - <case>
 - <case>
+- If the change touches save code or handoff code: an edit made while a save
+  is pending is not lost, and a side effect that fails is not reported as a
+  success.
 
 ## Acceptance
 <how the human will check it, usually on staging>
@@ -58,6 +66,22 @@ that is nearest to the existing code. Explain the choice in the pull request bod
 For each finding, fix the root cause, not only the one example. In the pull
 request body, write a list of the neighboring cases of the same class. Add
 tests for them before you push. Never push when tests fail.
+Before you push a fix, search the whole diff for the same class of bug. Fix
+each instance, and add at least one test that covers the class.
+
+## Self-review before Ready
+Before you mark the pull request as ready, read your diff for each class.
+In the pull request body, write one line for each class: "not in this
+change", or the places that you checked and fixed.
+1. Lost updates: an edit made while a save or write is pending is dropped.
+2. Unserialized read-modify-write, or a reservation that is not atomic.
+3. Success reported before the action succeeds, or the attempt recorded
+   in place of the result.
+4. State that goes stale: check mergeability, CI, review state, and open
+   questions again just before the action.
+5. Lost repository or board scope: pass the repository through, and
+   include it in each key for deduplication.
+6. <class for this project, if any>
 
 ## Rules
 - Start the branch from main. The base is main. Push a first commit and wait for the draft pull request from the coordinator.
