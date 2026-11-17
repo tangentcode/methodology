@@ -261,7 +261,7 @@ This rule, from 2026-11-17, records the decision on [issue #64](https://github.c
 
 - The head is the same head that passed the gate at Staging entry.
 - The pull request still merges cleanly with main and with each Human Review pull request. A local `git merge-tree` check is sufficient.
-- No person commented on the pull request or reviewed it after the gate. Comments and reviews from bots do not count.
+- No person commented on the pull request or reviewed it after the gate, except comments that the coordinator cleared. Comments and reviews from bots do not count.
 
 The order is: the active fast-track pull request first, then a high-priority pull request, then the Staging order. A fast-track pull request does not push a pull request out of Human Review. The promotion takes the shared lock. It does not wait for a CI run, a redeploy, or a new read of the pull request body. Those checks passed at Staging entry, on the same head.
 
@@ -270,7 +270,7 @@ A pull request that fails the cheap check does not take the slot. The coordinato
 - If its head changed, the card goes back to In Progress.
 - If it conflicts with main, the card goes to In Progress with a merge-main relay. See [After a merge to main](#after-a-merge-to-main).
 - If it conflicts only with a Human Review pull request, it waits in Staging. When that pull request merges, the merge check against main runs again.
-- If a person commented after the gate, the card waits in Staging. The coordinator reads the comment and acts on it. If the comment asks for a change, the card goes back to In Progress.
+- If a person commented after the gate, the card waits in Staging. The coordinator reads the comment and acts on it. If the comment asks for a change, the card goes back to In Progress. If the comment needs no change, for example an approval or a question that the coordinator answered, the coordinator clears it. It writes a clearance record on the pull request that names the head and the time of the last comment that it read. The cheap check then counts only person comments and reviews that are newer than that record. Clearing a comment does not run the full gate again, and the card can take the next free slot.
 
 #### After a merge to main
 

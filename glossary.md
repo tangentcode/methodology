@@ -10,7 +10,7 @@
 
 **Brief.** The written instructions of the owner bot to a worker for one change. A change is a full issue or a named part of one.
 
-**Cheap check.** The only check when a Staging pull request moves to Human Review. The head did not change since the gate, the pull request still merges with main and with each Human Review pull request, and no person commented after the gate. The full gate does not run again. See [Promotion from Staging](review.md#promotion-from-staging).
+**Cheap check.** The only check when a Staging pull request moves to Human Review. The head did not change since the gate, the pull request still merges with main and with each Human Review pull request, and no person commented after the gate, except comments that the coordinator cleared. The full gate does not run again. See [Promotion from Staging](review.md#promotion-from-staging).
 
 **Coordinator bot.** The agent that runs the pull request loop. It sends Triage comments to the owner bot, steers workers, checks changes, and moves cards.
 
