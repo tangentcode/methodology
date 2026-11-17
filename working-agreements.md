@@ -68,7 +68,7 @@ There is no fixed maximum number of workers. Look at the free resources before y
 
 This rule is from the maintainer, 2026-11-15 4:40 AM ET: "Idle agents should be closed with /exit ... We can always resume them. (Close the agent not the tmux window)". It replaces the earlier rule that stopped idle workers only when memory was low.
 
-- An agent is idle when its pull request is in Ready, Staging, or Human Review, or when it has no work. Close an idle agent with `/exit`. Do not wait until memory is low.
+- An agent is idle when its pull request is in Auto Review, Needs Input, Ready, Staging, or Human Review, or when it has no work. Close an idle agent with `/exit`. Do not wait until memory is low. The Needs Input case is from the maintainer, 2026-11-15 6:45 PM ET (tangentswarm #40, item 4): the question is on the ticket, and the answer resumes the agent.
 - Close the agent, not the tmux window. The window, its shell, the worktree, and the branch stay.
 - Never kill the window, its shell, or its processes to close an idle agent. Send only `/exit`.
 - An exited agent does not count toward the Claude cap. Only a live agent process counts.
@@ -81,6 +81,8 @@ Send `/exit` only when these three conditions are true:
 - Its worktree is clean.
 - It pushed all its work.
 - It is idle at an empty prompt.
+
+There is one exception. An agent whose card is in Needs Input can have uncommitted work when it is closed. Its worktree and its files stay, and the resume starts the agent in that worktree.
 
 An agent that writes, tests, or waits at a permission prompt is not idle. Do not close it.
 
