@@ -18,8 +18,11 @@ flowchart TD
     J -->|limit reached:<br/>coordinator examines,<br/>no more automated rounds| K
     H -->|clean| K{Coordinator<br/>post-check}
     K -->|fails| I
-    K -->|passes| RQ[Ready,<br/>not on the staging environment]
-    RQ -->|Staging below target:<br/>pull one at a time| L[Merge into staging,<br/>deploy staging,<br/>verify served commit,<br/>screenshots in the PR if visible]
+    K -->|passes, nothing visible| RQ[Ready,<br/>not on the staging environment]
+    K -->|passes, visible change| PV{Preview check, one at a time:<br/>deploy on a preview site of the real app,<br/>check the feature, screenshots in the PR}
+    PV -->|passes| RQ
+    PV -->|fails| I
+    RQ -->|Staging below target:<br/>pull one at a time| L[Merge into staging,<br/>deploy staging,<br/>verify served commit]
     L --> M{Gate into Staging}
     M -->|passes| P[Staging,<br/>3 to 5]
     P -->|Human Review slot opens,<br/>card move| N[Human Review,<br/>exactly two]

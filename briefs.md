@@ -65,6 +65,7 @@ tests for them before you push. Never push when tests fail.
 - Do not resolve review threads.
 - Keep temporary files in your own working directory, not in a shared temporary directory.
 - Workers that do verification or screenshots must use a throwaway user or a scratch root. They must never write, change, or delete files in the real staging tree of the human.
+- If a person can see the change: local screenshots, such as from a Vite harness, help you while you work. They are not review evidence. The review screenshots come from the preview check of the real app before Ready (see review.md, Screenshots from a preview of the real app).
 - <rule for secrets, if the change touches credentials>
 - Write issues, pull request bodies, commit messages, and replies in ASD-STE100 style, in ASCII only (see working-agreements.md, Writing style).
 - Run only the targeted tests for the files that you changed. Report the number of tests that pass.
