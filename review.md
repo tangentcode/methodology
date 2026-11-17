@@ -312,7 +312,9 @@ Of the usual 5 to 8 running coding agents, 3 to 4 always do first implementation
 
 The other 2 to 3 slots are reserved for revival of agents that must rework a change.
 
-When a pull request reaches Ready, its coding agent process exits. Its terminal session, its branch, and its worktree stay, so a reserved slot can start the agent again with feedback. Then the next Active issue starts, in a new-work slot.
+When a pull request reaches Ready, its coding agent is closed with `/exit`. Its tmux window, its saved session, its branch, and its worktree stay, so a reserved slot can start the agent again with feedback. Then the next Active issue starts, in a new-work slot.
+
+The same applies to each idle agent (rule from 2026-11-15 4:40 AM ET). An agent whose pull request is in Ready, Staging, or Human Review, or that has no work, is closed with `/exit`. Close the agent, not the tmux window. Never kill the window or its processes for this. An exited agent does not take a slot and does not count toward the Claude cap. Resume it later in the same window with `claude --resume <session>` or `claude --continue`. See [Close idle agents with /exit](working-agreements.md#close-idle-agents-with-exit).
 
 Staging pulls from Ready just in time. If the maintainer marks a pull request urgent, that pull request becomes the next Staging pull.
 

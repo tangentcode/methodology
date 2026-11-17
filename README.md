@@ -80,6 +80,6 @@ We moved full test suites onto a shared machine that had no resource limits. The
 - A throttle that lets only two test runs operate at the same time.
 - Only targeted tests run locally.
 - Full Linux CI runs in GitHub Actions again.
-- Idle workers that pushed all their work stop only when memory is low. Saved sessions make it easy to start them again.
+- Idle workers that pushed all their work stop only when memory is low. Saved sessions make it easy to start them again. (Since 2026-11-15, idle agents close with `/exit` at once, not only when memory is low. See [Close idle agents with /exit](working-agreements.md#close-idle-agents-with-exit).)
 
 See [review.md](review.md) and [working-agreements.md](working-agreements.md).

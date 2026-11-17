@@ -12,6 +12,8 @@
 
 **Cheap check.** The only check when a Staging pull request moves to Human Review. The head did not change since the gate, the pull request still merges with main and with each Human Review pull request, and no person commented after the gate, except comments that the coordinator cleared. The full gate does not run again. See [Promotion from Staging](review.md#promotion-from-staging).
 
+**Claude cap.** The maximum number of live Claude agent processes that the start tools allow on the shared build machine. An agent counts only while its process runs. An agent that exited with `/exit` does not count (see Parked worker).
+
 **Coordinator bot.** The agent that runs the pull request loop. It sends Triage comments to the owner bot, steers workers, checks changes, and moves cards.
 
 **Discuss.** The column for issues that need careful thought or a conversation. They wait here so that simple Triage items move first. The human writes comments on the issue. The agent then writes the issue body again to agree with the answers. This continues until the issue is ready for Backlog or Active. No worker starts on a Discuss item. The coordinator does not count it as waiting on the human. Agents do not move the card forward themselves.
@@ -51,13 +53,15 @@
 
 **Owner bot.** The agent that owns the product decisions for an area of the board: Triage options, questions on Triage issues, and briefs.
 
+**Parked worker.** A worker agent that was closed with `/exit` because it was idle: its pull request is in Ready, Staging, or Human Review, or it has no work. Its tmux window, shell, saved session, branch, and worktree stay. It does not count toward the Claude cap. It is resumed later in the same window with `claude --resume <session>` or `claude --continue`. Nobody kills the window or its processes to park a worker. See [Close idle agents with /exit](working-agreements.md#close-idle-agents-with-exit). This is not the Parked column, which holds pull requests that we decided not to merge yet.
+
 **Pending.** The former name of the Staging column. The board option id did not change when the column was renamed. Cards kept their status. Tools must match the option id, not the name. See [Staging](#staging).
 
 **Preview site.** A staging-like site of the real app, separate from the staging environment. It mirrors the staging branch and has its own data. Before a pull request that a person can see enters Ready, the swarm deploys it there, one pull request at a time, checks that the feature works, and takes the screenshots for the human review. Then the site resets to the staging branch. See [Screenshots from a preview of the real app](review.md#screenshots-from-a-preview-of-the-real-app).
 
 **Pull request title.** A short headline that completes the sentence "Merging this pull request will ...". It starts with a verb in the imperative.
 
-**Ready.** The column for finished pull requests that wait to be pulled into Staging. It sits on the board between Needs Input and Staging. It is the buffer of finished work, because a merge is easier than a first implementation. The worker is done, the automated review is clean, and the post-check of the coordinator passed on the head. A MinBot pass comment names the exact head. If a person can see the change, the preview check passed, and its screenshots are in the pull request. The pull request is not merged into the staging branch, not deployed, and not gated. It is not on the staging environment. The coding agent process has exited, but its terminal session, branch, and worktree stay. Agents work Active issues until their pull requests are in Ready. See [Coding agent slots](review.md#coding-agent-slots). The active fast-track pull request waits first, when it is in Ready. Then pull requests wait by milestone, then by fewest conflicts with the current stack, then by age. See [Just-in-time Human Review flow](review.md#just-in-time-human-review-flow) and [Fast track](review.md#fast-track).
+**Ready.** The column for finished pull requests that wait to be pulled into Staging. It sits on the board between Needs Input and Staging. It is the buffer of finished work, because a merge is easier than a first implementation. The worker is done, the automated review is clean, and the post-check of the coordinator passed on the head. A MinBot pass comment names the exact head. If a person can see the change, the preview check passed, and its screenshots are in the pull request. The pull request is not merged into the staging branch, not deployed, and not gated. It is not on the staging environment. The coding agent was closed with `/exit`, but its tmux window, saved session, branch, and worktree stay (see Parked worker). Agents work Active issues until their pull requests are in Ready. See [Coding agent slots](review.md#coding-agent-slots). The active fast-track pull request waits first, when it is in Ready. Then pull requests wait by milestone, then by fewest conflicts with the current stack, then by age. See [Just-in-time Human Review flow](review.md#just-in-time-human-review-flow) and [Fast track](review.md#fast-track).
 
 **Ready for review.** A pull request that is marked for review, not a draft. When a card moves to Auto Review, its pull request becomes ready for review.
 
@@ -77,4 +81,4 @@
 
 **work2.** A label that keeps an issue in Inbox, even when the issue has a linked pull request. The pull request of a `work2` issue still moves through the flow columns in the usual way, but it does not move the issue out of Inbox and it does not count in the Active total.
 
-**Worker agent.** A coding agent in a terminal session. It owns one change.
+**Worker agent.** A coding agent in a terminal session. It owns one change. When it is idle, it is closed with `/exit` and its terminal session stays (see Parked worker).
