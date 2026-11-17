@@ -24,6 +24,7 @@ The post-check does the pre-check again on the current head. It also asks:
 
 - Is each P1 and P2 finding fixed, and is its thread resolved?
 - Does the pull request body give the neighboring cases for each fix?
+- Does the pull request body have a self-review line for each recurring finding class?
 - Can the pull request merge into main?
 
 When a change touches timing, concurrency, or shared state, the coordinator makes sure that the related tests passed two times. Local test runs stay targeted and throttled. Full suites run in GitHub Actions.
@@ -58,6 +59,37 @@ Use the same procedure for each finding, from all reviewers:
 5. Give the cases in the pull request body and in the report to the coordinator.
 
 The coordinator puts this rule in each message that sends a finding. If a second round finds one more case of the same class, the first fix did not find the root cause. Then the worker must tell what the real cause was.
+
+Before you push a fix for a finding, search the whole diff for the same class of bug. Fix each instance. Add at least one test that covers the class, not only the line that the reviewer shows.
+
+## Recurring finding classes
+
+This rule, from 2026-11-17, records [methodology #85](https://github.com/tangentcode/methodology/issues/85). In the week of 2026-11-09 to 2026-11-16, Codex gave 201 inline findings. Most of them were in a small number of classes. Each review reports only a few findings, so a large pull request lets the same class come back round after round. One pull request had 33 findings in 15 reviews.
+
+These classes come back most:
+
+1. **Lost updates during async work.** An edit made while a save, a Save As, or a write is pending gets dropped or overwritten.
+2. **Unserialized read-modify-write.** Two writers read the same value, change it, and write it back, and one change is lost. A reservation, such as a slot, a once-key, or a file name, is not atomic.
+3. **Success reported before it happens.** Code marks a handoff, a relay, or a route as done before the action succeeds. Or it records the attempt, not the result.
+4. **State that goes stale before an action.** Code reads mergeability, CI, the Codex state, or open questions, and later acts on the old value. Check each value again just before the action.
+5. **Lost repository or board scope.** In code for many repositories, a function does not get the repository, or a key for deduplication does not include the repository.
+
+A project adds its own classes. Examples: terminal-screen parsing that breaks on wide characters, line wraps, or prompt glyphs; timeline seek and hold state in an animation plugin.
+
+### Self-review before Ready
+
+Before the worker marks a pull request as ready, it reads its own diff for each class on the list. For each class, it writes one line in the pull request body: "not in this change", or the places that it checked and fixed.
+
+### Tests for save and handoff code
+
+When a change touches save code or handoff code, it includes these tests:
+
+- An edit made while a save is pending. The edit must not be lost.
+- A side effect that fails. The code must not report success, and the recorded state must show the failure.
+
+### Review guidelines in AGENTS.md
+
+Codex reads the "Review guidelines" section of the AGENTS.md file of a project. Put the same list of classes there, with this instruction: when you find one instance of a class, report every instance of that class in the diff in the same review. Then one round finds the whole class.
 
 ## Threads
 
