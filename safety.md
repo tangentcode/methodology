@@ -15,7 +15,7 @@
 
 ## Verification and screenshots
 
-Workers that do verification or screenshots must use a throwaway user or a scratch root. They must never write, change, or delete files in the real staging tree of the human.
+Workers that do verification or screenshots must use a throwaway user or a scratch root. They must never write, change, or delete files in the real staging tree of the human. The preview check uses a test account on the preview site. The preview site never writes to the staging database.
 
 ## Root-level operations
 

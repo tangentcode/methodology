@@ -65,7 +65,21 @@ Workers do not resolve review threads. The coordinator resolves a thread after i
 
 ## Act on a clean review
 
-A clean review is also an event. The latest automated review of the current head can be clean, with no open P1 or P2 threads. Then the automation of the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. The coordinator does not start a staging merge or a gate at this point. See [The pull into Staging](#the-pull-into-staging). It does not wait for the worker, because the worker is usually already finished. The periodic scan counts a clean review with no post-check after it as a stall.
+A clean review is also an event. The latest automated review of the current head can be clean, with no open P1 or P2 threads. Then the automation of the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. A change that a person can see first goes through the preview check, and moves to Ready only when that check passes. See [Screenshots from a preview of the real app](#screenshots-from-a-preview-of-the-real-app). The coordinator does not start a staging merge or a gate at this point. See [The pull into Staging](#the-pull-into-staging). It does not wait for the worker, because the worker is usually already finished. The periodic scan counts a clean review with no post-check after it as a stall.
+
+## Screenshots from a preview of the real app
+
+This rule, from 2026-11-14, records the maintainer decision on [methodology #67](https://github.com/tangentcode/methodology/issues/67). Platform PR #476 reached Human Review with screenshots from a local Vite page that showed the component outside the app. The feature did not work in the real app.
+
+The screenshots of a change that a person can see come from a staging-like preview of the real app. The swarm takes them, and checks that the feature works there, before the pull request enters Ready. Then the move from Staging to Human Review stays only a card move, with no wait.
+
+- **The preview site.** Each app has a separate preview site. It runs the same build of the real app as the staging site of that app, and it mirrors the staging branch (`work`). It has its own data. It must not write to the staging database.
+- **One pull request at a time.** The preview check runs in the background, upstream of Human Review, for one pull request at a time. It does not take the shared lock of the staging merge, so it never slows a pull into Staging or a promotion into Human Review.
+- **The steps.** When a pull request that a person can see passes the automated review and the post-check, the swarm merges its head onto a copy of the staging branch. It deploys that copy to the preview site and confirms that the site serves it. It takes the screenshots there, and it checks that the feature works there. Then it resets the preview site back to the staging branch. The preview check never changes the staging branch, main, or the branch of the pull request.
+- **The result.** If the check passes, the pull request moves to Ready, and the preview screenshots go into the pull request description for the human review. If the check fails, the card goes back to In Progress with the failed step and the last screenshot. Only pull requests that pass become Ready.
+- **What does not count.** A screenshot of an isolated component page, such as a local Vite harness or a story page, is never review evidence. Local screenshots are fine during In Progress, to help the worker. They do not satisfy the gate.
+- **Which head.** The preview runs on the head that enters Ready. A later merge from main or from the staging branch does not need new screenshots. A new code push sends the pull request back through the review, and then through the preview check again.
+- **Until the preview site exists.** Until an app has its preview site and the swarm runs the preview check for it, the screenshots of a change in that app come from the staging site, when the pull step deploys the change. They must show the real app. An isolated component page still does not count.
 
 
 ## The gate into Human Review
@@ -83,7 +97,7 @@ The coordinator runs this full gate one time, when it pulls a pull request into 
 - The Linux checks in GitHub Actions are green on this exact head.
 - The change is merged into the staging branch and deployed. Staging is verified to serve the correct commit. A merge into the staging branch must not remove lines of the change. A pull request does not enter Staging until this is true.
 - The pull request description tells where and how to see the change.
-- Each change that a person can see, such as UI, rendered images, or generated video, has screenshots or frames in the pull request description. Existing screenshots count, also when they are from an older head. Do not take them again after a merge from main or from the staging branch. Generated media includes a side-by-side view with its reference, if there is a reference. If you are not sure whether a person can see a change, think that a person can see it.
+- Each change that a person can see, such as UI, rendered images, or generated video, has screenshots or frames in the pull request description. They come from the preview check of the real app, as [Screenshots from a preview of the real app](#screenshots-from-a-preview-of-the-real-app) tells. A screenshot of an isolated component page does not count. Existing screenshots count, also when they are from an older head. Do not take them again after a merge from main or from the staging branch. Generated media includes a side-by-side view with its reference, if there is a reference. If you are not sure whether a person can see a change, think that a person can see it.
 
 The automation that moves cards must check each condition on this list. A condition that is written but not checked is not part of the gate.
 
@@ -98,7 +112,7 @@ A wait for a required check is not progress. A check is a stall when it did not 
 
 If a condition fails later, for example after a new push or a late finding, the card goes back to In Progress.
 
-When the automated review of the current head is clean, the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. Do not start a staging merge or a gate until the pull step takes this pull request. Do not take the screenshots again. Screenshots that are already in the pull request count. The pull request cannot enter Staging until the Linux checks on that head are green.
+When the automated review of the current head is clean, the coordinator immediately starts the post-check. If the post-check passes, the pull request moves to Ready. A change that a person can see first passes the preview check, which puts the screenshots in the pull request. Do not start a staging merge or a gate until the pull step takes this pull request. Do not take the screenshots again. Screenshots that are already in the pull request count. The pull request cannot enter Staging until the Linux checks on that head are green.
 
 A webhook event does not run the gate for a draft pull request, or for a pull request that is in Ready and has not been pulled. The hook makes those checks before it makes any API call. It also ignores repeated CI events for the same head. If a CI event is for the pull request that is currently in the pull step, the event can continue that step. A CI event for a pull request that is already in Staging does not run the gate again. That pull request passed the gate on its head, and a new head sends the card back to In Progress. If the lock is busy, the event queues a rerun. The process that holds the lock drains that rerun before it exits.
 
@@ -134,14 +148,14 @@ The rule from 2026-11-17 ([issue #64](https://github.com/tangentcode/methodology
      - It is merged into the staging branch.
      - It is deployed to the staging environment, and that environment is verified to serve it.
      - The Linux checks are green on the current head.
-     - The pull request body has screenshots, when a person can see the change, and a section that tells where to see it.
+     - The pull request body has the preview screenshots, when a person can see the change, and a section that tells where to see it.
      - All conditions of the gate pass.
    - A Staging pull request is merged into the staging branch when it is pulled, not as part of a bulk speculative stack.
    - The work merge, the redeploy, and the gate happen only at pull time, and only one pull at a time.
    - Moving the first Staging pull request to Human Review is a card move after the cheap check, so it is almost instant. It does not run the full gate again.
 3. Ready is a board column between Needs Input and Staging. It is the buffer of finished pull requests. Finished work piles up here, because a merge is easier than a first implementation. Ready is also the finish line for a first-implementation coding agent. Agents work Active issues and the backlog until their pull requests are in Ready. See [Coding agent slots](#coding-agent-slots).
-   - A pull request in Ready is finished. Its worker is done. The automated review of the current head is clean, or it is at the round limit or has timed out and the post-check of the coordinator has passed. No P1 or P2 findings are open.
-   - Thus Ready means two things on the exact head: the automated review is clean (or at its limit, as above), and a MinBot pass comment names that head. The post-check of the coordinator writes that comment.
+   - A pull request in Ready is finished. Its worker is done. The automated review of the current head is clean, or it is at the round limit or has timed out and the post-check of the coordinator has passed. No P1 or P2 findings are open. If a person can see the change, the preview check passed and its screenshots are in the pull request.
+   - Thus Ready means two things on the exact head: the automated review is clean (or at its limit, as above), and a MinBot pass comment names that head. The post-check of the coordinator writes that comment. If a person can see the change, it also means a third thing: the preview check passed on that head. See [Screenshots from a preview of the real app](#screenshots-from-a-preview-of-the-real-app).
    - A pull request in Ready is not merged into the staging branch, not deployed, not gated, and not on the staging environment.
    - Pull requests in Ready wait in this order:
      1. The one active fast-track pull request, if it is in Ready. See [Fast track](#fast-track).
@@ -169,7 +183,7 @@ Within that, high-priority tickets and a fast-track pull request fill a slot fir
 ##### What the active ticket gets
 
 1. **Launch.** Its coding agent starts at once, before any backlog launch.
-2. **Review.** The automated reviewer and the coordinator check take it first in their queues.
+2. **Review.** The automated reviewer, the coordinator check, and the preview check take it first in their queues.
 3. **Ready to Staging.** It goes to the head of the Ready queue. The next pull into Staging takes it first when Staging is below the floor. It may enter Staging when it merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request. Do not restack existing Staging pull requests just to put it first. A pull that is already running does not stop. The new pull waits for the shared lock, like every other operation.
 4. **Staging to Human Review.** It takes the next free Human Review slot, ahead of the other Staging pull requests. It is promoted at once, with the same cheap check as every other pull request. It does not push a pull request out of Human Review. Human Review stays at exactly two.
 
@@ -180,6 +194,7 @@ Nothing. It must pass every step:
 - The automated review
 - The coordinator check
 - CI
+- The preview check, and its screenshots of the real app
 - Merge into the integration branch and deploy to staging
 - Screenshots and the "where to see it" section in the pull request body
 - Every condition of the Human Review gate
