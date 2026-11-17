@@ -143,7 +143,7 @@ The rule from 2026-11-17 ([issue #64](https://github.com/tangentcode/methodology
    - That move is the signal that only one pull request is left. The next pull request must enter in seconds, not minutes.
    - While the human reviews the remaining pull request, a new one goes in behind it.
    - When Human Review holds exactly one pull request, and the first Staging pull request depends on it, that Staging pull request can go in as the one stacked pull request. It has a banner at the top of the body that names the Human Review pull request that it depends on. See [Stacked pull requests](workflow.md#stacked-pull-requests). If that base merges first, remove the banner. Then the pull request is a plain pull request.
-2. Staging has no fixed cap. The goal is flow. This column was formerly named Pending. Any Ready pull request that merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request may enter Staging. The tools cache a conflict map per head SHA. When Staging drops below a floor, the cascade pulls the next clean Ready pull request. The default floor is 2. We will compare a floor of 1 with a floor of 2 by how long pull requests take from Ready to Human Review. The expensive steps (the work merge, the redeploy, and the gate) happen only at pull time. Never rebase or rework a pull request just to fill Staging. Do not pre-merge Ready pull requests in bulk: that made every merge to main conflict with the speculative branches. Blocked pull requests can also sit in Staging, but they do not count toward the floor, and they do not stop a promotion or a pull step. A pull that is merged into the staging branch, but waits only for a worker, for example for its screenshots (condition 7a), is also blocked. It does not count toward the floor, so the cascade pulls the next clean Ready pull request ([incident #82](https://github.com/tangentcode/methodology/issues/82)). Only Staging and Human Review are merged into the staging branch and deployed to the staging environment. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
+2. Staging has no fixed cap. The goal is flow. This column was formerly named Pending. Any Ready pull request that merges cleanly, by `git merge-tree`, with main, the staging branch (`work`), and every Human Review and Staging pull request may enter Staging. The tools cache a conflict map per head SHA. When Staging drops below a floor, the cascade pulls the next clean Ready pull request. The default floor is 2. We will compare a floor of 1 with a floor of 2 by how long pull requests take from Ready to Human Review. The expensive steps (the work merge, the redeploy, and the gate) happen only at pull time. Never rebase or rework a pull request just to fill Staging. Do not pre-merge Ready pull requests in bulk: that made every merge to main conflict with the speculative branches. Blocked pull requests can also sit in Staging, but they do not count toward the floor, and they do not stop a promotion or a pull step. A pull that is merged into the staging branch, but waits only for a worker, for example for its screenshots (condition 7a), is also blocked. It does not count toward the floor, so the cascade pulls the next clean Ready pull request See [Screenshot waits](#screenshot-waits). Only Staging and Human Review are merged into the staging branch and deployed to the staging environment. When a pull request enters Staging, its merge into the staging branch is the dry run for its merge into main. Do these merges in order, one at a time.
    - Each Staging pull request is fully prepared:
      - It is merged into the staging branch.
      - It is deployed to the staging environment, and that environment is verified to serve it.
@@ -245,6 +245,7 @@ The pull step starts during that cascade, when Staging is below the floor and a 
 5. Run the gate with `hr-gate --apply`.
    - If the gate passes, the pull request goes to Staging.
    - If the gate fails, restore the staging branch to the last admitted stack: the Human Review pull requests and the Staging pull requests only. Deploy that stack again. Then move the failed pull request back to In Progress with the reason, and try the next pull request in Ready. Do not leave a failed candidate on the staging branch, and do not merge the next candidate on top of it.
+   - If the gate fails only on the screenshots (condition 7a), it is a wait, not a failure. Do not restore the stack. See [Screenshot waits](#screenshot-waits).
 
 Do not pre-merge Ready pull requests in bulk. Every merge to main made those speculative branches conflict. We will compare a floor of 1 with a floor of 2 by how long pull requests take from Ready to Human Review.
 
@@ -269,6 +270,18 @@ Events move the work, not timers. A clean automated review moves the pull reques
 The reviewer always knows the state. When Human Review becomes empty, the swarm manager immediately tells the reviewer. It gives the next pull request and the time when it will be ready.
 
 The swarm tools include a status command and a cascade command, `~/bin/swarm-advance --cascade`. The status command reports whether Human Review holds two pull requests, when two prepared pull requests are available, and whether Staging is at or above its floor (default 2). The cascade command takes the shared lock and runs the whole just-in-time cascade: it promotes the first Staging pull request into Human Review with the cheap check when a slot is open, pulls the next clean Ready pull request while Staging is below the floor, may also pull other Ready pull requests that already merge cleanly, and starts the next new-work coding agent when fewer than 3 new-work agents are running and an Active issue has no pull request yet. If the lock is busy, the command queues a rerun. The process that holds the lock drains that rerun before it exits.
+
+##### Screenshot waits
+
+This rule is from the incident of 2026-11-15 ([issue #82](https://github.com/tangentcode/methodology/issues/82)). Until an app has its preview site, the worker takes the screenshots of a change from staging, after the pull step deploys it. See [Screenshots from a preview of the real app](#screenshots-from-a-preview-of-the-real-app). Thus a gate that fails only on condition 7a (no screenshots) is a wait, not a failure:
+
+- The pull stays on the staging branch, and the card stays in Ready. Do not restore the stack, and do not move the card to In Progress.
+- The coordinator gives the screenshot job to the worker of the pull request. The worker edits only the body of the pull request.
+- When the body has the screenshots, the gate runs again on the same head. If it passes, the pull request goes to Staging.
+- The pull is blocked on a worker. It does not count toward the floor. Thus the cascade can pull the next clean Ready pull request on top of it.
+- A new head ends the wait. The pull request goes back through the review.
+
+A gate that fails on any other condition is a failure. Restore the stack, as the pull step says.
 
 #### Promotion from Staging
 

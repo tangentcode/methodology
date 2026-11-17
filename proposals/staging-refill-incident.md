@@ -1,6 +1,6 @@
 # Proposal: prevention for the 2026-11-15 Staging refill incident
 
-> **Status: proposal. Not adopted.** This page is for review only. The live rules are in [workflow.md](../workflow.md) and [review.md](../review.md). One small rule edit comes with this page. It only applies a rule that we have already. See [Rule edit in this pull request](#rule-edit-in-this-pull-request). Nothing else on this page is built until the human owner accepts it, rejects it, or changes it. Incident report: [issue #82](https://github.com/tangentcode/methodology/issues/82).
+> **Status: proposal. Not adopted.** This page is for review only. The live rules are in [workflow.md](../workflow.md) and [review.md](../review.md). Two small rule edits come with this page. They only make the rules match a rule and the tools that we have already. See [Rule edit in this pull request](#rule-edit-in-this-pull-request). Nothing else on this page is built until the human owner accepts it, rejects it, or changes it. Incident report: [issue #82](https://github.com/tangentcode/methodology/issues/82).
 
 ## The incident
 
@@ -98,6 +98,8 @@ These are for tangentswarm. This pull request does not open them.
 ## Rule edit in this pull request
 
 [review.md](../review.md#columns-and-limits) and [workflow.md](../workflow.md#just-in-time-review) now say that a pull that is merged into the staging branch, but waits only for a worker (for example, for its screenshots), is blocked. It does not count toward the floor. This only applies the rule about blocked pull requests that we have. It does not add the 15-minute limit. That limit waits for a decision.
+
+A new short section, [Screenshot waits](../review.md#screenshot-waits), says what the coordinator does with such a pull. A gate that fails only on condition 7a is a wait, not a failure. The pull stays on the staging branch, because the worker takes its screenshots there. The coordinator does not restore the stack, and the next pull can go on top of it. The pull step in [review.md](../review.md#the-just-in-time-cascade), [workflow.md](../workflow.md#the-loop) (step 11 and [Just-in-time review](../workflow.md#just-in-time-review)), [tooling.md](../tooling.md), and [adopting.md](../adopting.md) now name this exception. The tools already work this way: `flow.WAIT_ROWS` (`tangentswarm/flow.py:65`) makes 7a a wait row, so the pull stays open. Thus this edit makes the rules match the tools.
 
 ## Decision needed
 
