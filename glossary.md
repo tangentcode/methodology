@@ -55,7 +55,7 @@
 
 **Owner bot.** The agent that owns the product decisions for an area of the board: Triage options, questions on Triage issues, and briefs.
 
-**Parked worker.** A worker agent that was closed with `/exit` because it was idle: its pull request is in Ready, Staging, or Human Review, or it has no work. Its tmux window, shell, saved session, branch, and worktree stay. It does not count toward the Claude cap. It is resumed later in the same window with `claude --resume <session>` or `claude --continue`. Nobody kills the window or its processes to park a worker. See [Close idle agents with /exit](working-agreements.md#close-idle-agents-with-exit). This is not the Parked column, which holds pull requests that we decided not to merge yet.
+**Parked worker.** A worker agent that was closed with `/exit` because it was idle: its pull request is in Auto Review, Needs Input, Ready, Staging, or Human Review, or it has no work. Its tmux window, shell, saved session, branch, and worktree stay. It does not count toward the Claude cap. It is resumed later in the same window with `claude --resume <session>` or `claude --continue`. Nobody kills the window or its processes to park a worker. See [Close idle agents with /exit](working-agreements.md#close-idle-agents-with-exit). This is not the Parked column, which holds pull requests that we decided not to merge yet.
 
 **Pending.** The former name of the Staging column. The board option id did not change when the column was renamed. Cards kept their status. Tools must match the option id, not the name. See [Staging](#staging).
 
